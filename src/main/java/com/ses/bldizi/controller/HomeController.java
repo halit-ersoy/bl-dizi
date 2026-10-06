@@ -32,12 +32,6 @@ public class HomeController {
     }
 
 
-    @GetMapping({"/admin", "/admin/**"})
-    public ResponseEntity<Void> redirectToAdmin() {
-        return ResponseEntity.status(HttpStatus.FOUND)
-                .location(URI.create("https://whodatidols.com/admin"))
-                .build();
-    }
 
     @GetMapping("/api/status")
     @ResponseBody
