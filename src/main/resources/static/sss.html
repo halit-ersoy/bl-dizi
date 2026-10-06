@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sıkça Sorulan Sorular - BL Dizi | bldizi.com</title>
+    <meta name="description" content="BL Dizi (bldizi.com) sıkça sorulan sorular: Yayın takvimi, çeviriler, video oynatıcı ve üyelik hakkında merak edilen her şey.">
+    <link rel="canonical" href="https://bldizi.com/sss">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="/css/legal.css">
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="site-header">
+        <a href="/" class="logo-link">
+            <div class="logo">
+                <i class="fas fa-heart logo-icon"></i>
+                <span class="logo-text">BL <span class="logo-highlight">DİZİ</span></span>
+            </div>
+        </a>
+        <a href="/" class="back-link">
+            <i class="fas fa-arrow-left"></i> <span>Ana Sayfa</span>
+        </a>
+    </header>
+
+    <!-- Hero -->
+    <section class="page-hero">
+        <div class="page-hero-overlay"></div>
+        <div class="page-hero-content">
+            <span class="hero-badge"><i class="fas fa-question-circle"></i> YARDIM &amp; DESTEK</span>
+            <h1>Sıkça Sorulan Sorular</h1>
+            <p>BL Dizi platformu, yayınlar ve çeviriler hakkında merak ettiğiniz tüm soruların yanıtları.</p>
+        </div>
+    </section>
+
+    <!-- Main -->
+    <main class="page-main">
+        <div class="container">
+            <!-- Search Box -->
+            <div class="faq-search-box">
+                <i class="fas fa-search faq-search-icon"></i>
+                <input type="text" id="faqSearchInput" placeholder="Aklınızdaki soruyu arayın (örn: ücretsiz, çeviri, takvim)..." oninput="filterFaq(this.value)">
+            </div>
+
+            <!-- FAQ Accordion List -->
+            <div class="faq-list" id="faqList">
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        <h3><i class="fas fa-heart"></i> BL ve GL Dizileri Nedir?</h3>
+                        <i class="fas fa-chevron-down faq-arrow"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p><strong>BL (Boys' Love)</strong> ve <strong>GL (Girls' Love)</strong>; Asya kültüründe özellikle Tayland, Güney Kore, Japonya ve Tayvan'da üretilen, derin duygusal ve romantik ilişkileri konu alan popüler dizi ve film türleridir. Platformumuz bu türün en seçkin yapımlarını Türk izleyicileriyle buluşturur.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        <h3><i class="fas fa-gift"></i> bldizi.com platformu ücretsiz mi?</h3>
+                        <i class="fas fa-chevron-down faq-arrow"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Evet! <strong>bldizi.com</strong> üzerindeki tüm dizi ve filmleri herhangi bir ücret ödemeden, yüksek kalitede ve kesintisiz olarak izleyebilirsiniz.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        <h3><i class="fas fa-clock"></i> Yeni bölümler ve altyazılar ne zaman yüklenir?</h3>
+                        <i class="fas fa-chevron-down faq-arrow"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Yayınlanan diziler menşei ülkede vizyona girdikten hemen sonra çeviri ekibimiz tarafından titizlikle ele alınır. Genellikle aynı gün veya en geç 24 saat içerisinde Türkçe altyazılı olarak sitemize eklenir.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        <h3><i class="fas fa-globe-asia"></i> Hangi ülkelerin yapımları yer alıyor?</h3>
+                        <i class="fas fa-chevron-down faq-arrow"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Başta Tayland olmak üzere Güney Kore (K-BL), Japonya (J-BL), Tayvan ve Çin yapımları geniş arşivimizde yer almaktadır. Ayrıca özel GL yapımları da arşivimize dahil edilmektedir.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        <h3><i class="fas fa-tv"></i> Mobil ve Akıllı TV'lerden izleyebilir miyim?</h3>
+                        <i class="fas fa-chevron-down faq-arrow"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Evet, video oynatıcımız ve web sitemiz tüm akıllı telefonlar, tabletler ve akıllı televizyon tarayıcıları ile %100 uyumludur. HLS teknolojimiz sayesinde internet hızınıza göre en akıcı kalite otomatik seçilir.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        <h3><i class="fas fa-users"></i> Çeviri ekibine veya kadroya nasıl katılabilirim?</h3>
+                        <i class="fas fa-chevron-down faq-arrow"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>İngilizce, Tayca, Korece veya Japonca dillerinden Türkçeye çeviri yapabilecek tutkulu ekip arkadaşlarına her zaman kapımız açık! Başvurularınız için <strong>info@bldizi.com</strong> üzerinden bize ulaşabilirsiniz.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="/">Anasayfa</a>
+                <a href="/about">Hakkımızda</a>
+                <a href="/privacy_policy">Gizlilik Politikası</a>
+                <a href="/terms_of_use">Kullanım Şartları</a>
+                <a href="/sss" class="active">SSS</a>
+            </div>
+            <p class="copyright">&copy; <span id="year">2026</span> <strong>bldizi.com</strong> &bull; Tüm hakları saklıdır.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        // FAQ Toggle Logic
+        function toggleFaq(el) {
+            const item = el.parentElement;
+            const wasActive = item.classList.contains('active');
+            
+            // Close all
+            document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('active'));
+            
+            // Toggle clicked
+            if (!wasActive) {
+                item.classList.add('active');
+            }
+        }
+
+        // Live Search Filter
+        function filterFaq(query) {
+            const q = query.toLowerCase().trim();
+            const items = document.querySelectorAll('.faq-item');
+            items.forEach(item => {
+                const text = item.innerText.toLowerCase();
+                item.style.display = text.includes(q) ? 'block' : 'none';
+            });
+        }
+    </script>
+</body>
+</html>

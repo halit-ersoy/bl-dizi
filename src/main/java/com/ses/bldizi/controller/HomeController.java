@@ -5,8 +5,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.HttpStatus;
-import java.net.URI;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -18,8 +16,32 @@ public class HomeController {
 
     @GetMapping({"/", "/yakinda", "/coming-soon"})
     public ResponseEntity<Resource> getComingSoonPage() {
+        return renderHtml("static/index.html");
+    }
+
+    @GetMapping("/about")
+    public ResponseEntity<Resource> getAboutPage() {
+        return renderHtml("static/about.html");
+    }
+
+    @GetMapping("/privacy_policy")
+    public ResponseEntity<Resource> getPrivacyPolicyPage() {
+        return renderHtml("static/privacy_policy.html");
+    }
+
+    @GetMapping("/terms_of_use")
+    public ResponseEntity<Resource> getTermsOfUsePage() {
+        return renderHtml("static/terms_of_use.html");
+    }
+
+    @GetMapping("/sss")
+    public ResponseEntity<Resource> getFaqPage() {
+        return renderHtml("static/sss.html");
+    }
+
+    private ResponseEntity<Resource> renderHtml(String classpathLocation) {
         try {
-            Resource htmlPage = new ClassPathResource("static/index.html");
+            Resource htmlPage = new ClassPathResource(classpathLocation);
             if (!htmlPage.exists()) {
                 return ResponseEntity.notFound().build();
             }
@@ -30,8 +52,6 @@ public class HomeController {
             return ResponseEntity.status(500).build();
         }
     }
-
-
 
     @GetMapping("/api/status")
     @ResponseBody
