@@ -1,8 +1,11 @@
 package com.ses.bldizi.controller;
 
+import com.ses.bldizi.service.SystemSettingService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -14,9 +17,22 @@ import java.util.Map;
 @Controller
 public class HomeController {
 
+    @Autowired
+    private SystemSettingService systemSettingService;
+
     @GetMapping({"/", "/yakinda", "/coming-soon"})
     public ResponseEntity<Resource> getComingSoonPage() {
         return renderHtml("static/index.html");
+    }
+
+    @GetMapping("/maintenance")
+    public ResponseEntity<?> getMaintenancePage() {
+        if (!systemSettingService.isMaintenanceMode()) {
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, "/")
+                    .build();
+        }
+        return renderHtml("static/maintenance.html");
     }
 
     @GetMapping("/about")
@@ -58,7 +74,8 @@ public class HomeController {
     public Map<String, Object> getStatus() {
         return Map.of(
                 "site", "bldizi.com",
-                "status", "coming_soon",
+                "maintenance", systemSettingService.isMaintenanceMode(),
+                "status", systemSettingService.isMaintenanceMode() ? "maintenance" : "online",
                 "theme", "pink",
                 "version", "1.0.0"
         );

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="pink">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bakım Modu - BL Dizi</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <style>
+        :root {
+            --primary-color: #ff4081;
+            --secondary-color: #ff80ab;
+            --primary-rgb: 255, 64, 129;
+            --bg-dark: #0a0a0d;
+            --bg-elevated: #141318;
+            --text-light: #ffffff;
+            --text-muted: #aaaaaa;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .bg-glow {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(var(--primary-rgb), 0.18) 0%, rgba(10, 10, 13, 0) 70%);
+            top: -200px;
+            left: -200px;
+            z-index: 0;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .bg-glow-2 {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(var(--primary-rgb), 0.12) 0%, rgba(10, 10, 13, 0) 70%);
+            bottom: -150px;
+            right: -150px;
+            z-index: 0;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .maintenance-container {
+            text-align: center;
+            z-index: 10;
+            background: rgba(20, 19, 24, 0.65);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 64, 129, 0.15);
+            padding: 60px 40px;
+            border-radius: 24px;
+            max-width: 600px;
+            width: 90%;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .icon-container {
+            font-size: 80px;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            letter-spacing: -0.5px;
+        }
+
+        p {
+            font-size: 1.05rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 32px;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            margin: 0 auto 30px;
+            max-width: 300px;
+        }
+
+        .progress-fill {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            width: 30%;
+            border-radius: 10px;
+            animation: loadingFill 2s infinite ease-in-out alternate;
+        }
+
+        @keyframes loadingFill {
+            0% {
+                width: 10%;
+                transform: translateX(0);
+            }
+            100% {
+                width: 10%;
+                transform: translateX(900%);
+            }
+        }
+
+        .brand {
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 0.95rem;
+            color: rgba(255, 64, 129, 0.7);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .brand i {
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-glow"></div>
+    <div class="bg-glow-2"></div>
+
+    <div class="maintenance-container">
+        <div class="icon-container">
+            <i class="fas fa-heart-crack"></i>
+        </div>
+        <h1>Şu An Bakımdayız</h1>
+        <p>Sizlere en iyi ve en hızlı BL &amp; GL dizi deneyimini sunabilmek için şu anda altyapımızda kısa süreli planlı bir bakım çalışması yapıyoruz. Lütfen kısa bir süre sonra tekrar ziyaret edin.</p>
+
+        <div class="progress-bar">
+            <div class="progress-fill"></div>
+        </div>
+
+        <div class="brand">
+            <i class="fas fa-heart"></i>
+            BL DİZİ &bull; bldizi.com
+        </div>
+    </div>
+</body>
+
+</html>
