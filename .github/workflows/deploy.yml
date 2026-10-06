@@ -1,0 +1,41 @@
+name: Deploy to Server
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: contains(github.event.head_commit.message, '-live-')
+
+    steps:
+      - name: Sunucuya Baglan ve Guncelle
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: root
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: 22
+          script: |
+            # 1. Proje Klasorune Git
+            cd /home/bldizi
+
+            # 2. GitHub'dan En Guncel Kodlari Cek (Zorla)
+            git fetch --all
+            git reset --hard origin/main || git reset --hard origin/master
+            
+            # 3. Gradle'a Calisma Izni Ver
+            chmod +x gradlew
+
+            # 4. Temiz Derleme Yap (Production Jar Olustur)
+            ./gradlew clean build -x test --no-daemon
+
+            # 5. Servisi Yeniden Baslat
+            systemctl restart bldizi
+            
+            # 6. Durum Raporu Ver
+            sleep 5
+            systemctl status bldizi --no-pager || true
