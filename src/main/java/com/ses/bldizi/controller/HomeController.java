@@ -21,22 +21,22 @@ public class HomeController {
 
     @GetMapping("/about")
     public ResponseEntity<Resource> getAboutPage() {
-        return renderHtml("static/about.html");
+        return renderHtml("static/about/html/about.html");
     }
 
     @GetMapping("/privacy_policy")
     public ResponseEntity<Resource> getPrivacyPolicyPage() {
-        return renderHtml("static/privacy_policy.html");
+        return renderHtml("static/privacy_policy/html/privacy_policy.html");
     }
 
     @GetMapping("/terms_of_use")
     public ResponseEntity<Resource> getTermsOfUsePage() {
-        return renderHtml("static/terms_of_use.html");
+        return renderHtml("static/terms_of_use/html/terms_of_use.html");
     }
 
     @GetMapping("/sss")
     public ResponseEntity<Resource> getFaqPage() {
-        return renderHtml("static/sss.html");
+        return renderHtml("static/sss/html/sss.html");
     }
 
     private ResponseEntity<Resource> renderHtml(String classpathLocation) {

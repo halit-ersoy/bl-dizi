@@ -1,0 +1,163 @@
+/* ---------------------- *
+ *     ANIMATIONS  CSS    *
+ * ---------------------- */
+
+/* fadeIn */
+@-webkit-keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+@keyframes pulse-bg {
+    0% { opacity: 0; }
+    50% { opacity: 0.7; }
+    100% { opacity: 0; }
+}
+
+@keyframes glowing {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* slideUp */
+@-webkit-keyframes slideUp {
+    from {
+        opacity: 0;
+        -webkit-transform: translateY(30px);
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        -webkit-transform: translateY(0);
+        transform: translateY(0);
+    }
+}
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        -webkit-transform: translateY(30px);
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        -webkit-transform: translateY(0);
+        transform: translateY(0);
+    }
+}
+
+/* bounce (örnek: scroll-indicator) */
+@-webkit-keyframes bounce {
+    0%, 20%, 50%, 80%, 100% { -webkit-transform: translateY(0) translateX(-50%); transform: translateY(0) translateX(-50%); }
+    40% { -webkit-transform: translateY(-15px) translateX(-50%); transform: translateY(-15px) translateX(-50%); }
+    60% { -webkit-transform: translateY(-7px) translateX(-50%); transform: translateY(-7px) translateX(-50%); }
+}
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% { -webkit-transform: translateY(0) translateX(-50%); transform: translateY(0) translateX(-50%); }
+    40% { -webkit-transform: translateY(-15px) translateX(-50%); transform: translateY(-15px) translateX(-50%); }
+    60% { -webkit-transform: translateY(-7px) translateX(-50%); transform: translateY(-7px) translateX(-50%); }
+}
+
+/* pulse (örnek: pulse-button) */
+@-webkit-keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(var(--primary-rgb), 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 15px rgba(var(--primary-rgb), 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(var(--primary-rgb), 0);
+    }
+}
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(var(--primary-rgb), 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 15px rgba(var(--primary-rgb), 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(var(--primary-rgb), 0);
+    }
+}
+
+/* fadeInUp (örnek: trending-item) */
+@-webkit-keyframes fadeInUp {
+    to {
+        opacity: 1;
+        -webkit-transform: translateY(0);
+        transform: translateY(0);
+    }
+}
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        -webkit-transform: translateY(0);
+        transform: translateY(0);
+    }
+}
+
+/* badgePulse (örnek: .hero-badge) */
+@-webkit-keyframes badgePulse {
+    0%   { -webkit-transform: scale(1); transform: scale(1); }
+    50%  { -webkit-transform: scale(1.05); transform: scale(1.05); }
+    100% { -webkit-transform: scale(1); transform: scale(1); }
+}
+@keyframes badgePulse {
+    0%   { -webkit-transform: scale(1); transform: scale(1); }
+    50%  { -webkit-transform: scale(1.05); transform: scale(1.05); }
+    100% { -webkit-transform: scale(1); transform: scale(1); }
+}
+
+/* Global Skeleton Loading Animation */
+.img-skeleton {
+    position: relative;
+    overflow: hidden;
+    background-color: var(--bg-secondary-hover);
+}
+
+.img-skeleton::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent 25%, rgba(255, 255, 255, 0.05) 50%, transparent 75%);
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.5s infinite linear;
+}
+
+@keyframes skeleton-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.img-skeleton img {
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+.img-skeleton.loaded img {
+    opacity: 1;
+}
+
+.img-skeleton.loaded::after {
+    display: none;
+}
