@@ -113,6 +113,24 @@
 
     <script>
         document.getElementById('year').textContent = new Date().getFullYear();
+
+        // Ortak Aktif Kullanıcı Takibi (Heartbeat)
+        (function () {
+            function sendHeartbeat() {
+                fetch('/api/stats/heartbeat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }).catch(err => console.debug("Heartbeat error:", err));
+            }
+
+            // Sayfa açıldığında anında gönder
+            sendHeartbeat();
+
+            // Her 60 saniyede bir aktiflik sinyali gönder
+            setInterval(sendHeartbeat, 60000);
+        })();
     </script>
 </body>
 </html>
