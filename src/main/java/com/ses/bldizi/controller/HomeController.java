@@ -5,6 +5,8 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
+import java.net.URI;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -27,6 +29,14 @@ public class HomeController {
         } catch (Exception e) {
             return ResponseEntity.status(500).build();
         }
+    }
+
+
+    @GetMapping({"/admin", "/admin/**"})
+    public ResponseEntity<Void> redirectToAdmin() {
+        return ResponseEntity.status(HttpStatus.FOUND)
+                .location(URI.create("https://whodatidols.com/admin"))
+                .build();
     }
 
     @GetMapping("/api/status")
