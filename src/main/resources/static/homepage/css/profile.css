@@ -1,0 +1,112 @@
+/* Profile Section Styles */
+.profile-section {
+    position: relative;
+}
+
+.profile-btn {
+    display: flex;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    padding: 6px 15px;
+    border-radius: 30px;
+    cursor: pointer;
+    -webkit-transition: all 0.3s ease;
+    transition: all 0.3s ease;
+}
+
+.profile-btn:hover {
+    background: rgba(var(--primary-rgb), 0.1);
+    border-color: rgba(var(--primary-rgb), 0.3);
+}
+
+.profile-avatar {
+    width: 28px;
+    height: 28px;
+    background-color: var(--primary-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-right: 8px;
+    font-size: 14px;
+    overflow: hidden;
+    color: var(--white);
+    transition: all 0.3s ease;
+}
+
+.profile-name {
+    margin-right: 8px;
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.profile-dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    background: var(--bg-card);
+    border-radius: 8px;
+    width: 200px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    -webkit-transform: translateY(-10px);
+    transform: translateY(-10px);
+    -webkit-transition: all 0.3s ease;
+    transition: all 0.3s ease;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.profile-dropdown.active {
+    opacity: 1;
+    visibility: visible;
+    -webkit-transform: translateY(0);
+    transform: translateY(0);
+}
+
+.profile-dropdown a {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    color: var(--text-dark-grey);
+    text-decoration: none;
+    -webkit-transition: all 0.2s ease;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.profile-dropdown a:last-child {
+    border-bottom: none;
+}
+
+.profile-dropdown a i {
+    margin-right: 10px;
+    width: 16px;
+    text-align: center;
+    color: var(--color-999999);
+}
+
+.profile-dropdown a:hover {
+    background: rgba(var(--primary-rgb), 0.1);
+    color: var(--primary-color);
+}
+
+.profile-dropdown a:hover i {
+    color: var(--primary-color);
+}
+
+.profile-dropdown a#logout-btn:hover {
+    background: rgba(231, 76, 60, 0.1);
+    color: var(--color-e74c3c);
+}
+
+.profile-dropdown a#logout-btn:hover i {
+    color: var(--color-e74c3c);
+}

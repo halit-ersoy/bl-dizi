@@ -1,129 +1,609 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="tr" data-theme="pink">
+
 <head>
+    <script src="/elements/theme.js"></script>
+    <!-- Google AdSense (Auto Ads) -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8903433157602253"
+        crossorigin="anonymous"></script>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yakında - BL Dizi | bldizi.com</title>
-    <meta name="description" content="En sevilen BL dizileri, Asya yapımları ve özel Türkçe çeviriler çok yakında bldizi.com'da sizlerle!">
-    <link rel="canonical" href="https://bldizi.com">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <meta name="viewport" content="width=device-width, maximum-scale=1.0, user-scalable=no">
+    <title>BL Dizi - Asya & BL Dizileri İzle | bldizi.com</title>
+    <meta name="description"
+        content="En sevilen BL dizileri, Asya yapımları, Tayland, Kore ve Japonya dizileri kesintisiz Türkçe altyazı ile bldizi.com'da!">
+    <link rel="canonical" href="https://bldizi.com/">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://bldizi.com/">
+    <meta property="og:title" content="BL Dizi - Asya & BL Dizileri İzle">
+    <meta property="og:description"
+        content="En sevilen BL dizileri, Asya yapımları, Tayland, Kore ve Japonya dizileri kesintisiz Türkçe altyazı ile bldizi.com'da!">
+    <meta property="og:image" content="https://bldizi.com/favicon.svg">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://bldizi.com/">
+    <meta property="twitter:title" content="BL Dizi - Asya & BL Dizileri İzle">
+    <meta property="twitter:description"
+        content="En sevilen BL dizileri, Asya yapımları, Tayland, Kore ve Japonya dizileri kesintisiz Türkçe altyazı ile bldizi.com'da!">
+    <meta property="twitter:image" content="https://bldizi.com/favicon.svg">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&family=Poppins:wght@300;400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="stylesheet" href="/homepage/css/main.css?v=5">
+    <script src="/homepage/js/devtools-protection.js"></script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "BL Dizi",
+      "url": "https://bldizi.com/",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://bldizi.com/diziler?search={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
     <link rel="stylesheet" href="/elements/variables.css">
-    <link rel="stylesheet" href="/elements/footer.css">
-    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 </head>
+
 <body>
-
-    <!-- BACKGROUND GLOW EFFECTS -->
-    <div class="ambient-glow glow-1"></div>
-    <div class="ambient-glow glow-2"></div>
-
-    <!-- HEADER -->
-    <header class="site-header">
-        <a href="/" class="logo-link">
-            <div class="logo">
-                <span class="logo-text">BL <span class="logo-highlight">DİZİ</span></span>
-            </div>
+    <div id="loading-screen">
+        <div class="loader-container">
+            <div class="loader-circle"></div>
+            <div class="loading-text">BL DİZİ</div>
+        </div>
+        <div class="loader-status">Yükleniyor...</div>
+    </div>
+    <header id="header">
+        <a href="/" class="logo-link" aria-label="Ana sayfa">
+            <div class="logo">BL DİZİ</div>
         </a>
-    </header>
 
-    <!-- MAIN HERO SECTION -->
-    <main class="coming-soon-container">
-        <div class="glow-circle"></div>
-        
-        <div class="content-wrapper">
-            <!-- BADGE -->
-            <div class="announcement-pill">
-                <span class="pill-dot"></span>
-                <span class="pill-text">YENİ NESİL ASYA VE BL DİZİ PLATFORMU</span>
+        <button class="mobile-menu-toggle" aria-label="Menüyü aç/kapat" id="mobile-menu-toggle">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <nav class="nav-menu" role="navigation" aria-label="Ana navigasyon">
+            <div class="nav-menu-header">
+                <div class="nav-menu-logo">BL DİZİ</div>
+                <button class="nav-menu-close" id="nav-menu-close" aria-label="Menüyü kapat">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
-
-            <div class="icon-wrapper">
-                <div class="icon-pulse-ring"></div>
-                <i class="fas fa-heart"></i>
-            </div>
-
-            <h1 class="main-title">
-                ÇOK <span class="title-highlight">YAKINDA</span>
-            </h1>
-
-            <p class="subtitle">
-                SİZİN İÇİN <span class="highlight">EFSANE</span> BİR BL DİZİ DENEYİMİ HAZIRLIYORUZ
-            </p>
-
-            <p class="description">
-                Tayland, Kore, Japonya ve Tayvan'ın en popüler BL dizileri, yüksek kaliteli video oynatıcısı ve hızlı Türkçe çevirileri ile <strong>bldizi.com</strong>'da sizlerle buluşuyor.
-            </p>
-
-            <!-- FEATURES CARDS -->
-            <div class="features-preview">
-                <div class="feature-item">
-                    <div class="feature-icon">
-                        <i class="fas fa-tv"></i>
-                    </div>
-                    <h3>Geniş Arşiv</h3>
-                    <p>En yeni ve klasik tüm BL yapımları tek çatı altında.</p>
-                </div>
-                <div class="feature-item">
-                    <div class="feature-icon">
-                        <i class="fas fa-bolt"></i>
-                    </div>
-                    <h3>Hızlı Çeviri</h3>
-                    <p>Bölümler yayınlandığı gibi ekibimizce Türkçe'ye kazandırılır.</p>
-                </div>
-                <div class="feature-item">
-                    <div class="feature-icon">
-                        <i class="fas fa-film"></i>
-                    </div>
-                    <h3>Full HD Yayın</h3>
-                    <p>Kasmayan, mobil uyumlu modern HLS video player deneyimi.</p>
+            <a href="/filmler" class="nav-link">Filmler</a>
+            <a href="/diziler" class="nav-link">Diziler</a>
+            <a href="#" class="nav-link">Takvim</a>
+            <div class="nav-menu-footer">
+                <div class="nav-menu-social">
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-discord"></i></a>
                 </div>
             </div>
+        </nav>
 
-            <!-- COMMUNITY / BACK LINK -->
-            <div class="action-box">
-                <p class="action-box-text">Açılışa kadar kardeş sitemizdeki dizi ve filmleri keşfedin:</p>
-                <a href="https://whodatidols.com" class="btn-primary" target="_blank" rel="noopener noreferrer">
-                    <i class="fas fa-play"></i> WHODATIDOLS.COM'A GİT
-                </a>
+        <div class="header-right">
+            <div class="search" role="search">
+                <input type="text" placeholder="Film veya dizi ara..." aria-label="Film veya dizi ara"
+                    id="search-input">
+                <button class="search-button" aria-label="Ara">
+                    <i class="fas fa-search"></i>
+                </button>
+                <div class="search-results" id="search-results"></div>
+            </div>
+
+            <!-- AI Vibe Search Button -->
+            <button class="ai-vibe-btn" id="ai-vibe-btn" title="✨ Yapay Zeka ile Moduna Göre Film Bul" aria-label="AI Vibe Arama">
+                <i class="fas fa-wand-magic-sparkles"></i>
+                <span class="ai-btn-text">AI Vibe</span>
+            </button>
+
+            <div class="user-controls">
+                <div class="update-notes-wrapper" id="update-notes-wrapper">
+                    <button class="update-notes-btn" aria-label="Güncelleme Notları" id="update-notes-btn">
+                        <i class="fas fa-rocket"></i>
+                        <span class="update-badge" id="update-badge" style="display: none;">!</span>
+                    </button>
+                </div>
+                <div class="messages-wrapper" id="messages-wrapper" style="display: none;">
+                    <a href="/messages" class="messages-btn" aria-label="Mesajlar" id="messages-btn">
+                        <i class="fas fa-envelope"></i>
+                        <span class="message-badge" id="message-badge" style="display: none;">0</span>
+                    </a>
+                </div>
+                <div class="notifications-wrapper" id="notifications-wrapper">
+                    <button class="notifications-btn" aria-label="Bildirimler" id="notifications-btn">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge" id="notification-badge" style="display: none;">0</span>
+                    </button>
+                    <div class="notifications-dropdown" id="notifications-dropdown">
+                        <div class="notifications-header">
+                            <h3>Bildirimler</h3>
+                        </div>
+                        <div class="notifications-list" id="notifications-list">
+                            <!-- Notifications will be populated here -->
+                            <div class="notification-empty">Henüz bildirim yok.</div>
+                        </div>
+                    </div>
+                </div>
+                <button class="login-btn" aria-label="Oturum aç" id="login-btn">OTURUM AÇ</button>
             </div>
         </div>
-    </main>
+        <div class="login-modal-overlay" id="login-modal">
+            <div class="login-modal">
+                <button class="close-modal" id="close-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="login-header">
+                    <div class="login-logo">BL DİZİ</div>
+                    <h2 class="login-title">Hoşgeldiniz</h2>
+                    <p class="login-subtitle">Hesabınıza giriş yapın</p>
+                </div>
+                <form class="login-form" id="login-form-element" action="javascript:void(0);">
+                    <div class="form-group">
+                        <label for="email">E-posta veya kullanıcı adı</label>
+                        <input type="text" class="form-control" id="email" name="username" autocomplete="username" placeholder="E-posta veya kullanıcı adı" required>
+                        <span class="highlight"></span>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Şifre</label>
+                        <input type="password" class="form-control" id="password" name="password" autocomplete="current-password" placeholder="Şifreniz" required>
+                        <span class="highlight"></span>
+                    </div>
+                    <div class="forgot-password">
+                        <a href="#">Şifremi unuttum</a>
+                    </div>
+                    <button type="submit" class="login-btn-page" id="login-submit">Giriş Yap</button>
+                    <div class="login-divider">veya</div>
+                    <div class="social-login">
+                        <button class="social-btn">
+                            <i class="fab fa-google"></i>
+                        </button>
+                        <button class="social-btn">
+                            <i class="fab fa-facebook-f"></i>
+                        </button>
+                        <button class="social-btn">
+                            <i class="fab fa-twitter"></i>
+                        </button>
+                        <button class="social-btn">
+                            <i class="fab fa-apple"></i>
+                        </button>
+                    </div>
+                    <div class="register-link">
+                        Hesabınız yok mu? <a href="#">Hesap oluştur</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="login-modal-overlay" id="register-modal">
+            <div class="login-modal">
+                <button class="close-modal" id="close-register-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="login-header">
+                    <div class="login-logo">BL DİZİ</div>
+                    <div class="login-title">Hesap Oluştur</div>
+                    <div class="login-subtitle">En iyi BL içerik platformuna üye ol</div>
+                </div>
+                <div class="login-form">
+                    <div class="form-group">
+                        <label for="first-name">Ad</label>
+                        <input type="text" id="first-name" class="form-control" placeholder="Adınızı giriniz" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="last-name">Soyad</label>
+                        <input type="text" id="last-name" class="form-control" placeholder="Soyadınızı giriniz"
+                            required>
+                    </div>
+                    <div class="form-group">
+                        <label for="nickname">Kullanıcı Adı</label>
+                        <input type="text" id="nickname" class="form-control" placeholder="Kullanıcı adınızı giriniz"
+                            required>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-email">E-posta</label>
+                        <input type="email" id="register-email" class="form-control"
+                            placeholder="E-posta adresinizi giriniz" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-password">Şifre</label>
+                        <input type="password" id="register-password" class="form-control"
+                            placeholder="Şifrenizi giriniz" required>
+                    </div>
+                    <button class="login-btn-page" id="register-submit">Kayıt Ol</button>
+                    <div class="login-divider">veya</div>
+                    <div class="social-login">
+                        <button class="social-btn">
+                            <i class="fab fa-google"></i>
+                        </button>
+                        <button class="social-btn">
+                            <i class="fab fa-facebook-f"></i>
+                        </button>
+                        <button class="social-btn">
+                            <i class="fab fa-twitter"></i>
+                        </button>
+                        <button class="social-btn">
+                            <i class="fab fa-apple"></i>
+                        </button>
+                    </div>
+                    <div class="register-link login-link">
+                        Zaten hesabınız var mı? <a href="#" id="login-link">Giriş Yap</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="login-modal-overlay" id="forgot-password-modal">
+            <div class="login-modal">
+                <button class="close-modal" id="close-forgot-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="login-header">
+                    <div class="login-logo">BL DİZİ</div>
+                    <h2 class="login-title">Şifremi Unuttum</h2>
+                    <p class="login-subtitle">Şifre sıfırlamak için e-posta veya kullanıcı adınızı girin</p>
+                </div>
+                <div class="login-form">
+                    <div class="form-group">
+                        <label for="forgot-email">E-posta veya kullanıcı adı</label>
+                        <input type="text" class="form-control" id="forgot-email"
+                            placeholder="E-posta veya kullanıcı adınızı giriniz">
+                        <span class="highlight"></span>
+                    </div>
+                    <button class="login-btn-page" id="forgot-password-submit">Şifremi Sıfırla</button>
+                    <div class="register-link login-link">
+                        Şifrenizi hatırladınız mı? <a href="#" id="back-to-login">Giriş Yap</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="calendar-modal-overlay" id="calendar-modal">
+            <div class="calendar-modal">
+                <button class="close-modal" id="close-calendar-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="calendar-header">
+                    <h2>Takvim</h2>
+                </div>
+                <div class="weekly-calendar">
+                    <div class="calendar-day">
+                        <h3>Pazartesi</h3>
+                        <div class="calendar-shows" id="monday-shows"></div>
+                    </div>
+                    <div class="calendar-day">
+                        <h3>Salı</h3>
+                        <div class="calendar-shows" id="tuesday-shows"></div>
+                    </div>
+                    <div class="calendar-day">
+                        <h3>Çarşamba</h3>
+                        <div class="calendar-shows" id="wednesday-shows"></div>
+                    </div>
+                    <div class="calendar-day">
+                        <h3>Perşembe</h3>
+                        <div class="calendar-shows" id="thursday-shows"></div>
+                    </div>
+                    <div class="calendar-day">
+                        <h3>Cuma</h3>
+                        <div class="calendar-shows" id="friday-shows"></div>
+                    </div>
+                    <div class="calendar-day">
+                        <h3>Cumartesi</h3>
+                        <div class="calendar-shows" id="saturday-shows"></div>
+                    </div>
+                    <div class="calendar-day">
+                        <h3>Pazar</h3>
+                        <div class="calendar-shows" id="sunday-shows"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <section class="hero">
+        <button id="stopTrailerBtn" class="glow-button stop-trailer-btn">
+            <i class="fas fa-pause"></i> İZLEMEYİ DURDUR
+        </button>
+        <div class="hero-videos">
 
-        <!-- Footer -->
+        </div>
+        <button class="hero-nav prev-hero" aria-label="Önceki">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <button class="hero-nav next-hero" aria-label="Sonraki">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+        <div class="hero-indicators">
+            <span class="hero-indicator active" data-index="0"></span>
+            <span class="hero-indicator" data-index="1"></span>
+            <span class="hero-indicator" data-index="2"></span>
+        </div>
+        <div class="scroll-indicator">
+            <i class="fas fa-chevron-down"></i>
+        </div>
+    </section>
+    <section class="section weekly-best-content weekly-best-section">
+        <div class="section-header">
+            <h2>HAFTANIN EN İYİLERİ</h2>
+            <div class="section-actions">
+                <div class="weekly-best-toggle">
+                    <button id="weekly-tv-toggle" class="weekly-toggle-btn active">Diziler</button>
+                    <button id="weekly-movies-toggle" class="weekly-toggle-btn">Filmler</button>
+                </div>
+            </div>
+        </div>
+        <div class="weekly-best-grid"></div>
+    </section>
+    <section class="upcoming-episodes-section">
+        <div class="upcoming-episodes-header">
+            <h2 class="upcoming-episodes-title">YÜKLENECEK BÖLÜMLER</h2>
+            <div class="upcoming-episodes-actions">
+                <div class="upcoming-episodes-toggle">
+                    <button id="upcoming-translated-toggle" class="upcoming-toggle-btn active">Çevrilenler</button>
+                    <button id="upcoming-new-toggle" class="upcoming-toggle-btn">Beklenenler</button>
+                </div>
+            </div>
+        </div>
+        <div class="upcoming-carousel-container">
+            <button class="upcoming-carousel-nav upcoming-prev-btn prev-btn" data-carousel="upcoming-episodes-carousel"
+                aria-label="Önceki">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <div class="upcoming-carousel" id="upcoming-episodes-carousel">
+                <!-- Items will be populated by JavaScript -->
+            </div>
+            <button class="upcoming-carousel-nav upcoming-next-btn next-btn" data-carousel="upcoming-episodes-carousel"
+                aria-label="Sonraki">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+    </section>
+    <section class="section featured-content">
+        <div class="section-header">
+            <h2>SON EKLENENLER</h2>
+            <div class="section-actions">
+                <div class="featured-toggle">
+                    <button id="featured-tv-toggle" class="featured-toggle-btn active">Diziler</button>
+                    <button id="featured-movies-toggle" class="featured-toggle-btn">Filmler</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="featured-grid">
+            <!-- JavaScript ile doldurulacak -->
+        </div>
+
+        <div id="featured-pagination" class="featured-pagination pagination-container">
+            <!-- JavaScript ile doldurulacak -->
+        </div>
+    </section>
+    <section class="section new-soap-operas">
+        <div class="section-header">
+            <h2>YENİ EKLENEN DİZİLER</h2>
+            <a href="#" class="view-all">
+                Tümünü Gör <i class="fas fa-chevron-right"></i>
+            </a>
+        </div>
+        <div class="carousel-container">
+            <button class="carousel-nav prev-btn" data-carousel="new-soap-operas-carousel" aria-label="Önceki">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <div class="carousel" id="new-soap-operas-carousel"></div>
+            <button class="carousel-nav next-btn" data-carousel="new-soap-operas-carousel" aria-label="Sonraki">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+    </section>
+    <section id="new-soap-operas-all" class="section new-soap-operas-all-section hidden">
+        <div class="section-header">
+            <h2>TÜM YENİ EKLENEN DİZİLER</h2>
+            <div class="all-section-search">
+                <input type="text" id="search-soap-operas-all" placeholder="Dizilerde ara...">
+                <i class="fas fa-search"></i>
+            </div>
+            <button class="close-all-btn">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="new-soap-operas-all-grid"></div>
+    </section>
+    <section class="section new-movies">
+        <div class="section-header">
+            <h2>YENİ EKLENEN FİLMLER</h2>
+            <a href="#" class="view-all">
+                Tümünü Gör <i class="fas fa-chevron-right"></i>
+            </a>
+        </div>
+        <div class="carousel-container">
+            <button class="carousel-nav prev-btn" data-carousel="new-movies-carousel" aria-label="Önceki">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <div class="carousel" id="new-movies-carousel"></div>
+            <button class="carousel-nav next-btn" data-carousel="new-movies-carousel" aria-label="Sonraki">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+    </section>
+    <section id="new-movies-all" class="section new-movies-all-section hidden">
+        <div class="section-header">
+            <h2>TÜM YENİ EKLENEN FİLMLER</h2>
+            <div class="all-section-search">
+                <input type="text" id="search-movies-all" placeholder="Filmlerde ara...">
+                <i class="fas fa-search"></i>
+            </div>
+            <button class="close-all-btn">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="new-movies-all-grid"></div>
+    </section>
+    <div class="announcement" id="announcement-bar" style="display: none;">
+        <i class="fas fa-bullhorn"></i>
+        <span id="announcement-text"></span>
+    </div>
     <footer>
         <div class="footer-links">
-            <a href="/">Anasayfa</a>
+            <a href="/" class="active">Anasayfa</a>
             <a href="/about">Hakkımızda</a>
             <a href="/privacy_policy">Gizlilik Politikası</a>
             <a href="/terms_of_use">Kullanım Şartları</a>
             <a href="/sss">SSS</a>
         </div>
-        &copy; <script>document.write(new Date().getFullYear())</script> BL Dizi. Tüm hakları saklıdır.
+        &copy;
+        <script>document.write(new Date().getFullYear())</script> BL Dizi. Tüm hakları saklıdır.
     </footer>
 
-    <script>
-        document.getElementById('year').textContent = new Date().getFullYear();
+    <!-- Update Notes Modal -->
+    <div id="update-notes-modal" class="update-modal-overlay" style="display: none;">
+        <div class="update-modal">
+            <div class="update-modal-header">
+                <h2>Güncelleme Notları</h2>
+                <button class="close-update-modal" id="close-update-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="update-modal-body" id="update-notes-list">
+                <!-- Notes will be loaded here -->
+            </div>
+        </div>
+    </div>
 
-        // Ortak Aktif Kullanıcı Takibi (Heartbeat)
-        (function () {
-            function sendHeartbeat() {
-                fetch('/api/stats/heartbeat', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                }).catch(err => console.debug("Heartbeat error:", err));
-            }
+    <!-- Feedback Modal -->
+    <div class="login-modal-overlay" id="feedback-modal">
+        <div class="login-modal feedback-modal-box">
+            <button class="close-modal" id="close-feedback-modal">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="login-header">
+                <div class="login-logo">BL DİZİ</div>
+                <h2 class="login-title">Geri Bildirim</h2>
+                <p class="login-subtitle">Görüş ve önerilerinizi bizimle paylaşın</p>
+            </div>
+            <div class="login-form" id="feedback-form">
+                <div class="form-group">
+                    <label for="feedback-subject">Konu</label>
+                    <input type="text" class="form-control" id="feedback-subject"
+                        placeholder="Geri bildiriminizin konusu" maxlength="255">
+                </div>
+                <div class="form-group">
+                    <label for="feedback-message">Mesaj</label>
+                    <textarea class="form-control feedback-textarea" id="feedback-message"
+                        placeholder="Mesajınızı buraya yazın..." maxlength="400" rows="5"></textarea>
+                    <div id="feedback-char-counter"
+                        style="text-align: right; font-size: 0.75rem; color: rgba(255,255,255,0.4); margin-top: 4px;">0
+                        / 400</div>
+                </div>
 
-            // Sayfa açıldığında anında gönder
-            sendHeartbeat();
+                <button class="login-btn-page" id="feedback-submit">
+                    <i class="fas fa-paper-plane"></i> Gönder
+                </button>
+            </div>
+        </div>
+    </div>
 
-            // Her 60 saniyede bir aktiflik sinyali gönder
-            setInterval(sendHeartbeat, 60000);
-        })();
-    </script>
+    <!-- Mini Update Popup (Toaster) -->
+    <div id="mini-update-popup" class="mini-update-popup" style="display: none;">
+        <div class="mini-popup-content">
+            <div class="mini-popup-icon"><i class="fas fa-rocket"></i></div>
+            <div class="mini-popup-text">
+                <h4 id="mini-popup-title">Yeni Güncelleme!</h4>
+                <p id="mini-popup-message">Neler yeni olduğunu görmek için tıkla.</p>
+            </div>
+            <button class="close-mini-popup" id="close-mini-popup">&times;</button>
+        </div>
+    </div>
+
+    <!-- AI Disclaimer (Beta / Deneme Aşaması) Modal -->
+    <div class="ai-modal-backdrop" id="ai-disclaimer-backdrop" style="display: none;">
+        <div class="ai-modal-dialog ai-disclaimer-dialog">
+            <div class="ai-modal-header">
+                <div class="ai-modal-title">
+                    <i class="fas fa-flask ai-flask-icon"></i>
+                    <span>Deneysel Özellik</span>
+                    <span class="ai-disclaimer-pill">Beta</span>
+                </div>
+                <button class="ai-modal-close" id="ai-disclaimer-close" aria-label="Kapat">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="ai-modal-body ai-disclaimer-body">
+                <div class="ai-disclaimer-icon-wrapper">
+                    <i class="fas fa-triangle-exclamation ai-disclaimer-warn-icon"></i>
+                </div>
+                <h3 class="ai-disclaimer-heading">Yapay Zeka ile Öneri Sistemi</h3>
+                <div class="ai-disclaimer-text">
+                    <p>
+                        Bu özellik henüz <strong>deneme aşamasındadır</strong>. Yapay zeka modelleri ve öneri algoritmalarımız sürekli olarak geliştirilmektedir.
+                    </p>
+                    <div class="ai-disclaimer-highlight">
+                        <i class="fas fa-circle-exclamation"></i>
+                        <span>Sistem deneme sürecinde olduğu için zaman zaman <strong>sık sık hatalar alınabilir, beklenmeyen sonuçlar çıkabilir</strong> veya yanıt gecikebilir.</span>
+                    </div>
+                    <p class="ai-disclaimer-subnote">
+                        Aklınızdaki hissi veya modu yazarak arama yapabilirsiniz.
+                    </p>
+                </div>
+                <div class="ai-disclaimer-actions">
+                    <button type="button" class="ai-disclaimer-btn-cancel" id="ai-disclaimer-cancel">Vazgeç</button>
+                    <button type="button" class="ai-disclaimer-btn-confirm" id="ai-disclaimer-confirm">
+                        <i class="fas fa-check"></i>
+                        <span>Tamam</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Vibe Search Modal -->
+    <div class="ai-modal-backdrop" id="ai-modal-backdrop" style="display: none;">
+        <div class="ai-modal-dialog">
+            <div class="ai-modal-header">
+                <div class="ai-modal-title">
+                    <i class="fas fa-wand-magic-sparkles ai-sparkle-icon"></i>
+                    <span>AI Mood & Vibe Arama</span>
+                    <span class="ai-beta-tag">BETA</span>
+                </div>
+                <button class="ai-modal-close" id="ai-modal-close" aria-label="Kapat">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="ai-modal-body">
+                <p class="ai-modal-subtitle">Aklındaki hissi, ruh halini veya izlemek istediğin atmosferi yaz; yapay zeka senin için en uygun yapımları seçsin.</p>
+                
+                <div class="ai-vibe-chips">
+                    <button type="button" class="ai-chip" data-vibe="Yağmurlu ve melankolik bir gecede battaniye altında izlenecek gizemli dizi/film">🌧️ Melankolik Gece</button>
+                    <button type="button" class="ai-chip" data-vibe="Beyin yakan, son ana kadar ters köşe yapan şaşırtıcı bir yapım">🤯 Beyin Yakan / Ters Köşe</button>
+                    <button type="button" class="ai-chip" data-vibe="Kafamı hiç yormayacak, kahkaha attıracak sıcacık bir çerezlik">🍿 Kafa Dağıtmalık Komedi</button>
+                    <button type="button" class="ai-chip" data-vibe="Dün sevgilimden ayrıldım, içimi ısıtacak ve umut aşılayacak bir yapım">💔 Ayrılık Sonrası İyi Hisset</button>
+                    <button type="button" class="ai-chip" data-vibe="Nefesimi kesecek, baştan sona adrenalin dolu gerilim">⚡ Saf Adrenalin</button>
+                </div>
+
+                <div class="ai-input-wrapper">
+                    <textarea id="ai-vibe-input" rows="3" placeholder="Örn: 'Bugün çok yoruldum, bana sakin, huzurlu ama içine çeken bir dizi öner...'"></textarea>
+                    <button id="ai-vibe-submit" class="ai-submit-btn">
+                        <i class="fas fa-wand-magic-sparkles"></i>
+                        <span>Önerileri Bul</span>
+                    </button>
+                </div>
+
+                <div id="ai-loading" class="ai-loading-container" style="display: none;">
+                    <div class="ai-loader-pulse"></div>
+                    <p>Yapay zeka arşivimizi tarıyor ve senin için en uygun yapımları seçiyor...</p>
+                </div>
+
+                <div id="ai-results" class="ai-results-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/elements/heartbeat.js"></script>
+    <script type="module" src="/homepage/js/main.js?v=6"></script>
+    <script src="/homepage/js/updateNotes.js?v=1"></script>
 </body>
+
 </html>

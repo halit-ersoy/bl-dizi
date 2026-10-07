@@ -61,4 +61,19 @@ public class SystemSettingService {
         this.cachedMaintenance = active;
         this.lastCheckTime = System.currentTimeMillis();
     }
+
+    public boolean isRegistrationEnabled() {
+        if (jdbcTemplate != null) {
+            try {
+                String val = jdbcTemplate.queryForObject(
+                        "SELECT SettingValue FROM SystemSettings WHERE SettingKey = 'registration_enabled'",
+                        String.class
+                );
+                return val == null || "true".equalsIgnoreCase(val);
+            } catch (Exception e) {
+                return true;
+            }
+        }
+        return true;
+    }
 }

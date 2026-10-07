@@ -1,0 +1,93 @@
+/* ---------------------- *
+ *     CAROUSEL  CSS      *
+ * ---------------------- */
+
+/* Carousel Container */
+.carousel-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+/* Carousel Main Wrapper */
+.carousel {
+    display: flex;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    padding: 20px 0;
+    gap: 20px;
+    scrollbar-width: none;
+    /* Firefox */
+    -ms-overflow-style: none;
+    /* IE ve Edge */
+}
+
+.carousel::-webkit-scrollbar {
+    display: none;
+    /* Chrome, Safari, Opera */
+}
+
+/* Carousel Navigation Buttons */
+.carousel-nav {
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    border: none;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    z-index: 10;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.carousel-nav:hover {
+    background-color: var(--primary-color);
+    color: var(--black);
+    transform: scale(1.1);
+    border-color: var(--primary-color);
+}
+
+.carousel-nav.disabled {
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+}
+
+.carousel-nav i {
+    font-size: 1.2rem;
+}
+
+.prev-btn {
+    left: -22px;
+}
+
+.next-btn {
+    right: -22px;
+}
+
+/* Mobile carousel adjustments */
+@media (max-width: 576px) {
+    .carousel {
+        gap: 10px;
+        padding: 10px 0;
+    }
+
+    .carousel-nav {
+        width: 32px;
+        height: 32px;
+    }
+
+    .prev-btn {
+        left: -10px;
+    }
+
+    .next-btn {
+        right: -10px;
+    }
+}

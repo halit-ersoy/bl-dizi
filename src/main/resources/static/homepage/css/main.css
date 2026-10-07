@@ -1,0 +1,62 @@
+/* main.css */
+
+/* 1) Temel reset ve global ayarlar */
+@import url('../../elements/base.css');
+
+/* 2) Header */
+@import url('../../elements/header.css');
+
+/* AI Search Styles */
+@import url('../../elements/ai-search.css?v=5');
+
+/* 3) Hero */
+@import url('hero.css');
+
+/* 4) Weekly Best */
+@import url('weekly-best.css');
+
+/* 5) Cards */
+@import url('cards.css');
+
+/* 6) Footer */
+@import url('../../elements/footer.css');
+
+/* 7) Carousel */
+@import url('carousel.css');
+
+/* 8) Animations */
+@import url('../../elements/animations.css');
+
+/* 9) Sections */
+@import url('sections.css');
+
+@import url('new-movies.css');
+
+/* 12) New Soap Operas (series) */
+@import url('new-soap-operas.css');
+@import url('new-programs.css');
+
+/* 13) Login */
+@import url('login.css');
+
+@import url('featured-grid.css');
+
+@import url('upcoming-episodes.css');
+
+@import url('calendar.css');
+
+/* 14) Loading Page */
+@import url('loading-page.css');
+
+/* 15) Profile */
+@import url('profile.css');
+
+/* 16) Scrool */
+@import url('../../elements/scrool.css');
+
+/* 17) Notifications */
+@import url('notifications.css');
+@import url('update-notes.css');
+
+/* 18) Final Responsive Priority */
+@import url('responsive.css');

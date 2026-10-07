@@ -1,0 +1,700 @@
+/* ==========================================================================
+   AI Vibe & Mood Search Styles
+   with Dynamic Rotating Rainbow Gradient Borders
+   ========================================================================== */
+
+/* 0. Rotating Border Variables & Animation */
+@property --border-angle {
+    syntax: "<angle>";
+    inherits: false;
+    initial-value: 0deg;
+}
+
+@keyframes rainbowBorderSpin {
+    0% {
+        --border-angle: 0deg;
+    }
+    100% {
+        --border-angle: 360deg;
+    }
+}
+
+/* Hide Scrollbar for All AI Modal Elements */
+.ai-modal-dialog,
+.ai-disclaimer-dialog,
+.ai-modal-dialog *,
+.ai-disclaimer-dialog * {
+    scrollbar-width: none !important; /* Firefox / modern */
+    -ms-overflow-style: none !important; /* IE / Edge */
+}
+
+.ai-modal-dialog::-webkit-scrollbar,
+.ai-disclaimer-dialog::-webkit-scrollbar,
+.ai-modal-dialog *::-webkit-scrollbar,
+.ai-disclaimer-dialog *::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+}
+
+/* 1. Header Trigger Button (AI Vibe) */
+.ai-vibe-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.55rem 1.15rem;
+    border-radius: 9999px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #ffffff;
+    cursor: pointer;
+    white-space: nowrap;
+    position: relative;
+    border: 2px solid transparent;
+    background: 
+        linear-gradient(#0d0e15, #0d0e15) padding-box,
+        conic-gradient(from var(--border-angle), #ff007a, #7928ca, #0070f3, #00dfd8, #43e97b, #ffe600, #ff007a) border-box;
+    animation: rainbowBorderSpin 3s linear infinite;
+    box-shadow: 0 0 16px rgba(121, 40, 202, 0.4), 0 0 25px rgba(255, 0, 122, 0.2);
+    transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.25s ease;
+}
+
+.ai-vibe-btn:hover {
+    transform: translateY(-2px) scale(1.04);
+    box-shadow: 0 0 25px rgba(255, 0, 122, 0.65), 0 0 45px rgba(0, 223, 216, 0.45);
+    color: #ffffff;
+}
+
+.ai-vibe-btn i {
+    color: #e879f9;
+    font-size: 1rem;
+    transition: transform 0.25s ease;
+}
+
+.ai-vibe-btn:hover i {
+    transform: scale(1.15);
+}
+
+@media (max-width: 768px) {
+    .ai-btn-text {
+        display: none;
+    }
+    .ai-vibe-btn {
+        padding: 0.55rem 0.75rem;
+        border-radius: 50%;
+    }
+}
+
+/* Rotating Rainbow on Search Input Focus */
+.search input:focus {
+    background: 
+        linear-gradient(rgba(20, 22, 34, 0.95), rgba(20, 22, 34, 0.95)) padding-box,
+        conic-gradient(from var(--border-angle), #ff007a, #7928ca, #0070f3, #00dfd8, #43e97b, #ffe600, #ff007a) border-box !important;
+    border: 2px solid transparent !important;
+    animation: rainbowBorderSpin 3.5s linear infinite;
+    box-shadow: 0 0 22px rgba(121, 40, 202, 0.4) !important;
+}
+
+/* 2. Modal Backdrop */
+.ai-modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(5, 5, 10, 0.85);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.ai-modal-backdrop.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* 3. Modal Dialog Box (AI Mood & Vibe Search) */
+.ai-modal-dialog {
+    border-radius: 22px;
+    width: 100%;
+    max-width: 680px;
+    max-height: 90vh;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    position: relative;
+    transform: translateY(20px) scale(0.97);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: flex;
+    flex-direction: column;
+    border: 2.5px solid transparent;
+    background: 
+        linear-gradient(#0d0e15, #0d0e15) padding-box,
+        conic-gradient(from var(--border-angle), #ff007a, #7928ca, #0070f3, #00dfd8, #43e97b, #ffe600, #ff007a) border-box;
+    animation: rainbowBorderSpin 4.5s linear infinite;
+    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.9), 0 0 45px rgba(121, 40, 202, 0.32), 0 0 65px rgba(255, 0, 122, 0.18);
+}
+
+.ai-modal-backdrop.active .ai-modal-dialog {
+    transform: translateY(0) scale(1);
+}
+
+/* 4. Modal Header */
+.ai-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ai-modal-title {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #ffffff 0%, #d8b4fe 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.ai-sparkle-icon {
+    color: #c084fc;
+    -webkit-text-fill-color: #c084fc;
+    font-size: 1.3rem;
+}
+
+.ai-modal-close {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #a1a1aa;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.ai-modal-close:hover {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.5);
+    color: #ef4444;
+}
+
+/* 5. Modal Body */
+.ai-modal-body {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.ai-modal-subtitle {
+    color: #94a3b8;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* 6. Vibe Quick Chips */
+.ai-vibe-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.ai-chip {
+    background: 
+        linear-gradient(rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.05)) padding-box,
+        rgba(255, 255, 255, 0.12) border-box;
+    border: 1.5px solid transparent;
+    color: #cbd5e1;
+    padding: 0.45rem 0.85rem;
+    border-radius: 20px;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    user-select: none;
+}
+
+.ai-chip:hover {
+    background: 
+        linear-gradient(#151624, #151624) padding-box,
+        conic-gradient(from var(--border-angle), #ff007a, #7928ca, #0070f3, #00dfd8, #43e97b, #ffe600, #ff007a) border-box;
+    animation: rainbowBorderSpin 3s linear infinite;
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 0 15px rgba(121, 40, 202, 0.4);
+}
+
+/* 7. Input Area with Rotating Rainbow Border */
+.ai-input-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.ai-input-wrapper textarea {
+    width: 100%;
+    background: 
+        linear-gradient(#131422, #131422) padding-box,
+        conic-gradient(from var(--border-angle), #ff007a, #7928ca, #0070f3, #00dfd8, #43e97b, #ffe600, #ff007a) border-box;
+    border: 2px solid transparent;
+    border-radius: 14px;
+    padding: 1rem 1.15rem;
+    color: #ffffff;
+    font-size: 0.95rem;
+    font-family: inherit;
+    resize: none;
+    outline: none;
+    box-sizing: border-box;
+    animation: rainbowBorderSpin 4s linear infinite;
+    box-shadow: 0 0 15px rgba(121, 40, 202, 0.2);
+    transition: box-shadow 0.25s ease;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.ai-input-wrapper textarea:focus {
+    box-shadow: 0 0 25px rgba(255, 0, 122, 0.45), 0 0 45px rgba(0, 223, 216, 0.25);
+}
+
+/* Action Submit Button with Rotating Rainbow Border */
+.ai-submit-btn {
+    align-self: flex-end;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    color: white;
+    border: 2px solid transparent;
+    border-radius: 12px;
+    padding: 0.7rem 1.5rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    background: 
+        linear-gradient(135deg, #8b5cf6, #ec4899) padding-box,
+        conic-gradient(from var(--border-angle), #ff007a, #7928ca, #0070f3, #00dfd8, #43e97b, #ffe600, #ff007a) border-box;
+    animation: rainbowBorderSpin 3s linear infinite;
+    box-shadow: 0 4px 20px rgba(139, 92, 246, 0.45);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.ai-submit-btn:hover:not(:disabled) {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 6px 25px rgba(236, 72, 153, 0.65), 0 0 30px rgba(0, 223, 216, 0.4);
+}
+
+.ai-submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    animation: none;
+}
+
+/* 8. Loading State */
+.ai-loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    text-align: center;
+    gap: 1rem;
+    color: #d8b4fe;
+}
+
+.ai-loader-pulse {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    background: 
+        linear-gradient(#0d0e15, #0d0e15) padding-box,
+        conic-gradient(from var(--border-angle), #ff007a, #7928ca, #0070f3, #00dfd8, #43e97b, #ffe600, #ff007a) border-box;
+    animation: rainbowBorderSpin 1.5s infinite linear;
+}
+
+/* 9. Results Grid */
+.ai-results-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.ai-result-card {
+    background: 
+        linear-gradient(rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.03)) padding-box,
+        rgba(255, 255, 255, 0.08) border-box;
+    border: 1.5px solid transparent;
+    border-radius: 14px;
+    padding: 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    transition: all 0.25s ease;
+}
+
+.ai-result-card:hover {
+    background: 
+        linear-gradient(#12131e, #12131e) padding-box,
+        conic-gradient(from var(--border-angle), #ff007a, #7928ca, #0070f3, #00dfd8, #43e97b, #ffe600, #ff007a) border-box;
+    animation: rainbowBorderSpin 3.5s linear infinite;
+    border-color: transparent;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 25px rgba(121, 40, 202, 0.35);
+    transform: translateY(-2px);
+}
+
+.ai-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.8rem;
+}
+
+.ai-card-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0;
+}
+
+.ai-card-badges {
+    display: flex;
+    gap: 0.4rem;
+}
+
+.ai-badge {
+    font-size: 0.72rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.ai-badge-film {
+    background: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
+    border: 1px solid rgba(59, 130, 246, 0.4);
+}
+
+.ai-badge-dizi {
+    background: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.ai-card-category {
+    font-size: 0.82rem;
+    color: #94a3b8;
+}
+
+.ai-card-reason {
+    background: rgba(139, 92, 246, 0.12);
+    border-left: 3px solid #c084fc;
+    border-radius: 4px 8px 8px 4px;
+    padding: 0.6rem 0.8rem;
+    font-size: 0.9rem;
+    color: #f1f5f9;
+    line-height: 1.45;
+}
+
+.ai-card-reason strong {
+    color: #e879f9;
+}
+
+.ai-card-action {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-end;
+    gap: 0.4rem;
+    background: rgba(255, 255, 255, 0.08);
+    color: #f3e8ff;
+    text-decoration: none;
+    padding: 0.45rem 0.9rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.ai-card-action:hover {
+    background: #8b5cf6;
+    color: #ffffff;
+    transform: translateX(3px);
+}
+
+.ai-error-box {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #fca5a5;
+    padding: 1rem;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+/* AI Shortcut inside search dropdown */
+.search-ai-shortcut {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 1rem;
+    margin-top: 0.25rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(147, 51, 234, 0.12);
+    color: #e9d5ff;
+    font-size: 0.82rem;
+    cursor: pointer;
+    border-radius: 0 0 8px 8px;
+    transition: all 0.2s ease;
+}
+
+.search-ai-shortcut:hover {
+    background: rgba(147, 51, 234, 0.25);
+    color: #ffffff;
+}
+
+.search-ai-shortcut i {
+    color: #c084fc;
+    font-size: 0.9rem;
+}
+
+/* 10. Disclaimer (Beta / Deneme Aşaması) Modal with Rotating Rainbow Border */
+.ai-disclaimer-dialog {
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    border-radius: 22px;
+    border: 2.5px solid transparent;
+    background: 
+        linear-gradient(#0d0e15, #0d0e15) padding-box,
+        conic-gradient(from var(--border-angle), #ff007a, #7928ca, #0070f3, #00dfd8, #43e97b, #ffe600, #ff007a) border-box;
+    animation: rainbowBorderSpin 4.5s linear infinite;
+    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.9), 0 0 45px rgba(255, 0, 122, 0.28), 0 0 65px rgba(0, 223, 216, 0.2);
+}
+
+.ai-disclaimer-pill {
+    background: rgba(245, 158, 11, 0.2);
+    color: #fbbf24;
+    border: 1px solid rgba(245, 158, 11, 0.45);
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.2rem 0.55rem;
+    border-radius: 12px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.ai-beta-tag {
+    background: linear-gradient(135deg, rgba(236, 72, 153, 0.25), rgba(139, 92, 246, 0.25));
+    border: 1px solid rgba(236, 72, 153, 0.5);
+    color: #f472b6;
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 0.18rem 0.5rem;
+    border-radius: 8px;
+    letter-spacing: 0.5px;
+    margin-left: 0.5rem;
+    vertical-align: middle;
+}
+
+.ai-flask-icon {
+    color: #fbbf24;
+    -webkit-text-fill-color: #fbbf24;
+    font-size: 1.15rem;
+}
+
+.ai-disclaimer-body {
+    padding: 1.75rem 1.6rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1.15rem;
+}
+
+.ai-disclaimer-icon-wrapper {
+    position: relative;
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid transparent;
+    background: 
+        linear-gradient(#151624, #151624) padding-box,
+        conic-gradient(from var(--border-angle), #ff007a, #7928ca, #0070f3, #00dfd8, #43e97b, #ffe600, #ff007a) border-box;
+    animation: rainbowBorderSpin 3s linear infinite;
+    box-shadow: 0 0 25px rgba(255, 0, 122, 0.35);
+}
+
+.ai-disclaimer-warn-icon {
+    font-size: 2rem;
+    color: #fbbf24;
+}
+
+.ai-disclaimer-heading {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0;
+}
+
+.ai-disclaimer-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    color: #cbd5e1;
+    font-size: 0.92rem;
+    line-height: 1.6;
+}
+
+.ai-disclaimer-text p {
+    margin: 0;
+}
+
+.ai-disclaimer-highlight {
+    background: rgba(245, 158, 11, 0.12);
+    border-left: 3px solid #f59e0b;
+    border-radius: 6px;
+    padding: 0.8rem 1rem;
+    color: #fde68a;
+    font-size: 0.88rem;
+    text-align: left;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.65rem;
+    line-height: 1.5;
+}
+
+.ai-disclaimer-highlight i {
+    margin-top: 3px;
+    color: #fbbf24;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.ai-disclaimer-subnote {
+    font-size: 0.82rem;
+    color: #94a3b8;
+}
+
+.ai-disclaimer-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.85rem;
+    width: 100%;
+    margin-top: 0.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ai-disclaimer-btn-cancel {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: #94a3b8;
+    padding: 0.65rem 1.25rem;
+    border-radius: 10px;
+    font-size: 0.92rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.ai-disclaimer-btn-cancel:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+}
+
+.ai-disclaimer-btn-confirm {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: 2px solid transparent;
+    color: #ffffff;
+    padding: 0.65rem 1.6rem;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    background: 
+        linear-gradient(135deg, #8b5cf6, #ec4899) padding-box,
+        conic-gradient(from var(--border-angle), #ff007a, #7928ca, #0070f3, #00dfd8, #43e97b, #ffe600, #ff007a) border-box;
+    animation: rainbowBorderSpin 3s linear infinite;
+    box-shadow: 0 4px 18px rgba(139, 92, 246, 0.45);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ai-disclaimer-btn-confirm:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 6px 25px rgba(236, 72, 153, 0.65), 0 0 35px rgba(0, 223, 216, 0.4);
+    color: #ffffff;
+}
+
+/* 11. Cooldown Warning Notice */
+.ai-cooldown-box {
+    background: rgba(245, 158, 11, 0.1);
+    border: 1.5px solid rgba(245, 158, 11, 0.35);
+    border-radius: 14px;
+    padding: 1.1rem 1.3rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    animation: fadeIn 0.3s ease;
+}
+
+.ai-cooldown-icon {
+    font-size: 1.6rem;
+    color: #fbbf24;
+    margin-top: 3px;
+    flex-shrink: 0;
+}
+
+.ai-cooldown-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.ai-cooldown-info h4 {
+    margin: 0;
+    color: #fbbf24;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.ai-cooldown-info p {
+    margin: 0;
+    color: #cbd5e1;
+    font-size: 0.88rem;
+    line-height: 1.5;
+}
+
+.ai-cooldown-timer-text {
+    color: #fde68a !important;
+    font-size: 0.92rem !important;
+    font-weight: 600;
+    margin-top: 0.4rem !important;
+}
+
+.ai-cooldown-timer-text strong {
+    color: #ffffff;
+    font-size: 1.05rem;
+}
