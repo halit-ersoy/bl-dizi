@@ -6,8 +6,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -107,16 +105,6 @@ public class UserInteractionController {
 
         Map<String, Object> result = personRepository.updatePasswordByCookie(token, newPassword);
         return ResponseEntity.ok(result);
-    }
-
-    @GetMapping("/api/notifications")
-    public ResponseEntity<List<Object>> getNotifications() {
-        return ResponseEntity.ok(new ArrayList<>());
-    }
-
-    @GetMapping("/api/notifications/unread-count")
-    public ResponseEntity<Map<String, Integer>> getUnreadCount() {
-        return ResponseEntity.ok(Map.of("count", 0));
     }
 
     @PostMapping("/api/feedback")
