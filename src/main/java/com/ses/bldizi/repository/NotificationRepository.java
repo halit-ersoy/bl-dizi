@@ -60,9 +60,9 @@ public class NotificationRepository {
                         (N.Type = 'Movie' AND EXISTS (SELECT 1 FROM MovieCategories MC WHERE MC.MovieID = N.ContentID AND MC.CategoryID IN (52, 63)))
                         OR
                         (N.Type = 'SoapOpera' AND (
-                            EXISTS (SELECT 1 FROM Episode E JOIN SeriesCategories SC ON SC.SeriesID = E.SeriesId WHERE E.ID = N.ContentID AND SC.CategoryID IN (52, 63))
+                            EXISTS (SELECT 1 FROM Episode E JOIN Series S ON S.ID = E.SeriesId WHERE E.ID = N.ContentID AND S.SeriesType = 'BL')
                             OR
-                            EXISTS (SELECT 1 FROM SeriesCategories SC WHERE SC.SeriesID = N.ContentID AND SC.CategoryID IN (52, 63))
+                            EXISTS (SELECT 1 FROM Series S WHERE S.ID = N.ContentID AND S.SeriesType = 'BL')
                         ))
                     )
                     ORDER BY N.CreatedAt DESC
@@ -83,9 +83,9 @@ public class NotificationRepository {
                         (N.Type = 'Movie' AND EXISTS (SELECT 1 FROM MovieCategories MC WHERE MC.MovieID = N.ContentID AND MC.CategoryID IN (52, 63)))
                         OR
                         (N.Type = 'SoapOpera' AND (
-                            EXISTS (SELECT 1 FROM Episode E JOIN SeriesCategories SC ON SC.SeriesID = E.SeriesId WHERE E.ID = N.ContentID AND SC.CategoryID IN (52, 63))
+                            EXISTS (SELECT 1 FROM Episode E JOIN Series S ON S.ID = E.SeriesId WHERE E.ID = N.ContentID AND S.SeriesType = 'BL')
                             OR
-                            EXISTS (SELECT 1 FROM SeriesCategories SC WHERE SC.SeriesID = N.ContentID AND SC.CategoryID IN (52, 63))
+                            EXISTS (SELECT 1 FROM Series S WHERE S.ID = N.ContentID AND S.SeriesType = 'BL')
                         ))
                       )
                 """;

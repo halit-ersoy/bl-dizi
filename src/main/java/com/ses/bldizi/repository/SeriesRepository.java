@@ -24,10 +24,8 @@ public class SeriesRepository {
                     JOIN SeriesCategories sc2 ON sc2.CategoryID = c.ID 
                     WHERE sc2.SeriesID = s.ID) as Category
             FROM Series s
-            JOIN SeriesCategories sc ON s.ID = sc.SeriesID
-            WHERE sc.CategoryID IN (52, 63)
+            WHERE s.SeriesType = 'BL'
               AND (s.IsHidden = 0 OR s.IsHidden IS NULL)
-            GROUP BY s.ID, s.name, s.Summary, s.Country, s.Language, s.slug, s.viewCount
             ORDER BY s.viewCount DESC
         """;
 
@@ -60,10 +58,8 @@ public class SeriesRepository {
                     JOIN SeriesCategories sc2 ON sc2.CategoryID = c.ID 
                     WHERE sc2.SeriesID = s.ID) as Category
             FROM Series s
-            JOIN SeriesCategories sc ON s.ID = sc.SeriesID
-            WHERE sc.CategoryID IN (52, 63)
+            WHERE s.SeriesType = 'BL'
               AND (s.IsHidden = 0 OR s.IsHidden IS NULL)
-            GROUP BY s.ID, s.name, s.Country, s.slug, s.uploadDate
             ORDER BY s.uploadDate DESC
             OFFSET ? ROWS FETCH NEXT ? ROWS ONLY
         """;
@@ -92,10 +88,9 @@ public class SeriesRepository {
 
     public int countAllSeries() {
         String sql = """
-            SELECT COUNT(DISTINCT s.ID)
+            SELECT COUNT(*)
             FROM Series s
-            JOIN SeriesCategories sc ON s.ID = sc.SeriesID
-            WHERE sc.CategoryID IN (52, 63)
+            WHERE s.SeriesType = 'BL'
               AND (s.IsHidden = 0 OR s.IsHidden IS NULL)
         """;
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
@@ -109,11 +104,9 @@ public class SeriesRepository {
                     JOIN SeriesCategories sc2 ON sc2.CategoryID = c.ID 
                     WHERE sc2.SeriesID = s.ID) as Category
             FROM Series s
-            JOIN SeriesCategories sc ON s.ID = sc.SeriesID
-            WHERE sc.CategoryID IN (52, 63)
+            WHERE s.SeriesType = 'BL'
               AND (s.IsHidden = 0 OR s.IsHidden IS NULL)
               AND s.name LIKE ?
-            GROUP BY s.ID, s.name, s.Country, s.slug, s.uploadDate
             ORDER BY s.uploadDate DESC
             OFFSET ? ROWS FETCH NEXT ? ROWS ONLY
         """;
@@ -142,10 +135,9 @@ public class SeriesRepository {
 
     public int countSeriesBySearch(String query) {
         String sql = """
-            SELECT COUNT(DISTINCT s.ID)
+            SELECT COUNT(*)
             FROM Series s
-            JOIN SeriesCategories sc ON s.ID = sc.SeriesID
-            WHERE sc.CategoryID IN (52, 63)
+            WHERE s.SeriesType = 'BL'
               AND (s.IsHidden = 0 OR s.IsHidden IS NULL)
               AND s.name LIKE ?
         """;
@@ -156,13 +148,13 @@ public class SeriesRepository {
 
     public List<FeaturedTvItemDto> findRecentBlEpisodes(int offset, int limit) {
         String sql = """
-            WITH OrderedEpisodes AS (\n                SELECT E.ID as EpisodeId, E.SeriesId as SeriesId, E.uploadDate, E.name, E.slug, E.SeasonNumber, E.EpisodeNumber,
+            WITH OrderedEpisodes AS (
+                SELECT E.ID as EpisodeId, E.SeriesId as SeriesId, E.uploadDate, E.name, E.slug, E.SeasonNumber, E.EpisodeNumber,
                        S.name AS SeriesName, S.Language, S.Country, S.SeriesType, S.finalStatus,
                        ROW_NUMBER() OVER (PARTITION BY E.SeriesId ORDER BY E.uploadDate DESC, E.SeasonNumber DESC, E.EpisodeNumber DESC) as rn
                 FROM Episode E
                 JOIN Series S ON E.SeriesId = S.ID
-                JOIN SeriesCategories SC ON S.ID = SC.SeriesID
-                WHERE SC.CategoryID IN (52, 63)
+                WHERE S.SeriesType = 'BL'
                   AND (E.IsHidden = 0 OR E.IsHidden IS NULL)
                   AND (S.IsHidden = 0 OR S.IsHidden IS NULL)
             )
@@ -213,8 +205,7 @@ public class SeriesRepository {
                 SELECT DISTINCT E.SeriesId
                 FROM Episode E
                 JOIN Series S ON E.SeriesId = S.ID
-                JOIN SeriesCategories SC ON S.ID = SC.SeriesID
-                WHERE SC.CategoryID IN (52, 63)
+                WHERE S.SeriesType = 'BL'
                   AND (E.IsHidden = 0 OR E.IsHidden IS NULL)
                   AND (S.IsHidden = 0 OR S.IsHidden IS NULL)
             )
@@ -231,11 +222,9 @@ public class SeriesRepository {
                     JOIN SeriesCategories sc2 ON sc2.CategoryID = c.ID 
                     WHERE sc2.SeriesID = s.ID) as Category
             FROM Series s
-            JOIN SeriesCategories sc ON s.ID = sc.SeriesID
-            WHERE sc.CategoryID IN (52, 63)
+            WHERE s.SeriesType = 'BL'
               AND (s.IsHidden = 0 OR s.IsHidden IS NULL)
               AND s.name LIKE ?
-            GROUP BY s.ID, s.name, s.Country, s.slug
             UNION
             SELECT TOP 4 m.ID, m.name, m.Country, m.slug, 'Movie' as type,
                    (SELECT STRING_AGG(c.Name, ', ') FROM Categories c 
@@ -453,8 +442,8 @@ public class SeriesRepository {
                 JOIN SeriesCategories SC ON S.ID = SC.SeriesID
                 WHERE SC.CategoryID IN (SELECT CategoryID FROM TargetCategories)
                   AND S.ID <> ?
+                  AND S.SeriesType = 'BL'
                   AND (S.IsHidden = 0 OR S.IsHidden IS NULL)
-                  AND EXISTS (SELECT 1 FROM SeriesCategories SC_BL WHERE SC_BL.SeriesID = S.ID AND SC_BL.CategoryID IN (52, 63))
                 GROUP BY S.ID, S.Name, S.viewCount
             ),
             SimilarMovies AS (
@@ -499,11 +488,9 @@ public class SeriesRepository {
                                (SELECT STRING_AGG(c.Name, ', ') FROM Categories c JOIN SeriesCategories sc2 ON sc2.CategoryID = c.ID WHERE sc2.SeriesID = s.ID) as Category,
                                (SELECT TOP 1 e.slug FROM Episode e WHERE e.SeriesId = s.ID AND (e.IsHidden = 0 OR e.IsHidden IS NULL) ORDER BY SeasonNumber ASC, EpisodeNumber ASC) as slug
                         FROM Series s
-                        JOIN SeriesCategories sc ON s.ID = sc.SeriesID
-                        WHERE sc.CategoryID IN (52, 63)
+                        WHERE s.SeriesType = 'BL'
                           AND s.ID <> ?
                           AND (s.IsHidden = 0 OR s.IsHidden IS NULL)
-                        GROUP BY s.ID, s.Name, s.viewCount
                         UNION ALL
                         SELECT m.ID, m.Name, 'movie' as Type, m.viewCount,
                                (SELECT STRING_AGG(c.Name, ', ') FROM Categories c JOIN MovieCategories mc2 ON mc2.CategoryID = c.ID WHERE mc2.MovieID = m.ID) as Category,

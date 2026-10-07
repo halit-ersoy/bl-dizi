@@ -27,6 +27,7 @@ public class HeroRepository {
             FROM Hero h
             JOIN Series s ON h.ReferenceId = s.ID
             WHERE (s.IsHidden = 0 OR s.IsHidden IS NULL)
+              AND s.SeriesType = 'BL'
             ORDER BY h.sortOrder ASC
         """;
 
@@ -74,10 +75,8 @@ public class HeroRepository {
                         JOIN SeriesCategories sc2 ON sc2.CategoryID = c.ID 
                         WHERE sc2.SeriesID = s.ID) as Category
                 FROM Series s
-                JOIN SeriesCategories sc ON s.ID = sc.SeriesID
-                WHERE sc.CategoryID IN (52, 63)
+                WHERE s.SeriesType = 'BL'
                   AND (s.IsHidden = 0 OR s.IsHidden IS NULL)
-                GROUP BY s.ID, s.name, s.Summary, s.slug, s.Country, s.Language, s.viewCount
                 ORDER BY s.viewCount DESC
             """;
 

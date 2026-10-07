@@ -158,7 +158,7 @@ public class ActorRepository {
             JOIN [dbo].[Series] s ON sa.SeriesID = s.ID
             WHERE sa.ActorID = ? 
               AND (s.IsHidden = 0 OR s.IsHidden IS NULL)
-              AND EXISTS (SELECT 1 FROM SeriesCategories sc_bl WHERE sc_bl.SeriesID = s.ID AND sc_bl.CategoryID IN (52, 63))
+              AND s.SeriesType = 'BL'
             ORDER BY s.name ASC
         """;
         try {
