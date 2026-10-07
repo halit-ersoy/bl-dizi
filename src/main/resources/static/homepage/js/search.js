@@ -40,7 +40,10 @@ export function initSearch() {
             row.className = 'search-item';
 
             row.innerHTML = `
-                <img src="${item.thumbnailUrl}" class="search-item-thumb" alt="${item.name}" onerror="this.src='/images/placeholder.svg'">
+                <div class="search-item-thumb-box">
+                    <img src="${item.thumbnailUrl}" class="search-item-thumb" alt="${item.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="search-item-icon-fallback" style="display:none;"><i class="fas fa-film"></i></div>
+                </div>
                 <div class="search-item-details">
                     <span class="search-item-title">${item.name}</span>
                     <span class="search-item-cat">${item.category || (item.type === 'movie' ? 'Film' : 'Dizi')}</span>

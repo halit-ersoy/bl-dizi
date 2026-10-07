@@ -5,7 +5,6 @@ import com.ses.bldizi.repository.VideoSourceRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.core.io.support.ResourceRegion;
@@ -14,7 +13,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -30,21 +28,6 @@ public class MediaController {
     private static final Logger logger = LoggerFactory.getLogger(MediaController.class);
     private static final String[] EXTENSIONS = { ".jpg", ".jpeg", ".png", ".webp" };
     private static final long VIDEO_CHUNK_SIZE = 1024 * 1024 * 2; // 2MB
-
-    private static final String FALLBACK_SVG = """
-        <svg xmlns="http://www.w3.org/2000/svg" width="300" height="450" viewBox="0 0 300 450">
-          <defs>
-            <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#1e1e24"/>
-              <stop offset="100%" stop-color="#121216"/>
-            </linearGradient>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#g)"/>
-          <circle cx="150" cy="195" r="42" fill="#ff4081" fill-opacity="0.12" stroke="#ff4081" stroke-width="2"/>
-          <polygon points="143,182 165,195 143,208" fill="#ff4081"/>
-          <text x="150" y="270" font-family="'Montserrat', sans-serif" font-size="18" font-weight="700" fill="#ffffff" text-anchor="middle" letter-spacing="3">BL DİZİ</text>
-        </svg>
-        """;
 
     @Value("${media.source.movies.path}")
     private String moviesPath;
@@ -105,22 +88,15 @@ public class MediaController {
                 return ResponseEntity.ok()
                         .contentType(mediaType)
                         .lastModified(lastModified)
-                        .cacheControl(CacheControl.maxAge(7, TimeUnit.DAYS).cachePublic())
+                        .cacheControl(CacheControl.noCache().mustRevalidate())
                         .body(new UrlResource(imagePath.toUri()));
             }
 
-            byte[] svgBytes = FALLBACK_SVG.getBytes(StandardCharsets.UTF_8);
-            return ResponseEntity.ok()
-                    .contentType(MediaType.parseMediaType("image/svg+xml"))
-                    .cacheControl(CacheControl.maxAge(1, TimeUnit.DAYS).cachePublic())
-                    .body(new ByteArrayResource(svgBytes));
+            return ResponseEntity.notFound().cacheControl(CacheControl.noCache().mustRevalidate()).build();
 
         } catch (IOException e) {
             logger.error("Error serving image {}: {}", id, e.getMessage());
-            byte[] svgBytes = FALLBACK_SVG.getBytes(StandardCharsets.UTF_8);
-            return ResponseEntity.ok()
-                    .contentType(MediaType.parseMediaType("image/svg+xml"))
-                    .body(new ByteArrayResource(svgBytes));
+            return ResponseEntity.notFound().cacheControl(CacheControl.noCache().mustRevalidate()).build();
         }
     }
 

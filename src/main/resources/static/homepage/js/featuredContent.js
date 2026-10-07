@@ -175,7 +175,8 @@ export function initFeaturedContent() {
                 `;
                 handleImageSkeleton(el.querySelector('img'));
                 el.addEventListener('click', () => {
-                    window.location.href = `/${item.id}`;
+                    const targetPath = item.slug ? `/${item.slug}` : `/${item.id}`;
+                    window.location.href = targetPath;
                 });
                 featuredGrid.appendChild(el);
             });

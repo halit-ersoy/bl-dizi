@@ -36,7 +36,7 @@ export function initHero() {
             const yearText = item.releaseYear ? `<span><i class="far fa-calendar-alt"></i> ${item.releaseYear}</span>` : '';
 
             slide.innerHTML = `
-                <img class="hero-bg" src="${item.thumbnailUrl}" alt="${item.title}" onerror="this.src='/images/placeholder.svg'">
+                <img class="hero-bg" src="${item.thumbnailUrl}" alt="${item.title}" onerror="this.style.display='none'">
                 <div class="hero-overlay"></div>
                 <div class="hero-content">
                     <div class="hero-badge"><i class="fas fa-heart"></i> ÖNE ÇIKAN BL</div>

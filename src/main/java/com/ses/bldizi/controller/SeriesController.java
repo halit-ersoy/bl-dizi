@@ -7,6 +7,7 @@ import com.ses.bldizi.repository.SeriesRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -63,6 +64,10 @@ public class SeriesController {
         if (series == null) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(series);
+        Map<String, Object> resp = new HashMap<>(series);
+        if (resp.containsKey("ID")) {
+            resp.put("id", resp.get("ID"));
+        }
+        return ResponseEntity.ok(resp);
     }
 }

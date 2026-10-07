@@ -56,12 +56,12 @@ export function initHeroCarousel() {
             const mediaHtml = !isImage ? `
                 <video class="hero-bg-video" data-hero-id="${hero.ID}" data-index="${index}" muted playsinline loop>
                     <div class="img-skeleton">
-                        <img class="hero-bg" src="/media/image/${hero.ID}" alt="${hero.name}">
+                        <img class="hero-bg" src="/media/image/${hero.ID}?v=2" alt="${hero.name}">
                     </div>
                 </video>
             ` : `
                 <div class="img-skeleton">
-                    <img class="hero-bg" src="/media/image/${hero.ID}" alt="${hero.name}">
+                    <img class="hero-bg" src="/media/image/${hero.ID}?v=2" alt="${hero.name}">
                 </div>
             `;
 

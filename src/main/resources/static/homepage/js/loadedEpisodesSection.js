@@ -252,7 +252,7 @@ export function initLoadedEpisodesSection() {
                 };
                 card.innerHTML = `
                 <div class="upcoming-card-image img-skeleton">
-                    <img src="/media/image/${episode.ID}" alt="${episode.name}" onerror="this.style.display='none'; this.parentElement.classList.add('no-image');">
+                    <img src="/media/image/${episode.ID}?v=2" alt="${episode.name}" onerror="this.style.display='none'; this.parentElement.classList.add('no-image');">
                     <div class="upcoming-play-icon">
                         <i class="fas fa-play"></i>
                     </div>
@@ -339,7 +339,7 @@ export function initLoadedEpisodesSection() {
                 };
                 card.innerHTML = `
                     <div class="upcoming-card-image img-skeleton">
-                        <img src="/media/image/${episode.ID}" alt="${episode.name}" onerror="this.style.display='none'; this.parentElement.classList.add('no-image');">
+                        <img src="/media/image/${episode.ID}?v=2" alt="${episode.name}" onerror="this.style.display='none'; this.parentElement.classList.add('no-image');">
                         <div class="upcoming-play-icon">
                             <i class="fas fa-play"></i>
                         </div>

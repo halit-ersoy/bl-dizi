@@ -150,7 +150,7 @@
 .card-image-container.image-error::before {
     content: '\f03d';
     /* FontAwesome film icon */
-    font-family: "Font Awesome 5 Free";
+    font-family: "Font Awesome 6 Free", "Font Awesome 5 Free", "FontAwesome";
     font-weight: 900;
     font-size: 40px;
     color: rgba(255, 255, 255, 0.1);

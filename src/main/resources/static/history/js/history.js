@@ -217,7 +217,7 @@
 
         const timeAgoText = formatRelativeTime(item.watchedAt);
         const imageId = item.imageId || item.contentId;
-        const posterUrl = imageId ? `/media/image/${imageId}` : '';
+        const posterUrl = imageId ? `/media/image/${imageId}?v=2` : '';
 
         card.innerHTML = `
             <div class="no-image-placeholder">

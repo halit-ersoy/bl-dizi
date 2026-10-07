@@ -1,3 +1,5 @@
+import { handleImageSkeleton } from '../../elements/userLogged.js';
+
 export function initSimilarContent(videoId) {
     const container = document.getElementById('recommendationCards');
     const prevBtn = document.getElementById('recPrevBtn');
@@ -13,7 +15,7 @@ export function initSimilarContent(videoId) {
         })
         .catch(error => {
             console.error('Error fetching similar content:', error);
-            container.innerHTML = '<p class="error-text">Benzer içerikler yüklenemedi.</p>';
+            container.innerHTML = '<p class=\"error-text\">Benzer içerikler yüklenemedi.</p>';
         });
 }
 
@@ -53,11 +55,9 @@ function setupCarouselNavigation(container, prevBtn, nextBtn) {
 
 function renderRecommendations(items, container) {
     if (!items || items.length === 0) {
-        container.innerHTML = '<p class="empty-text">Henüz benzer bir içerik bulunmuyor.</p>';
+        container.innerHTML = '<p class=\"empty-text\">Henüz benzer bir içerik bulunmuyor.</p>';
         return;
     }
-
-    const defaultPosterSvg = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='320' viewBox='0 0 180 320' fill='%231a1a20'><rect width='100%' height='100%' fill='%231a1a20'/><circle cx='90' cy='130' r='24' fill='%2333333e'/><rect x='50' y='170' width='80' height='40' rx='10' fill='%2333333e'/></svg>";
 
     container.innerHTML = '';
     items.forEach(item => {
@@ -66,12 +66,12 @@ function renderRecommendations(items, container) {
         const title = escapeHtml(item.Name || 'İçerik');
         const category = item.Category ? escapeHtml(item.Category.split(',')[0].trim()) : 'Detaylar';
         const url = `/${item.slug || item.ID}`;
-        const posterUrl = `/media/image/${item.ID}`;
+        const posterUrl = `/media/image/${item.ID}?v=2`;
 
         card.innerHTML = `
             <a href="${url}" class="rec-link" title="${title} izle">
                 <div class="rec-image img-skeleton">
-                    <img src="${posterUrl}" alt="${title}" loading="lazy" onerror="this.onerror=null; this.src='${defaultPosterSvg}';">
+                    <img src="${posterUrl}" alt="${title}" loading="lazy">
                 </div>
                 <div class="rec-title" title="${title}">${title}</div>
                 <div class="rec-meta">${category}</div>
@@ -81,10 +81,7 @@ function renderRecommendations(items, container) {
 
         const img = card.querySelector('img');
         if (img) {
-            img.onload = () => card.querySelector('.rec-image')?.classList.remove('img-skeleton');
-            if (img.complete) {
-                card.querySelector('.rec-image')?.classList.remove('img-skeleton');
-            }
+            handleImageSkeleton(img);
         }
     });
 }

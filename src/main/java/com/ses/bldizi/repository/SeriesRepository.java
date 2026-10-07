@@ -46,7 +46,7 @@ public class SeriesRepository {
                     .id(seriesId.toString())
                     .title(name)
                     .info(mainCategory)
-                    .thumbnailUrl("/media/image/" + seriesId)
+                    .thumbnailUrl("/media/image/" + seriesId + "?v=2")
                     .videoUrl(videoUrl)
                     .country(country != null ? country.toLowerCase() : "th")
                     .build();
@@ -83,7 +83,7 @@ public class SeriesRepository {
                     .id(seriesId.toString())
                     .title(name)
                     .info(mainCategory)
-                    .thumbnailUrl("/media/image/" + seriesId)
+                    .thumbnailUrl("/media/image/" + seriesId + "?v=2")
                     .videoUrl(videoUrl)
                     .country(country != null ? country.toLowerCase() : "th")
                     .build();
@@ -92,7 +92,8 @@ public class SeriesRepository {
 
     public int countAllSeries() {
         String sql = """
-            SELECT COUNT(DISTINCT s.ID)\n            FROM Series s
+            SELECT COUNT(DISTINCT s.ID)
+            FROM Series s
             JOIN SeriesCategories sc ON s.ID = sc.SeriesID
             WHERE sc.CategoryID IN (52, 63)
               AND (s.IsHidden = 0 OR s.IsHidden IS NULL)
@@ -132,7 +133,7 @@ public class SeriesRepository {
                     .id(seriesId.toString())
                     .title(name)
                     .info(mainCategory)
-                    .thumbnailUrl("/media/image/" + seriesId)
+                    .thumbnailUrl("/media/image/" + seriesId + "?v=2")
                     .videoUrl(videoUrl)
                     .country(country != null ? country.toLowerCase() : "th")
                     .build();
@@ -155,8 +156,7 @@ public class SeriesRepository {
 
     public List<FeaturedTvItemDto> findRecentBlEpisodes(int offset, int limit) {
         String sql = """
-            WITH OrderedEpisodes AS (
-                SELECT E.ID as EpisodeId, E.SeriesId as SeriesId, E.uploadDate, E.name, E.slug, E.SeasonNumber, E.EpisodeNumber,
+            WITH OrderedEpisodes AS (\n                SELECT E.ID as EpisodeId, E.SeriesId as SeriesId, E.uploadDate, E.name, E.slug, E.SeasonNumber, E.EpisodeNumber,
                        S.name AS SeriesName, S.Language, S.Country, S.SeriesType, S.finalStatus,
                        ROW_NUMBER() OVER (PARTITION BY E.SeriesId ORDER BY E.uploadDate DESC, E.SeasonNumber DESC, E.EpisodeNumber DESC) as rn
                 FROM Episode E
@@ -196,7 +196,7 @@ public class SeriesRepository {
                     .season(season)
                     .episode(episode)
                     .slug(slug != null && !slug.isEmpty() ? slug : epId.toString())
-                    .image("/media/image/" + sId)
+                    .image("/media/image/" + sId + "?v=2")
                     .country(country != null && !country.isEmpty() ? country.toLowerCase() : mapLangToCode(lang))
                     .language(lang)
                     .finalStatus(finalStatus)
@@ -256,7 +256,7 @@ public class SeriesRepository {
             map.put("slug", rs.getString("slug"));
             map.put("type", rs.getString("type"));
             map.put("category", rs.getString("Category"));
-            map.put("thumbnailUrl", "/media/image/" + rs.getString("ID"));
+            map.put("thumbnailUrl", "/media/image/" + rs.getString("ID") + "?v=2");
             return map;
         }, wild, wild);
     }
@@ -359,7 +359,7 @@ public class SeriesRepository {
             ORDER BY SeasonNumber ASC, EpisodeNumber ASC
         """;
         try {
-            return jdbcTemplate.query(sql, (rs, rowNum) -> {
+            List<EpisodeViewModel> list = jdbcTemplate.query(sql, (rs, rowNum) -> {
                 EpisodeViewModel vm = new EpisodeViewModel();
                 vm.setId(UUID.fromString(rs.getString("ID")));
                 vm.setName(rs.getString("name"));
@@ -369,8 +369,30 @@ public class SeriesRepository {
                 vm.setSlug(rs.getString("slug"));
                 return vm;
             }, seriesId.toString());
+
+            if (list.isEmpty()) {
+                try {
+                    String parentSeriesId = jdbcTemplate.queryForObject(
+                            "SELECT SeriesId FROM Episode WHERE ID = ? AND (IsHidden = 0 OR IsHidden IS NULL)",
+                            String.class, seriesId.toString());
+                    if (parentSeriesId != null) {
+                        return findEpisodesBySeriesId(UUID.fromString(parentSeriesId));
+                    }
+                } catch (Exception ignored) {}
+            }
+            return list;
         } catch (Exception e) {
             return Collections.emptyList();
+        }
+    }
+
+    public int countEpisodesBySeriesId(UUID seriesId) {
+        String sql = "SELECT COUNT(*) FROM Episode WHERE SeriesId = ? AND (IsHidden = 0 OR IsHidden IS NULL)";
+        try {
+            Integer count = jdbcTemplate.queryForObject(sql, Integer.class, seriesId.toString());
+            return count != null ? count : 0;
+        } catch (Exception e) {
+            return 0;
         }
     }
 

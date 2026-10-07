@@ -32,16 +32,26 @@ export async function initEpisodeSelection(videoId) {
     async function checkAutoOpen() {
         console.log('DEBUG: checkAutoOpen starting for videoId:', videoId);
         try {
-            // 1. Try fetching as a series
+            // 1. Try fetching as a series or episode
             let response = await fetch(`/api/soapoperas/${videoId}/episodes`);
             if (response.ok) {
                 const eps = await response.json();
-                console.log('DEBUG: checkAutoOpen (series check) result:', eps);
+                console.log('DEBUG: checkAutoOpen result:', eps);
                 if (eps && eps.length > 0) {
-                    const lastEp = eps[eps.length - 1];
-                    console.log('DEBUG: Redirecting to last episode:', lastEp.id);
-                    const path = `/${lastEp.slug || lastEp.id}`;
-                    window.location.href = path;
+                    const isDirectEpisode = eps.some(ep => ep.id && ep.id.toString().toLowerCase() === videoId.toString().toLowerCase());
+                    if (!isDirectEpisode) {
+                        // videoId was a series ID, redirect to first episode
+                        const targetEp = eps[0];
+                        console.log('DEBUG: Redirecting to first episode:', targetEp.id);
+                        const path = `/${targetEp.slug || targetEp.id}` /* redirect to first episode */;
+                        window.location.href = path;
+                        return;
+                    }
+                    // videoId is an episode
+                    section.style.display = 'block';
+                    section.style.opacity = '1';
+                    await fetchAndRenderEpisodes();
+                    isLoaded = true;
                     return;
                 }
             }
@@ -55,8 +65,6 @@ export async function initEpisodeSelection(videoId) {
                 if (parent) {
                     section.style.display = 'block';
                     section.style.opacity = '1';
-
-                    // NEW: Fetch and render for navigation even if drawer is closed
                     await fetchAndRenderEpisodes();
                     isLoaded = true;
                     return;
@@ -89,9 +97,12 @@ export async function initEpisodeSelection(videoId) {
                 const parentRes = await fetch(`/api/soapoperas/episode/${videoId}/parent`);
                 if (parentRes.ok) {
                     const parent = await parentRes.json();
-                    idToFetch = parent.id;
-                    const secondRes = await fetch(`/api/soapoperas/${idToFetch}/episodes`);
-                    if (secondRes.ok) data = await secondRes.json();
+                    const parentId = parent.id || parent.ID;
+                    if (parentId) {
+                        idToFetch = parentId;
+                        const secondRes = await fetch(`/api/soapoperas/${idToFetch}/episodes`);
+                        if (secondRes.ok) data = await secondRes.json();
+                    }
                 }
             }
 
@@ -104,10 +115,11 @@ export async function initEpisodeSelection(videoId) {
 
             allEpisodes = data;
             section.style.display = 'block';
+            section.style.opacity = '1';
             renderSeasonTabs();
 
             // Find current episode's season if possible, otherwise first season
-            const currentEp = allEpisodes.find(ep => ep.id.toLowerCase() === videoId.toLowerCase());
+            const currentEp = allEpisodes.find(ep => ep.id && ep.id.toString().toLowerCase() === videoId.toString().toLowerCase());
             currentSeason = currentEp ? currentEp.seasonNumber : allEpisodes[0].seasonNumber;
 
             // Update active tab in UI
@@ -135,7 +147,7 @@ export async function initEpisodeSelection(videoId) {
             return;
         }
 
-        const currentIndex = episodes.findIndex(ep => ep.id.toLowerCase() === videoId.toLowerCase());
+        const currentIndex = episodes.findIndex(ep => ep.id && ep.id.toString().toLowerCase() === videoId.toString().toLowerCase());
 
         if (currentIndex === -1) {
             prevBtn.disabled = true;
@@ -196,14 +208,16 @@ export async function initEpisodeSelection(videoId) {
         filtered.forEach(ep => {
             const card = document.createElement('div');
             card.className = 'episode-card';
-            if (ep.id.toLowerCase() === videoId.toLowerCase()) card.classList.add('active');
+            if (ep.id && ep.id.toString().toLowerCase() === videoId.toString().toLowerCase()) {
+                card.classList.add('active');
+            }
 
             const mins = ep.duration || 0;
             const durationStr = mins > 0 ? `${mins} dk` : 'Bilinmiyor';
 
             card.innerHTML = `
-                <div class="episode-thumbnail">
-                    <img src="/media/image/${ep.id}" alt="${ep.name}">
+                <div class="episode-thumbnail img-skeleton">
+                    <img src="/media/image/${ep.id}?v=2" alt="${ep.name}">
                     <div class="episode-thumbnail-icon"><i class="fas fa-film"></i></div>
                     <div class="episode-duration">${durationStr}</div>
                 </div>
@@ -223,12 +237,12 @@ export async function initEpisodeSelection(videoId) {
 
             img.addEventListener('error', () => {
                 img.style.display = 'none';
-                icon.style.display = 'flex';
+                if (icon) icon.style.display = 'flex';
             });
 
             img.addEventListener('load', () => {
                 img.style.display = 'block';
-                icon.style.display = 'none';
+                if (icon) icon.style.display = 'none';
             });
 
             handleImageSkeleton(img);

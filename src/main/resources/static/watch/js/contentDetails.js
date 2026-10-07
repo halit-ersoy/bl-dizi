@@ -32,6 +32,16 @@ async function loadContentDetails(id) {
             spans.forEach(span => contentTitleEl.appendChild(span));
         }
 
+        // Update videoInfo bar under player
+        const videoInfoEl = document.getElementById('videoInfo');
+        if (videoInfoEl) {
+            if (data.type === 'episode') {
+                videoInfoEl.textContent = `${data.seriesTitle || data.title} • ${data.season}. Sezon ${data.episode}. Bölüm`;
+            } else if (data.type === 'movie') {
+                videoInfoEl.textContent = `${data.title} • Film`;
+            }
+        }
+
         // Handle Adult Content Video Blur Overlay
         const adultOverlay = document.getElementById('adultOverlay');
         const videoWrapper = document.querySelector('.video-wrapper');
@@ -55,7 +65,7 @@ async function loadContentDetails(id) {
         }
 
         // Update document title with SEO keyword
-        document.title = `${data.title} İzle - Who Dat Idols?`;
+        document.title = `${data.title} İzle - BL Dizi`;
 
         // SEO: Update Meta Description and Canonical
         if (data.plot) {
@@ -66,7 +76,7 @@ async function loadContentDetails(id) {
         const canonicalLink = document.getElementById('canonicalLink');
         if (canonicalLink && data.slug) {
             // Fix: remove '/watch/' for root-level slugs
-            canonicalLink.setAttribute('href', `https://whodatidols.com/${data.slug}`);
+            canonicalLink.setAttribute('href', `https://bldizi.com/${data.slug}`);
         }
 
         // SEO: Structured Data (JSON-LD)
@@ -87,7 +97,7 @@ async function loadContentDetails(id) {
                 return match ? `PT${match[1]}M` : undefined;
             };
 
-            const baseUrl = 'https://whodatidols.com';
+            const baseUrl = 'https://bldizi.com';
             const slug = data.slug || id;
             const contentUrl = `${baseUrl}/${slug}`;
 
@@ -138,7 +148,7 @@ async function loadContentDetails(id) {
 
         const posterImg = document.getElementById('contentPoster');
         if (posterImg) {
-            posterImg.src = `/media/image/${id}`;
+            posterImg.src = `/media/image/${id}?v=2`;
             handleImageSkeleton(posterImg);
         }
 
@@ -211,7 +221,10 @@ async function loadContentDetails(id) {
 
             const totalEpisodesEl = document.getElementById('totalEpisodes');
             if (totalEpisodesEl) {
-                if (data.finalStatus === 1) {
+                if (data.totalEpisodes && data.totalEpisodes > 0) {
+                    totalEpisodesEl.innerHTML = `<i class="fas fa-list-ol"></i> Toplam ${escapeHtml(data.totalEpisodes)} Bölüm`;
+                    totalEpisodesEl.style.display = 'inline-flex';
+                } else if (data.finalStatus === 1) {
                     totalEpisodesEl.innerHTML = `<i class="fas fa-flag-checkered"></i> Final`;
                     totalEpisodesEl.style.display = 'inline-flex';
                 } else if (data.finalStatus === 2) {
@@ -331,11 +344,11 @@ function getOrCreateActorModal() {
         overlay.setAttribute('aria-hidden', 'true');
 
         overlay.innerHTML = `
-            <div class="actor-modal-dialog">
-                <button type="button" class="actor-modal-close" aria-label="Kapat">
-                    <i class="fas fa-times"></i>
+            <div class=\"actor-modal-dialog\">
+                <button type=\"button\" class=\"actor-modal-close\" aria-label=\"Kapat\">
+                    <i class=\"fas fa-times\"></i>
                 </button>
-                <div class="actor-modal-body" id="actorModalBody"></div>
+                <div class=\"actor-modal-body\" id=\"actorModalBody\"></div>
             </div>
         `;
 
@@ -369,21 +382,21 @@ async function openActorModal(actorId, fallbackName, fallbackPhoto, contextChara
 
     // Render instant skeleton header while network request completes
     modalBody.innerHTML = `
-        <div class="actor-header-row">
-            <div class="actor-modal-photo-wrap">
-                <img src="${fallbackPhoto || defaultAvatarSvg}" alt="${escapeHtml(fallbackName || 'Oyuncu')}"
-                     onerror="this.onerror=null; this.src='${defaultAvatarSvg}'">
+        <div class=\"actor-header-row\">
+            <div class=\"actor-modal-photo-wrap\">
+                <img src=\"${fallbackPhoto || defaultAvatarSvg}\" alt=\"${escapeHtml(fallbackName || 'Oyuncu')}\"
+                     onerror=\"this.onerror=null; this.src='${defaultAvatarSvg}'\">
             </div>
-            <div class="actor-header-details">
+            <div class=\"actor-header-details\">
                 <h2>${escapeHtml(fallbackName || 'Oyuncu')}</h2>
-                <div class="actor-badges">
-                    <span class="actor-badge primary"><i class="fas fa-user"></i> Oyuncu</span>
-                    ${contextCharacter ? `<span class="actor-badge"><i class="fas fa-mask"></i> Bu Yapımda: ${escapeHtml(contextCharacter)}</span>` : ''}
+                <div class=\"actor-badges\">
+                    <span class=\"actor-badge primary\"><i class=\"fas fa-user\"></i> Oyuncu</span>
+                    ${contextCharacter ? `<span class=\"actor-badge\"><i class=\"fas fa-mask\"></i> Bu Yapımda: ${escapeHtml(contextCharacter)}</span>` : ''}
                 </div>
             </div>
         </div>
-        <div class="actor-modal-loading">
-            <i class="fas fa-circle-notch fa-spin"></i>
+        <div class=\"actor-modal-loading\">
+            <i class=\"fas fa-circle-notch fa-spin\"></i>
             <span>Oyuncu detayları ve yapımları yükleniyor...</span>
         </div>
     `;
@@ -402,18 +415,18 @@ async function openActorModal(actorId, fallbackName, fallbackPhoto, contextChara
     } catch (e) {
         console.error('Actor fetch error:', e);
         modalBody.innerHTML = `
-            <div class="actor-header-row">
-                <div class="actor-modal-photo-wrap">
-                    <img src="${fallbackPhoto || defaultAvatarSvg}" alt="${escapeHtml(fallbackName || 'Oyuncu')}">
+            <div class=\"actor-header-row\">
+                <div class=\"actor-modal-photo-wrap\">
+                    <img src=\"${fallbackPhoto || defaultAvatarSvg}\" alt=\"${escapeHtml(fallbackName || 'Oyuncu')}\">
                 </div>
-                <div class="actor-header-details">
+                <div class=\"actor-header-details\">
                     <h2>${escapeHtml(fallbackName || 'Oyuncu')}</h2>
-                    <div class="actor-badges">
-                        <span class="actor-badge primary"><i class="fas fa-user"></i> Oyuncu</span>
+                    <div class=\"actor-badges\">
+                        <span class=\"actor-badge primary\"><i class=\"fas fa-user\"></i> Oyuncu</span>
                     </div>
                 </div>
             </div>
-            <div class="actor-empty-prod" style="margin-top: 20px;">
+            <div class=\"actor-empty-prod\" style=\"margin-top: 20px;\">
                 Oyuncu detayları şu anda yüklenemedi. Lütfen daha sonra tekrar deneyiniz.
             </div>
         `;
@@ -429,32 +442,32 @@ function renderActorModalContent(modalBody, actor, fallbackName, fallbackPhoto, 
 
     // Badges array
     const badgesHtml = [
-        `<span class="actor-badge primary"><i class="fas fa-film"></i> ${escapeHtml(knownFor)}</span>`
+        `<span class=\"actor-badge primary\"><i class=\"fas fa-film\"></i> ${escapeHtml(knownFor)}</span>`
     ];
 
     if (birthInfo) {
-        badgesHtml.push(`<span class="actor-badge"><i class="fas fa-birthday-cake"></i> ${escapeHtml(birthInfo)}</span>`);
+        badgesHtml.push(`<span class=\"actor-badge\"><i class=\"fas fa-birthday-cake\"></i> ${escapeHtml(birthInfo)}</span>`);
     }
 
     if (placeOfBirth) {
-        badgesHtml.push(`<span class="actor-badge"><i class="fas fa-map-marker-alt"></i> ${escapeHtml(placeOfBirth)}</span>`);
+        badgesHtml.push(`<span class=\"actor-badge\"><i class=\"fas fa-map-marker-alt\"></i> ${escapeHtml(placeOfBirth)}</span>`);
     }
 
     if (contextCharacter) {
-        badgesHtml.push(`<span class="actor-badge"><i class="fas fa-mask"></i> Bu Yapımda: ${escapeHtml(contextCharacter)}</span>`);
+        badgesHtml.push(`<span class=\"actor-badge\"><i class=\"fas fa-mask\"></i> Bu Yapımda: ${escapeHtml(contextCharacter)}</span>`);
     }
 
     // Bio - NO nested scrollbar
     const bioHtml = actor.biography
-        ? `<div class="actor-bio-text">${escapeHtml(actor.biography)}</div>`
-        : `<div class="actor-bio-text empty">Bu oyuncu için henüz biyografi bilgisi eklenmedi.</div>`;
+        ? `<div class=\"actor-bio-text\">${escapeHtml(actor.biography)}</div>`
+        : `<div class=\"actor-bio-text empty\">Bu oyuncu için henüz biyografi bilgisi eklenmedi.</div>`;
 
     // Productions
     const prods = actor.productions || [];
     let prodsHtml = '';
     if (prods.length > 0) {
         prodsHtml = `
-            <div class="actor-productions-grid">
+            <div class=\"actor-productions-grid\">
                 ${prods.map(p => {
                     const isFilm = p.type === 'movie';
                     const badgeClass = isFilm ? 'film' : 'dizi';
@@ -464,20 +477,20 @@ function renderActorModalContent(modalBody, actor, fallbackName, fallbackPhoto, 
                     const year = p.releaseYear || '';
                     const role = p.characterName ? `${p.characterName}` : '';
                     const category = p.category || '';
-                    const poster = p.posterUrl || `/media/image/${p.id}`;
+                    const poster = p.posterUrl || `/media/image/${p.id}?v=2`;
 
                     return `
-                        <a href="${linkUrl}" class="actor-prod-card" title="${escapeHtml(title)} izle">
-                            <div class="actor-prod-poster">
-                                <span class="actor-prod-badge ${badgeClass}">${badgeText}</span>
-                                ${year ? `<span class="actor-prod-year">${year}</span>` : ''}
-                                <img src="${poster}" alt="${escapeHtml(title)}" loading="lazy"
-                                     onerror="this.onerror=null; this.src='/placeholder.jpg'">
+                        <a href=\"${linkUrl}\" class=\"actor-prod-card\" title=\"${escapeHtml(title)} izle\">
+                            <div class=\"actor-prod-poster\">
+                                <span class=\"actor-prod-badge ${badgeClass}\">${badgeText}</span>
+                                ${year ? `<span class=\"actor-prod-year\">${year}</span>` : ''}
+                                <img src=\"${poster}\" alt=\"${escapeHtml(title)}\" loading=\"lazy\"
+                                     onerror=\"this.style.display='none';\">
                             </div>
-                            <div class="actor-prod-info">
-                                <div class="actor-prod-title">${escapeHtml(title)}</div>
-                                ${role ? `<div class="actor-prod-role"><i class="fas fa-user-tag" style="font-size:0.7rem; margin-right:4px;"></i>${escapeHtml(role)}</div>` : ''}
-                                ${category ? `<div class="actor-prod-category">${escapeHtml(category)}</div>` : ''}
+                            <div class=\"actor-prod-info\">
+                                <div class=\"actor-prod-title\">${escapeHtml(title)}</div>
+                                ${role ? `<div class=\"actor-prod-role\"><i class=\"fas fa-user-tag\" style=\"font-size:0.7rem; margin-right:4px;\"></i>${escapeHtml(role)}</div>` : ''}
+                                ${category ? `<div class=\"actor-prod-category\">${escapeHtml(category)}</div>` : ''}
                             </div>
                         </a>
                     `;
@@ -485,31 +498,31 @@ function renderActorModalContent(modalBody, actor, fallbackName, fallbackPhoto, 
             </div>
         `;
     } else {
-        prodsHtml = `<div class="actor-empty-prod">Platformumuzda bu oyuncunun yer aldığı başka bir yapım henüz bulunmuyor.</div>`;
+        prodsHtml = `<div class=\"actor-empty-prod\">Platformumuzda bu oyuncunun yer aldığı başka bir yapım henüz bulunmuyor.</div>`;
     }
 
     modalBody.innerHTML = `
-        <div class="actor-header-row">
-            <div class="actor-modal-photo-wrap">
-                <img src="${photo}" alt="${escapeHtml(name)}"
-                     onerror="this.onerror=null; this.src='${defaultAvatarSvg}'">
+        <div class=\"actor-header-row\">
+            <div class=\"actor-modal-photo-wrap\">
+                <img src=\"${photo}\" alt=\"${escapeHtml(name)}\"
+                     onerror=\"this.onerror=null; this.src='${defaultAvatarSvg}'\">
             </div>
-            <div class="actor-header-details">
+            <div class=\"actor-header-details\">
                 <h2>${escapeHtml(name)}</h2>
-                <div class="actor-badges">
+                <div class=\"actor-badges\">
                     ${badgesHtml.join('')}
                 </div>
             </div>
         </div>
 
-        <div class="actor-modal-section-title">
-            <i class="fas fa-book-open"></i> Biyografi
+        <div class=\"actor-modal-section-title\">
+            <i class=\"fas fa-book-open\"></i> Biyografi
         </div>
         ${bioHtml}
 
-        <div class="actor-modal-section-title">
-            <i class="fas fa-tv"></i> Platformda Yer Aldığı Yapımlar
-            <span class="count-badge">${prods.length} Yapım</span>
+        <div class=\"actor-modal-section-title\">
+            <i class=\"fas fa-tv\"></i> Platformda Yer Aldığı Yapımlar
+            <span class=\"count-badge\">${prods.length} Yapım</span>
         </div>
         ${prodsHtml}
     `;

@@ -42,8 +42,18 @@ public class VideoController {
 
             if (seriesId != null) {
                 Map<String, Object> series = seriesRepository.findSeriesDetails(seriesId);
+                int totalEps = seriesRepository.countEpisodesBySeriesId(seriesId);
+                response.put("totalEpisodes", totalEps);
                 if (series != null) {
-                    response.put("title", series.get("name"));
+                    String seriesName = (String) series.get("name");
+                    Object seasonObj = episode.get("SeasonNumber");
+                    Object epObj = episode.get("EpisodeNumber");
+                    String formattedTitle = seriesName;
+                    if (seasonObj != null && epObj != null) {
+                        formattedTitle = seriesName + " - " + seasonObj + ". Sezon " + epObj + ". Bölüm";
+                    }
+                    response.put("title", formattedTitle);
+                    response.put("seriesTitle", seriesName);
                     response.put("name", episode.get("name"));
                     Object duration = episode.get("DurationMinutes");
                     response.put("duration", duration != null && ((Number) duration).intValue() > 0 ? duration + " dk" : "");
@@ -57,10 +67,12 @@ public class VideoController {
                     cast = actorRepository.getCastForSeries(seriesId);
                 } else {
                     response.put("title", episode.get("name"));
+                    response.put("seriesTitle", episode.get("name"));
                     response.put("adult", Boolean.TRUE.equals(episode.get("IsAdult")));
                 }
             } else {
                 response.put("title", episode.get("name"));
+                response.put("seriesTitle", episode.get("name"));
                 response.put("adult", Boolean.TRUE.equals(episode.get("IsAdult")));
             }
 
@@ -188,3 +200,4 @@ public class VideoController {
         return ResponseEntity.ok(Map.of("probability", 0));
     }
 }
+

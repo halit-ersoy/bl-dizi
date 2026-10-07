@@ -142,6 +142,8 @@
     background: linear-gradient(90deg, transparent 25%, rgba(255, 255, 255, 0.05) 50%, transparent 75%);
     background-size: 200% 100%;
     animation: skeleton-shimmer 1.5s infinite linear;
+    z-index: 2;
+    pointer-events: none;
 }
 
 @keyframes skeleton-shimmer {
@@ -150,6 +152,8 @@
 }
 
 .img-skeleton img {
+    position: relative;
+    z-index: 1;
     opacity: 0;
     transition: opacity 0.5s ease;
 }
@@ -160,4 +164,64 @@
 
 .img-skeleton.loaded::after {
     display: none;
+}
+
+/* Missing Image Placeholder & Background Icon Fallback */
+.img-skeleton.image-error,
+.card-image-container.image-error,
+.item-thumb.image-error,
+.upcoming-card-image.image-error,
+.rec-image.image-error,
+.actor-prod-poster.image-error {
+    background-color: var(--bg-secondary-hover);
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+}
+
+.img-skeleton.image-error img,
+.card-image-container.image-error img,
+.item-thumb.image-error img,
+.upcoming-card-image.image-error img,
+.rec-image.image-error img,
+.actor-prod-poster.image-error img {
+    display: none !important;
+}
+
+.img-skeleton.image-error::after {
+    display: none !important;
+}
+
+.img-skeleton.image-error::before,
+.card-image-container.image-error::before,
+.item-thumb.image-error::before,
+.upcoming-card-image.image-error::before,
+.rec-image.image-error::before,
+.actor-prod-poster.image-error::before,
+.actor-prod-poster::before {
+    content: '\f008';
+    font-family: "Font Awesome 5 Free", "Font Awesome 6 Free", "FontAwesome";
+    font-weight: 900;
+    font-size: 38px;
+    color: rgba(255, 255, 255, 0.12);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 0;
+    pointer-events: none;
+}
+
+.actor-prod-poster img {
+    position: relative;
+    z-index: 1;
+}
+
+.item-thumb.image-error::before {
+    font-size: 22px !important;
+}
+
+.details-poster .img-skeleton {
+    width: 100%;
+    height: 100%;
 }

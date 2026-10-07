@@ -1,3 +1,5 @@
+import { handleImageSkeleton } from '../../elements/userLogged.js';
+
 export function initWeeklyBest() {
     const grid = document.querySelector('.weekly-best-grid');
     const tvBtn = document.getElementById('weekly-tv-toggle');
@@ -65,8 +67,8 @@ export function initWeeklyBest() {
             const countryTag = item.country ? item.country.toUpperCase() : 'BL';
 
             card.innerHTML = `
-                <div class="card-image-container">
-                    <img src="${item.thumbnailUrl}" alt="${item.title}" loading="lazy" onerror="this.src='/images/placeholder.svg'">
+                <div class="card-image-container img-skeleton">
+                    <img src="${item.thumbnailUrl}" alt="${item.title}" loading="lazy">
                     <div class="card-play-overlay">
                         <div class="card-play-icon"><i class="fas fa-play"></i></div>
                     </div>
@@ -78,6 +80,8 @@ export function initWeeklyBest() {
                     <div class="card-info">${item.info || 'BL Dizi'}</div>
                 </div>
             `;
+            const img = card.querySelector('img');
+            handleImageSkeleton(img);
             grid.appendChild(card);
         });
     }

@@ -53,7 +53,7 @@ public class MovieRepository {
                     .id(movieId.toString())
                     .title(name)
                     .info(yearText + mainCategory + durationText)
-                    .thumbnailUrl("/media/image/" + movieId)
+                    .thumbnailUrl("/media/image/" + movieId + "?v=2")
                     .videoUrl(videoUrl)
                     .country(country != null ? country.toLowerCase() : "th")
                     .build();
@@ -94,7 +94,7 @@ public class MovieRepository {
                     .id(movieId.toString())
                     .title(name)
                     .info(yearText + mainCategory + durationText)
-                    .thumbnailUrl("/media/image/" + movieId)
+                    .thumbnailUrl("/media/image/" + movieId + "?v=2")
                     .videoUrl(videoUrl)
                     .country(country != null ? country.toLowerCase() : "th")
                     .build();
@@ -148,7 +148,7 @@ public class MovieRepository {
                     .id(movieId.toString())
                     .title(name)
                     .info(yearText + mainCategory + durationText)
-                    .thumbnailUrl("/media/image/" + movieId)
+                    .thumbnailUrl("/media/image/" + movieId + "?v=2")
                     .videoUrl(videoUrl)
                     .country(country != null ? country.toLowerCase() : "th")
                     .build();
@@ -198,7 +198,7 @@ public class MovieRepository {
                     .season(1)
                     .episode(1)
                     .slug(slug != null && !slug.isEmpty() ? slug : movieId.toString())
-                    .image("/media/image/" + movieId)
+                    .image("/media/image/" + movieId + "?v=2")
                     .country(country != null && !country.isEmpty() ? country.toLowerCase() : "th")
                     .language(lang)
                     .isNew(isNew)
