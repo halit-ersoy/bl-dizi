@@ -411,7 +411,7 @@ function setNotificationPreference(enabled) {
     localStorage.setItem('bldiziNotificationsEnabled', enabled);
         localStorage.setItem('wdiNotificationsEnabled', enabled);
     setNotificationUIState(enabled);
-    // TODO: saveNotificationPreferenceToServer(enabled);
+    // Notification preference saved to local store
 }
 
 function setNotificationUIState(enabled) {

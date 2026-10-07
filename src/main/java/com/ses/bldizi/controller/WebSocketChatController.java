@@ -4,6 +4,8 @@ import com.ses.bldizi.model.Message;
 import com.ses.bldizi.model.Person;
 import com.ses.bldizi.repository.MessageRepository;
 import com.ses.bldizi.repository.PersonRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -16,6 +18,8 @@ import java.util.UUID;
 
 @Controller
 public class WebSocketChatController {
+
+    private static final Logger logger = LoggerFactory.getLogger(WebSocketChatController.class);
 
     private final MessageRepository messageRepository;
     private final PersonRepository personRepository;
@@ -62,17 +66,15 @@ public class WebSocketChatController {
             // Fetch the chat history to retrieve the newly saved message (with correct database ID and timestamp)
             List<Message> history = messageRepository.getChatHistory(senderId, receiver.get().getId());
             if (!history.isEmpty()) {
-                Message savedMessage = history.get(history.size() - 1);
+                Message savedMessage = history.getLast();
                 if (savedMessage != null) {
-                    Object msgObj = savedMessage;
                     // Publish message to both receiver and sender topics
-                    messagingTemplate.convertAndSend("/topic/messages/" + receiverNickname, msgObj);
-                    messagingTemplate.convertAndSend("/topic/messages/" + senderNickname, msgObj);
+                    messagingTemplate.convertAndSend("/topic/messages/" + receiverNickname, savedMessage);
+                    messagingTemplate.convertAndSend("/topic/messages/" + senderNickname, savedMessage);
                 }
             }
         } catch (Exception e) {
-            System.err.println("Error processing WebSocket send message: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Error processing WebSocket send message: {}", e.getMessage(), e);
         }
     }
 
@@ -105,8 +107,7 @@ public class WebSocketChatController {
                 messagingTemplate.convertAndSend("/topic/messages/" + otherNickname, readEventPayload);
             }
         } catch (Exception e) {
-            System.err.println("Error processing WebSocket read status: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Error processing WebSocket read status: {}", e.getMessage(), e);
         }
     }
 }
