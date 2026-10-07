@@ -125,19 +125,46 @@ public class PersonRepository {
 
     public Map<String, Object> updatePasswordByCookie(String cookie, String newPassword) {
         try {
-            String sql = "UPDATE [Person] SET password = ? WHERE cookie = ?";
-            int rows = jdbcTemplate.update(sql, newPassword, UUID.fromString(cookie));
-            return Map.of("success", rows > 0, "message", rows > 0 ? "Şifre güncellendi." : "Kullanıcı bulunamadı.");
+            String sql = "EXEC UpdatePasswordByCookie @cookie = ?, @password = ?";
+            Map<String, Object> row = jdbcTemplate.queryForMap(sql, UUID.fromString(cookie), newPassword);
+            boolean result = row.containsKey("Result") && (row.get("Result").equals(1) || Boolean.TRUE.equals(row.get("Result")));
+            String message = row.getOrDefault("Message", "Şifre güncellendi.").toString();
+            Map<String, Object> response = new HashMap<>();
+            response.put("Result", result);
+            response.put("success", result);
+            response.put("Message", message);
+            response.put("message", message);
+            return response;
         } catch (Exception e) {
-            return Map.of("success", false, "message", e.getMessage());
+            Map<String, Object> response = new HashMap<>();
+            response.put("Result", false);
+            response.put("success", false);
+            response.put("Message", e.getMessage());
+            response.put("message", e.getMessage());
+            return response;
         }
     }
 
     public Map<String, Object> updateProfileByCookie(String cookie, String nickname, String name, String surname, String email) {
+        String sql = "EXEC UpdateUserProfile @cookie = ?, @nickname = ?, @name = ?, @surname = ?, @email = ?";
+
+        // Before updating, check if email changed to reset verification
         try {
-            String sql = "UPDATE [Person] SET nickname = ?, name = ?, surname = ?, email = ? WHERE cookie = ?";
-            int rows = jdbcTemplate.update(sql, nickname, name, surname, email, UUID.fromString(cookie));
-            return Map.of("success", rows > 0, "message", rows > 0 ? "Profil güncellendi." : "Kullanıcı bulunamadı.");
+            Map<String, Object> currentUser = getUserInfoByCookie(cookie);
+            if (currentUser != null) {
+                String currentEmail = (String) currentUser.get("email");
+                if (currentEmail != null && !currentEmail.equalsIgnoreCase(email)) {
+                    jdbcTemplate.update("UPDATE [Person] SET isVerified = 0 WHERE cookie = ?",
+                            UUID.fromString(cookie));
+                }
+            }
+        } catch (Exception ignored) {
+        }
+
+        try {
+            Map<String, Object> row = jdbcTemplate.queryForMap(sql, UUID.fromString(cookie), nickname, name, surname, email);
+            boolean result = row.containsKey("Result") && (row.get("Result").equals(1) || Boolean.TRUE.equals(row.get("Result")));
+            return Map.of("success", result, "message", row.getOrDefault("Message", "Profil güncellendi."));
         } catch (Exception e) {
             return Map.of("success", false, "message", e.getMessage());
         }
@@ -208,6 +235,75 @@ public class PersonRepository {
             return Map.of("Result", false, "Message", "Bir hata oluştu");
         } catch (Exception e) {
             return Map.of("Result", false, "Message", e.getMessage());
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> generateEmailVerificationCode(String nickname) {
+        try {
+            String code = String.format("%06d", new Random().nextInt(1000000));
+
+            Map<String, Object> result = jdbcTemplate.call(connection -> {
+                var callableStatement = connection.prepareCall(CALL_VERIFY_GENERATE_CODE);
+                callableStatement.setString(1, nickname);
+                callableStatement.setString(2, null);
+                callableStatement.setString(3, null);
+                callableStatement.setString(4, code);
+                return callableStatement;
+            }, new ArrayList<SqlParameter>());
+
+            if (result.containsKey("#result-set-1")) {
+                List<Map<String, Object>> resultSet = (List<Map<String, Object>>) result.get("#result-set-1");
+                if (!resultSet.isEmpty()) {
+                    Map<String, Object> responseMap = resultSet.get(0);
+                    boolean isSuccess = (boolean) responseMap.get("Result");
+
+                    if (isSuccess && responseMap.containsKey("Email")) {
+                        String email = (String) responseMap.get("Email");
+                        if (email != null && !email.isEmpty()) {
+                            try {
+                                emailService.sendVerificationCode(email, code);
+                            } catch (Exception e) {
+                                return Map.of("success", false, "Result", false, "message", "E-posta gönderimi başarısız: " + e.getMessage());
+                            }
+                        }
+                    }
+
+                    Map<String, Object> cleanResponse = new HashMap<>();
+                    cleanResponse.put("Result", responseMap.get("Result"));
+                    cleanResponse.put("Message", responseMap.get("Message"));
+                    cleanResponse.put("success", responseMap.get("Result"));
+                    return cleanResponse;
+                }
+            }
+            return Map.of("success", false, "Result", false, "message", "Bir hata oluştu.");
+        } catch (Exception e) {
+            return Map.of("success", false, "Result", false, "message", e.getMessage());
+        }
+    }
+
+    public Map<String, Object> verifyEmailCode(String nickname, String code) {
+        try {
+            Map<String, Object> verifyResult = verifyResetCode(nickname, code);
+
+            boolean isSuccess = false;
+            if (verifyResult.containsKey("Result") && verifyResult.get("Result") instanceof Boolean) {
+                isSuccess = (boolean) verifyResult.get("Result");
+            }
+
+            if (isSuccess) {
+                jdbcTemplate.update("UPDATE [Person] SET isVerified = 1 WHERE nickname = ?",
+                        nickname);
+                jdbcTemplate.update(
+                        "DELETE FROM [VerificationCode] WHERE ID = (SELECT ID FROM [Person] WHERE nickname = ?)",
+                        nickname);
+
+                return Map.of("success", true, "message", "Hesabınız başarıyla doğrulandı!");
+            } else {
+                return Map.of("success", false, "message", "Geçersiz veya süresi dolmuş kod.");
+            }
+        } catch (Exception e) {
+            return Map.of("success", false, "message", e.getMessage());
         }
     }
 

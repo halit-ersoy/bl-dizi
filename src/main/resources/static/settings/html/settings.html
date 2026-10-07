@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="pink">
+
+<head>
+    <script src="/elements/theme.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kullanıcı Ayarları - BL Dizi</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Poppins:wght@300;400;500;600&family=Roboto:wght@400;500;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="stylesheet" href="/elements/variables.css">
+    <link rel="stylesheet" href="/settings/css/settings.css">
+    <!-- Cropper.css -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+    <script src="/homepage/js/devtools-protection.js"></script>
+</head>
+
+<body>
+    <!-- Subtle Ambient Lighting -->
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
+
+    <div id="loading-screen">
+        <div class="loading-text">BL DİZİ</div>
+    </div>
+
+    <!-- Minimal Header -->
+    <header id="header">
+        <a href="/" class="logo-link" aria-label="Ana sayfa">
+            <div class="logo">BL DİZİ</div>
+        </a>
+    </header>
+
+    <main class="settings-main">
+        <!-- Hero Header -->
+        <section class="settings-hero">
+            <div class="settings-hero-content">
+                <div class="settings-badge">
+                    <i class="fas fa-user-gear"></i> Hesap Yönetimi
+                </div>
+                <h1 class="settings-title">Ayarlar</h1>
+                <p class="settings-subtitle">
+                    Profil bilgilerinizi, şifrenizi, bildirim tercihlerinizi ve site görünümünü buradan kolayca yönetebilirsiniz.
+                </p>
+            </div>
+        </section>
+
+        <!-- Main Layout (Sidebar + Content) -->
+        <div class="settings-layout">
+            <!-- Sidebar -->
+            <aside class="settings-sidebar">
+                <div class="settings-profile-card">
+                    <div class="settings-avatar-wrapper" title="Profil Fotoğrafını Değiştir">
+                        <div class="settings-avatar" id="user-avatar"></div>
+                        <div class="avatar-overlay" id="avatar-overlay">
+                            <i class="fas fa-camera"></i>
+                        </div>
+                        <!-- Hidden file input -->
+                        <input type="file" id="profile-photo-input" accept="image/jpeg, image/png, image/webp"
+                            style="display: none;">
+                    </div>
+                    <div class="avatar-actions">
+                        <button id="remove-photo-btn" class="btn-remove-photo" style="display: none;">
+                            <i class="fas fa-trash-can"></i> Fotoğrafı Kaldır
+                        </button>
+                    </div>
+                    <h2 id="user-fullname">Yükleniyor...</h2>
+                    <p id="user-nickname">@yükleniyor</p>
+                </div>
+
+                <nav class="settings-nav-wrapper">
+                    <ul class="settings-nav">
+                        <li class="active" data-section="profile">
+                            <i class="fas fa-id-card"></i>
+                            <span>Profil Bilgileri</span>
+                        </li>
+                        <li data-section="password">
+                            <i class="fas fa-shield-halved"></i>
+                            <span>Şifre Değiştir</span>
+                        </li>
+                        <li data-section="preferences">
+                            <i class="fas fa-sliders"></i>
+                            <span>Tercihler</span>
+                        </li>
+                    </ul>
+                </nav>
+            </aside>
+
+            <!-- Content Area -->
+            <div class="settings-content">
+                <!-- Profile Section -->
+                <section id="profile-section" class="settings-section active">
+                    <div class="settings-card">
+                        <div class="card-header">
+                            <div class="card-header-icon">
+                                <i class="fas fa-id-card"></i>
+                            </div>
+                            <div>
+                                <h2 class="card-title">Profil Bilgileri</h2>
+                                <p class="card-desc">Hesabınızın temel kimlik ve iletişim detayları</p>
+                            </div>
+                        </div>
+
+                        <form id="profile-form" novalidate>
+                            <div class="form-row">
+                                <div class="settings-field">
+                                    <label for="input-name">Ad</label>
+                                    <div class="input-container">
+                                        <i class="fas fa-user"></i>
+                                        <input type="text" id="input-name" class="form-control" placeholder="Adınız" required>
+                                    </div>
+                                </div>
+                                <div class="settings-field">
+                                    <label for="input-surname">Soyad</label>
+                                    <div class="input-container">
+                                        <i class="fas fa-signature"></i>
+                                        <input type="text" id="input-surname" class="form-control" placeholder="Soyadınız" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="settings-field">
+                                <label for="input-nickname">Kullanıcı Adı</label>
+                                <div class="input-container">
+                                    <i class="fas fa-at"></i>
+                                    <input type="text" id="input-nickname" class="form-control" placeholder="Kullanıcı adınız" required>
+                                </div>
+                            </div>
+
+                            <div class="settings-field email-field-group">
+                                <div class="label-with-addon">
+                                    <label for="input-email">E-posta</label>
+                                    <div id="verification-status-container"></div>
+                                </div>
+                                <div class="input-container">
+                                    <i class="fas fa-envelope"></i>
+                                    <input type="email" id="input-email" class="form-control" placeholder="E-posta adresiniz" required>
+                                </div>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" id="update-profile-btn" class="settings-btn btn-primary-glow">
+                                    <i class="fas fa-floppy-disk"></i> Profil Bilgilerini Güncelle
+                                </button>
+                            </div>
+                            <div id="profile-message" class="password-message" style="display: none;"></div>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- Password Section -->
+                <section id="password-section" class="settings-section">
+                    <div class="settings-card">
+                        <div class="card-header">
+                            <div class="card-header-icon">
+                                <i class="fas fa-shield-halved"></i>
+                            </div>
+                            <div>
+                                <h2 class="card-title">Şifre Değiştir</h2>
+                                <p class="card-desc">Hesabınızın güvenliği için güçlü ve benzersiz bir şifre belirleyin</p>
+                            </div>
+                        </div>
+
+                        <form id="password-form" novalidate>
+                            <div class="settings-field">
+                                <label for="new-password">Yeni Şifre</label>
+                                <div class="input-container">
+                                    <i class="fas fa-lock"></i>
+                                    <input type="password" id="new-password" class="form-control"
+                                        placeholder="Yeni şifrenizi girin">
+                                </div>
+                            </div>
+                            <div class="settings-field">
+                                <label for="confirm-password">Şifre Onayı</label>
+                                <div class="input-container">
+                                    <i class="fas fa-check-double"></i>
+                                    <input type="password" id="confirm-password" class="form-control"
+                                        placeholder="Yeni şifrenizi tekrar girin">
+                                </div>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" id="update-password-btn" class="settings-btn btn-primary-glow">
+                                    <i class="fas fa-key"></i> Şifreyi Güncelle
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- Preferences Section -->
+                <section id="preferences-section" class="settings-section">
+                    <div class="settings-card">
+                        <div class="card-header">
+                            <div class="card-header-icon">
+                                <i class="fas fa-sliders"></i>
+                            </div>
+                            <div>
+                                <h2 class="card-title">Tercihler</h2>
+                                <p class="card-desc">Bildirimler, iletişim izinleri ve tema görünümünü ayarlayın</p>
+                            </div>
+                        </div>
+
+                        <div class="preferences-list">
+                            <!-- Notifications Row -->
+                            <div class="preference-item">
+                                <div class="preference-info">
+                                    <div class="preference-icon">
+                                        <i class="fas fa-bell"></i>
+                                    </div>
+                                    <div>
+                                        <span class="preference-title">Anlık Bildirimler</span>
+                                        <span class="preference-desc">Yeni bölümler, istek güncellemeleri ve önemli duyuruları alın.</span>
+                                    </div>
+                                </div>
+                                <div class="preference-action">
+                                    <div class="notification-toggle">
+                                        <button id="notifications-off" class="notification-toggle-btn">Kapalı</button>
+                                        <button id="notifications-on" class="notification-toggle-btn active">Açık</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Direct Messages Row -->
+                            <div class="preference-item">
+                                <div class="preference-info">
+                                    <div class="preference-icon">
+                                        <i class="fas fa-comments"></i>
+                                    </div>
+                                    <div>
+                                        <span class="preference-title">Direkt Mesajlar</span>
+                                        <span class="preference-desc">Açık olduğunda topluluktaki diğer üyeler size özel mesaj gönderebilir.</span>
+                                    </div>
+                                </div>
+                                <div class="preference-action">
+                                    <div class="notification-toggle">
+                                        <button id="messages-off" class="notification-toggle-btn">Kapalı</button>
+                                        <button id="messages-on" class="notification-toggle-btn">Açık</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Theme Selector Row -->
+                            <div class="preference-item theme-item-block">
+                                <div class="preference-info">
+                                    <div class="preference-icon">
+                                        <i class="fas fa-palette"></i>
+                                    </div>
+                                    <div>
+                                        <span class="preference-title">Tema Rengi</span>
+                                        <span class="preference-desc">Sitenin genelindeki vurgu ve buton rengini kişiselleştirin.</span>
+                                    </div>
+                                </div>
+                                <div class="theme-selector-wrapper">
+                                    <div class="theme-selector">
+                                        <button class="theme-btn theme-green" data-theme-value="green" title="Neon Yeşil"></button>
+                                        <button class="theme-btn theme-blue" data-theme-value="blue" title="Mavi"></button>
+                                        <button class="theme-btn theme-purple" data-theme-value="purple" title="Mor"></button>
+                                        <button class="theme-btn theme-red" data-theme-value="red" title="Kırmızı"></button>
+                                        <button class="theme-btn theme-pink" data-theme-value="pink" title="Pembe"></button>
+                                        <button class="theme-btn theme-black" data-theme-value="black" title="Siyah"></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- Verification Modal -->
+    <div id="verification-modal" class="modal" style="display: none;">
+        <div class="modal-content modal-verification-content">
+            <span class="close-btn" id="close-verification-modal">&times;</span>
+            <div class="modal-badge-icon">
+                <i class="fas fa-envelope-circle-check"></i>
+            </div>
+            <h2>Hesabı Doğrula</h2>
+            <p class="modal-desc">E-posta adresinize gönderilen 6 haneli doğrulama kodunu giriniz.</p>
+            <div class="form-group code-input-group">
+                <input type="text" id="verification-code-input" class="form-control code-input" placeholder="••••••"
+                    maxlength="6">
+            </div>
+            <button id="submit-verification-btn" class="settings-btn btn-primary-glow btn-full" style="margin-top: 20px;">
+                <i class="fas fa-check"></i> Doğrula
+            </button>
+            <div id="verification-message" class="password-message" style="display: none; margin-top: 14px;"></div>
+        </div>
+    </div>
+
+    <!-- Profile Photo Crop Modal -->
+    <div id="crop-modal" class="modal" style="display: none;">
+        <div class="modal-content modal-crop-content">
+            <span class="close-btn" id="close-crop-modal">&times;</span>
+            <div class="modal-badge-icon">
+                <i class="fas fa-crop-simple"></i>
+            </div>
+            <h2>Fotoğrafı Kırp</h2>
+            <p class="modal-desc">Profil resminizi uygun ölçüde çerçeveleyin.</p>
+            <div class="crop-container">
+                <img id="crop-image" src="" alt="Resim kırpılıyor">
+            </div>
+            <button id="save-crop-btn" class="settings-btn btn-primary-glow btn-full">
+                <i class="fas fa-check"></i> Kırp ve Kaydet
+            </button>
+            <div id="crop-message" class="password-message" style="display: none; margin-top: 14px;"></div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-links">
+            <a href="/">Anasayfa</a>
+            <a href="/about">Hakkımızda</a>
+            <a href="/privacy_policy">Gizlilik Politikası</a>
+            <a href="/terms_of_use">Kullanım Şartları</a>
+            <a href="/sss">SSS</a>
+        </div>
+        <p>&copy; <script>document.write(new Date().getFullYear())</script> BL Dizi. Tüm hakları saklıdır.</p>
+    </footer>
+
+    <!-- Cropper.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    <script type="module" src="/settings/js/settings.js"></script>
+</body>
+
+</html>

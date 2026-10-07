@@ -5,7 +5,9 @@ import com.ses.bldizi.model.VideoViewModel;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Repository
@@ -206,5 +208,54 @@ public class MovieRepository {
 
     public int countRecentMoviesForFeatured() {
         return countAllMovies();
+    }
+
+    public Map<String, Object> findMovieDetails(UUID id) {
+        String sql = """
+            SELECT m.ID, m.name, m.Summary, m.DurationMinutes, m.Language, m.Country, m.ReleaseYear, m.slug, m.viewCount, m.IsAdult, m.IsHidden,
+                   (SELECT STRING_AGG(c.Name, ', ') FROM Categories c 
+                    JOIN MovieCategories mc2 ON mc2.CategoryID = c.ID 
+                    WHERE mc2.MovieID = m.ID) as Category
+            FROM Movie m
+            WHERE m.ID = ? AND (m.IsHidden = 0 OR m.IsHidden IS NULL)
+        """;
+        try {
+            return jdbcTemplate.queryForMap(sql, id.toString());
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public Map<String, Object> findMovieBySlug(String slug) {
+        String sql = """
+            SELECT TOP 1 m.ID, m.name, m.Summary, m.DurationMinutes, m.Language, m.Country, m.ReleaseYear, m.slug, m.viewCount, m.IsAdult, m.IsHidden,
+                   (SELECT STRING_AGG(c.Name, ', ') FROM Categories c 
+                    JOIN MovieCategories mc2 ON mc2.CategoryID = c.ID 
+                    WHERE mc2.MovieID = m.ID) as Category
+            FROM Movie m
+            WHERE m.slug = ? AND (m.IsHidden = 0 OR m.IsHidden IS NULL)
+        """;
+        try {
+            return jdbcTemplate.queryForMap(sql, slug);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public boolean isValidSlug(String slug) {
+        try {
+            Integer count = jdbcTemplate.queryForObject(
+                    "SELECT COUNT(*) FROM Movie WHERE slug = ? AND (IsHidden = 0 OR IsHidden IS NULL)",
+                    Integer.class, slug);
+            return count != null && count > 0;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public void incrementViewCount(UUID id) {
+        try {
+            jdbcTemplate.update("UPDATE Movie SET viewCount = COALESCE(viewCount, 0) + 1 WHERE ID = ?", id.toString());
+        } catch (Exception ignored) {}
     }
 }

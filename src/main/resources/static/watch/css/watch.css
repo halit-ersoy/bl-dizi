@@ -1,0 +1,239 @@
+/* watch.css - Main stylesheet for video watching page */
+
+/* 1) Global styles and basic resets */
+@import url('../../elements/variables.css');
+@import url('../../elements/base.css');
+@import url('../../elements/animations.css');
+
+/* 2) Layout structures */
+@import url('layout.css');
+
+/* 3) Header and footer */
+@import url('../../elements/header.css');
+@import url('../../elements/footer.css');
+
+/* 4) Video player components */
+@import url('video-player.css');
+
+/* 5) Recommendations section */
+@import url('recommendations.css');
+
+/* 6) Comments section */
+@import url('comments.css');
+
+/* 6.5) Content details section */
+@import url('content-details.css');
+
+/* 7) Button styles */
+@import url('buttons.css');
+
+/* 8) Responsive styles (always last to override) */
+@import url('responsive.css');
+
+/* 9) Wishlist styles */
+@import url('wishlist.css');
+
+/* 10) Episode selection */
+@import url('episode-selection.css');
+
+.back-button {
+    color: var(--white);
+    text-decoration: none;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: color 0.3s ease;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.back-button:hover {
+    color: var(--primary-color);
+}
+
+header {
+    background: rgba(14, 14, 18, 0.88);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    color: var(--white);
+    padding: 14px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 100;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    box-sizing: border-box;
+}
+
+body {
+    padding-top: 70px;
+    background-color: var(--bg-main, #0c0c0e);
+    color: var(--text-light, #e0e0e0);
+}
+
+/* Source Switcher */
+.source-switcher-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 22px;
+    background: rgba(255, 255, 255, 0.02);
+    padding: 16px 20px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    margin-top: 10px;
+    transition: border-color 0.3s ease;
+}
+
+.source-switcher-container:hover {
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.source-label {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.source-label i {
+    color: var(--primary-color);
+}
+
+.source-switcher {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.source-btn {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.85);
+    padding: 9px 18px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.source-btn i {
+    font-size: 0.95rem;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+}
+
+.source-btn:hover {
+    background: rgba(var(--primary-rgb), 0.1);
+    border-color: rgba(var(--primary-rgb), 0.35);
+    color: var(--white);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.source-btn.active {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+    color: var(--black);
+    border-color: var(--primary-color);
+    box-shadow: 0 4px 16px rgba(var(--primary-rgb), 0.35);
+    font-weight: 700;
+}
+
+.source-btn.active i {
+    opacity: 1;
+}
+
+/* +18 Blur Overlay Styles */
+.video-wrapper.blurred-adult video,
+.video-wrapper.blurred-adult iframe {
+    filter: blur(20px) brightness(0.5);
+    transition: filter 0.5s ease-in-out;
+}
+
+.adult-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    background: rgba(14, 14, 18, 0.92);
+    padding: 35px 45px;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.8), 0 0 30px rgba(var(--primary-rgb), 0.1);
+    color: white;
+    text-align: center;
+    pointer-events: auto;
+    max-width: 90%;
+    box-sizing: border-box;
+}
+
+.adult-overlay.active {
+    display: flex;
+}
+
+.adult-overlay i {
+    font-size: 44px;
+    color: var(--primary-color);
+    margin-bottom: 14px;
+    filter: drop-shadow(0 0 12px rgba(var(--primary-rgb), 0.5));
+}
+
+.adult-overlay h3 {
+    font-size: 22px;
+    margin: 0 0 10px 0;
+    font-weight: 700;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.adult-overlay p {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0 0 22px 0;
+    line-height: 1.5;
+}
+
+.btn-remove-blur {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+    color: var(--black);
+    border: none;
+    padding: 11px 26px;
+    font-size: 15px;
+    font-weight: 700;
+    border-radius: 30px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(var(--primary-rgb), 0.35);
+    transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-remove-blur:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(var(--primary-rgb), 0.5);
+}
+
+.btn-remove-blur:active {
+    transform: translateY(1px);
+}

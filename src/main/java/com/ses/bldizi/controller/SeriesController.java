@@ -1,15 +1,15 @@
 package com.ses.bldizi.controller;
 
+import com.ses.bldizi.model.EpisodeViewModel;
 import com.ses.bldizi.model.PageResponse;
 import com.ses.bldizi.model.VideoViewModel;
 import com.ses.bldizi.repository.SeriesRepository;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping({"/api/series", "/api/soapoperas"})
@@ -50,5 +50,19 @@ public class SeriesController {
         int totalPages = (int) Math.ceil((double) totalElements / size);
 
         return ResponseEntity.ok(new PageResponse<>(series, totalPages, page, totalElements));
+    }
+
+    @GetMapping("/{id}/episodes")
+    public ResponseEntity<List<EpisodeViewModel>> getEpisodes(@PathVariable("id") UUID id) {
+        return ResponseEntity.ok(seriesRepository.findEpisodesBySeriesId(id));
+    }
+
+    @GetMapping("/episode/{id}/parent")
+    public ResponseEntity<Map<String, Object>> getParentSeries(@PathVariable("id") UUID episodeId) {
+        Map<String, Object> series = seriesRepository.findSeriesByEpisodeId(episodeId);
+        if (series == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(series);
     }
 }

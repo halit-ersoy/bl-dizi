@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="pink">
+
+<head>
+    <script src="/elements/theme.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>İzleme Geçmişim - BL Dizi</title>
+    <meta name="description" content="İzlediğiniz dizi, film ve bölümlerin geçmişi.">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Poppins:wght@300;400;500;600&family=Roboto:wght@400;500;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="stylesheet" href="/elements/variables.css">
+    <link rel="stylesheet" href="/history/css/history.css">
+    <script src="/homepage/js/devtools-protection.js"></script>
+</head>
+
+<body>
+    <!-- Subtle Ambient Lighting -->
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
+
+    <!-- Minimal Header -->
+    <header id="header">
+        <a href="/" class="logo-link" aria-label="Ana sayfa">
+            <div class="logo">BL DİZİ</div>
+        </a>
+    </header>
+
+    <!-- Main Container -->
+    <main class="history-main">
+        <!-- Hero Header -->
+        <section class="history-hero">
+            <div class="history-hero-content">
+                <div class="history-badge">
+                    <i class="fas fa-clock-rotate-left"></i> Kişisel Aktivite
+                </div>
+                <h1 class="history-title">İzleme Geçmişim</h1>
+                <p class="history-subtitle">
+                    İzlediğiniz dizi, film ve bölümleri buradan takip edebilir veya geçmişinizi tek tıkla yönetebilirsiniz.
+                </p>
+            </div>
+            <div class="history-hero-actions">
+                <button id="clearHistoryBtn" class="clear-history-btn" style="display: none;">
+                    <i class="fas fa-trash-can"></i> Tüm Geçmişi Temizle
+                </button>
+            </div>
+        </section>
+
+        <!-- History Container -->
+        <div class="history-container">
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+                <p>İzleme geçmişiniz yükleniyor...</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title-wrapper">
+                    <div class="modal-icon-badge">
+                        <i class="fas fa-triangle-exclamation"></i>
+                    </div>
+                    <h3>Geçmişi Temizle</h3>
+                </div>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Tüm izleme geçmişinizi silmek istediğinize emin misiniz? Bu işlem geri alınamaz.</p>
+                <div class="modal-actions">
+                    <button class="btn-cancel">Vazgeç</button>
+                    <button class="btn-confirm-delete">Evet, Temizle</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-links">
+            <a href="/">Anasayfa</a>
+            <a href="/about">Hakkımızda</a>
+            <a href="/privacy_policy">Gizlilik Politikası</a>
+            <a href="/terms_of_use">Kullanım Şartları</a>
+            <a href="/sss">SSS</a>
+        </div>
+        <p>&copy; <script>document.write(new Date().getFullYear())</script> BL Dizi. Tüm hakları saklıdır.</p>
+    </footer>
+
+    <script type="module" src="/history/js/history.js"></script>
+</body>
+
+</html>

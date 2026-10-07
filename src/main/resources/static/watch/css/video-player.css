@@ -1,0 +1,394 @@
+/* ==========================================================================
+   Video Player Components - Modern Sleek Styles
+   ========================================================================== */
+
+/* Video Wrapper Styles */
+.video-wrapper {
+    position: relative;
+    border-radius: 14px;
+    overflow: hidden;
+    margin: 10px 0 20px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.7), 0 0 30px rgba(var(--primary-rgb), 0.15);
+    transition: box-shadow 0.4s ease, border-color 0.4s ease;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background-color: #000;
+}
+
+.video-wrapper:hover {
+    border-color: rgba(var(--primary-rgb), 0.35);
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.8), 0 0 35px rgba(var(--primary-rgb), 0.25);
+}
+
+/* Video Pulse Loading Animation (Skeleton) */
+.video-skeleton {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, rgba(25, 25, 30, 0.9) 25%, rgba(40, 40, 48, 0.9) 50%, rgba(25, 25, 30, 0.9) 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite linear;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+}
+
+@keyframes skeleton-loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.video-wrapper.loaded .video-skeleton {
+    display: none;
+}
+
+video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    border-radius: 12px;
+    background-color: #000;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+.video-wrapper.loaded video {
+    opacity: 1;
+}
+
+/* Video Controls */
+.video-controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    margin: 15px 0;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 14px;
+    padding: 12px 18px;
+    transition: all 0.3s ease;
+}
+
+.video-controls:hover {
+    border-color: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+/* Progress Bar Styles */
+.progress-container {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    cursor: pointer;
+    position: relative;
+    margin-bottom: 6px;
+    transition: height 0.2s ease;
+}
+
+.progress-container:hover {
+    height: 8px;
+}
+
+.time-display {
+    color: rgba(255, 255, 255, 0.85);
+    font-family: 'Roboto', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    min-width: 95px;
+    text-align: center;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-color), var(--primary-hover));
+    width: 0%;
+    border-radius: 3px;
+    position: relative;
+    transition: width 0.1s linear;
+}
+
+.progress-knob {
+    position: absolute;
+    top: 50%;
+    right: -6px;
+    transform: translateY(-50%);
+    width: 12px;
+    height: 12px;
+    background: var(--white);
+    border-radius: 50%;
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.6);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+}
+
+.progress-container:hover .progress-knob {
+    opacity: 1;
+}
+
+/* Enhanced Volume Control */
+.volume-control-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 7px 16px;
+    border-radius: 50px;
+    transition: all 0.25s ease;
+    position: relative;
+}
+
+.volume-control-wrapper:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(var(--primary-rgb), 0.3);
+}
+
+.volume-control-wrapper i {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 13px;
+    min-width: 16px;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.volume-control-wrapper:hover i {
+    color: var(--primary-color);
+}
+
+#volumeControl {
+    width: 75px;
+    height: 4px;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+    transition: height 0.2s ease;
+}
+
+#volumeControl:hover {
+    height: 6px;
+}
+
+#volumeControl::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px;
+    height: 12px;
+    background-color: var(--primary-color);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 8px rgba(var(--primary-rgb), 0.7);
+    transition: transform 0.2s ease;
+}
+
+#volumeControl:hover::-webkit-slider-thumb {
+    transform: scale(1.2);
+}
+
+#volumeControl::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    background-color: var(--primary-color);
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+}
+
+/* Play/Pause Button Overlay */
+.play-pause-button {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.9);
+    width: 76px;
+    height: 76px;
+    background: rgba(14, 14, 18, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 5;
+}
+
+.play-pause-button i {
+    color: var(--primary-color);
+    font-size: 30px;
+    transition: transform 0.2s ease;
+}
+
+.video-wrapper:hover .play-pause-button {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.play-pause-button:hover {
+    background: rgba(14, 14, 18, 0.95);
+    box-shadow: 0 0 25px rgba(var(--primary-rgb), 0.6);
+}
+
+.play-pause-button:hover i {
+    transform: scale(1.15);
+}
+
+/* Episode Navigation Styles */
+.episode-navigation {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+    gap: 12px;
+    opacity: 0;
+    animation: fadeIn 0.8s forwards;
+    animation-delay: 0.3s;
+}
+
+/* Speed Control Styles */
+.speed-control-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.speed-options {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(18, 18, 24, 0.96);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 6px 0;
+    display: none;
+    flex-direction: column;
+    min-width: 70px;
+    z-index: 10;
+    margin-bottom: 8px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+}
+
+.speed-options::after {
+    content: "";
+    position: absolute;
+    bottom: -15px;
+    left: 0;
+    width: 100%;
+    height: 15px;
+    background: transparent;
+}
+
+.speed-control-wrapper:hover .speed-options {
+    display: flex;
+}
+
+.speed-option {
+    padding: 8px 14px;
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 13px;
+    text-align: center;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.speed-option:hover {
+    background: rgba(var(--primary-rgb), 0.2);
+    color: var(--primary-color);
+}
+
+.speed-option.active {
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+/* Fullscreen Mode Styles */
+.fullscreen-mode {
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: none !important;
+    margin: 0 !important;
+    background: #000;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    padding: 0;
+}
+
+.fullscreen-mode .video-wrapper {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+    max-height: 100vh;
+}
+
+.fullscreen-mode video {
+    height: 100%;
+    width: 100%;
+    object-fit: contain;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.fullscreen-mode .video-controls {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 20px;
+    background: rgba(10, 10, 14, 0.85);
+    backdrop-filter: blur(12px);
+    margin: 0;
+    border-radius: 0;
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 2147483647;
+    transition: opacity 0.3s ease;
+}
+
+.fullscreen-mode.hide-controls .video-controls,
+.fullscreen-mode.hide-controls .play-pause-button {
+    opacity: 0 !important;
+    pointer-events: none;
+}
+
+.fullscreen-mode.hide-controls {
+    cursor: none !important;
+}
+
+.fullscreen-mode .video-controls:hover {
+    opacity: 1;
+}
+
+.fullscreen-mode .play-pause-button {
+    width: 100px;
+    height: 100px;
+}
+
+.fullscreen-mode .play-pause-button i {
+    font-size: 40px;
+}
+
+.fullscreen-mode .video-title,
+.fullscreen-mode .info-bar,
+.fullscreen-mode .episode-navigation {
+    display: none;
+}

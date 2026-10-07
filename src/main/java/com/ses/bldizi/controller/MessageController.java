@@ -4,6 +4,8 @@ import com.ses.bldizi.model.Message;
 import com.ses.bldizi.model.Person;
 import com.ses.bldizi.repository.MessageRepository;
 import com.ses.bldizi.repository.PersonRepository;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
@@ -29,6 +31,31 @@ public class MessageController {
         this.personRepository = personRepository;
     }
 
+    private String resolveCookie(String cookie, HttpServletRequest request) {
+        if (cookie != null && !cookie.trim().isEmpty()) {
+            return cookie.trim();
+        }
+        if (request != null) {
+            Cookie[] cookies = request.getCookies();
+            if (cookies != null) {
+                for (Cookie c : cookies) {
+                    if ("wdiAuth".equalsIgnoreCase(c.getName()) && c.getValue() != null && !c.getValue().isEmpty()) {
+                        return c.getValue().trim();
+                    }
+                }
+            }
+            String authHeader = request.getHeader("Authorization");
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                return authHeader.substring(7).trim();
+            }
+            String xAuth = request.getHeader("X-Auth-Token");
+            if (xAuth != null && !xAuth.trim().isEmpty()) {
+                return xAuth.trim();
+            }
+        }
+        return null;
+    }
+
     @GetMapping("/messages")
     public ResponseEntity<Resource> getMessagesPage() {
         try {
@@ -47,14 +74,16 @@ public class MessageController {
     @PostMapping("/api/messages/send")
     public ResponseEntity<?> sendMessage(
             @CookieValue(name = "wdiAuth", required = false) String cookie,
-            @RequestBody Map<String, String> request) {
+            @RequestBody Map<String, String> request,
+            HttpServletRequest httpRequest) {
 
-        if (cookie == null) {
+        String token = resolveCookie(cookie, httpRequest);
+        if (token == null) {
             return ResponseEntity.status(401).body(Map.of("success", false, "message", "Oturum açmanız gerekiyor."));
         }
 
         try {
-            Map<String, Object> senderInfo = personRepository.getUserInfoByCookie(cookie);
+            Map<String, Object> senderInfo = personRepository.getUserInfoByCookie(token);
             UUID senderId = UUID.fromString(senderInfo.get("ID").toString());
 
             String receiverNickname = request.get("receiverNickname");
@@ -94,13 +123,16 @@ public class MessageController {
     }
 
     @GetMapping("/api/messages/conversations")
-    public ResponseEntity<?> getConversations(@CookieValue(name = "wdiAuth", required = false) String cookie) {
-        if (cookie == null) {
+    public ResponseEntity<?> getConversations(
+            @CookieValue(name = "wdiAuth", required = false) String cookie,
+            HttpServletRequest httpRequest) {
+        String token = resolveCookie(cookie, httpRequest);
+        if (token == null) {
             return ResponseEntity.status(401).body(Map.of("success", false, "message", "Unauthorized"));
         }
 
         try {
-            Map<String, Object> userInfo = personRepository.getUserInfoByCookie(cookie);
+            Map<String, Object> userInfo = personRepository.getUserInfoByCookie(token);
             UUID userId = UUID.fromString(userInfo.get("ID").toString());
 
             List<Message> conversations = messageRepository.getConversationList(userId);
@@ -117,14 +149,16 @@ public class MessageController {
     @GetMapping("/api/messages/history/{nickname}")
     public ResponseEntity<?> getChatHistory(
             @CookieValue(name = "wdiAuth", required = false) String cookie,
-            @PathVariable("nickname") String otherNickname) {
+            @PathVariable("nickname") String otherNickname,
+            HttpServletRequest httpRequest) {
 
-        if (cookie == null) {
+        String token = resolveCookie(cookie, httpRequest);
+        if (token == null) {
             return ResponseEntity.status(401).body(Map.of("success", false, "message", "Unauthorized"));
         }
 
         try {
-            Map<String, Object> userInfo = personRepository.getUserInfoByCookie(cookie);
+            Map<String, Object> userInfo = personRepository.getUserInfoByCookie(token);
             UUID userId = UUID.fromString(userInfo.get("ID").toString());
 
             Optional<Person> otherUser = personRepository.findByNicknameOrEmail(otherNickname);
@@ -148,35 +182,39 @@ public class MessageController {
     @PostMapping("/api/user/settings/toggle-messages")
     public ResponseEntity<?> toggleMessages(
             @CookieValue(name = "wdiAuth", required = false) String cookie,
-            @RequestBody Map<String, Boolean> request) {
+            @RequestBody(required = false) Map<String, Boolean> requestBody,
+            HttpServletRequest httpRequest) {
 
-        if (cookie == null) {
-            return ResponseEntity.status(401).body(Map.of("success", false, "message", "Unauthorized"));
+        String token = resolveCookie(cookie, httpRequest);
+        if (token == null) {
+            return ResponseEntity.status(401).body(Map.of("success", false, "Result", false, "message", "Unauthorized"));
         }
 
-        Boolean allow = request.get("allow");
+        Boolean allow = requestBody != null ? requestBody.get("allow") : null;
         if (allow == null)
             allow = true;
 
         try {
-            personRepository.updateAllowMessagesByCookie(cookie, allow);
-            return ResponseEntity.ok(Map.of("success", true, "allow", allow));
+            personRepository.updateAllowMessagesByCookie(token, allow);
+            return ResponseEntity.ok(Map.of("success", true, "Result", true, "allow", allow));
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of("success", false, "message", e.getMessage()));
+            return ResponseEntity.status(500).body(Map.of("success", false, "Result", false, "message", e.getMessage()));
         }
     }
 
     @GetMapping("/api/users/search-messaging")
     public ResponseEntity<?> searchUsersForMessaging(
             @CookieValue(name = "wdiAuth", required = false) String cookie,
-            @RequestParam("q") String query) {
+            @RequestParam("q") String query,
+            HttpServletRequest httpRequest) {
 
-        if (cookie == null) {
+        String token = resolveCookie(cookie, httpRequest);
+        if (token == null) {
             return ResponseEntity.status(401).body(Map.of("success", false, "message", "Unauthorized"));
         }
 
         try {
-            Map<String, Object> userInfo = personRepository.getUserInfoByCookie(cookie);
+            Map<String, Object> userInfo = personRepository.getUserInfoByCookie(token);
             String myNickname = userInfo.get("nickname").toString();
 
             List<Person> results = personRepository.searchUsersForMessaging(query, myNickname);
@@ -189,16 +227,18 @@ public class MessageController {
     @PostMapping("/api/messages/block")
     public ResponseEntity<?> blockUser(
             @CookieValue(name = "wdiAuth", required = false) String cookie,
-            @RequestBody Map<String, String> request) {
+            @RequestBody Map<String, String> request,
+            HttpServletRequest httpRequest) {
 
-        if (cookie == null)
+        String token = resolveCookie(cookie, httpRequest);
+        if (token == null)
             return ResponseEntity.status(401).build();
         String nickname = request.get("nickname");
         if (nickname == null)
             return ResponseEntity.badRequest().build();
 
         try {
-            Map<String, Object> userInfo = personRepository.getUserInfoByCookie(cookie);
+            Map<String, Object> userInfo = personRepository.getUserInfoByCookie(token);
             UUID myId = UUID.fromString(userInfo.get("ID").toString());
 
             Optional<Person> them = personRepository.findByNicknameOrEmail(nickname);
@@ -215,16 +255,18 @@ public class MessageController {
     @PostMapping("/api/messages/unblock")
     public ResponseEntity<?> unblockUser(
             @CookieValue(name = "wdiAuth", required = false) String cookie,
-            @RequestBody Map<String, String> request) {
+            @RequestBody Map<String, String> request,
+            HttpServletRequest httpRequest) {
 
-        if (cookie == null)
+        String token = resolveCookie(cookie, httpRequest);
+        if (token == null)
             return ResponseEntity.status(401).build();
         String nickname = request.get("nickname");
         if (nickname == null)
             return ResponseEntity.badRequest().build();
 
         try {
-            Map<String, Object> userInfo = personRepository.getUserInfoByCookie(cookie);
+            Map<String, Object> userInfo = personRepository.getUserInfoByCookie(token);
             UUID myId = UUID.fromString(userInfo.get("ID").toString());
 
             Optional<Person> them = personRepository.findByNicknameOrEmail(nickname);
@@ -241,13 +283,15 @@ public class MessageController {
     @GetMapping("/api/messages/block-status/{nickname}")
     public ResponseEntity<?> getBlockStatus(
             @CookieValue(name = "wdiAuth", required = false) String cookie,
-            @PathVariable("nickname") String nickname) {
+            @PathVariable("nickname") String nickname,
+            HttpServletRequest httpRequest) {
 
-        if (cookie == null)
+        String token = resolveCookie(cookie, httpRequest);
+        if (token == null)
             return ResponseEntity.status(401).build();
 
         try {
-            Map<String, Object> userInfo = personRepository.getUserInfoByCookie(cookie);
+            Map<String, Object> userInfo = personRepository.getUserInfoByCookie(token);
             UUID myId = UUID.fromString(userInfo.get("ID").toString());
 
             Optional<Person> them = personRepository.findByNicknameOrEmail(nickname);
@@ -268,9 +312,11 @@ public class MessageController {
     @PostMapping("/api/user/report")
     public ResponseEntity<?> reportUser(
             @CookieValue(name = "wdiAuth", required = false) String cookie,
-            @RequestBody Map<String, String> request) {
+            @RequestBody Map<String, String> request,
+            HttpServletRequest httpRequest) {
 
-        if (cookie == null)
+        String token = resolveCookie(cookie, httpRequest);
+        if (token == null)
             return ResponseEntity.status(401).build();
         String nickname = request.get("nickname");
         String reason = request.get("reason");
@@ -280,7 +326,7 @@ public class MessageController {
             return ResponseEntity.badRequest().build();
 
         try {
-            Map<String, Object> userInfo = personRepository.getUserInfoByCookie(cookie);
+            Map<String, Object> userInfo = personRepository.getUserInfoByCookie(token);
             UUID myId = UUID.fromString(userInfo.get("ID").toString());
 
             Optional<Person> them = personRepository.findByNicknameOrEmail(nickname);

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="pink">
+
+<head>
+    <script src="/elements/theme.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BL ve GL Dizi İzle - BL Dizi</title>
+    <meta name="description" content="BL Dizi'de en sevdiğin BL ve GL dizilerini ve filmlerini izle.">
+    <link rel="canonical" id="canonicalLink" href="https://bldizi.com/watch">
+    <script id="structuredData" type="application/ld+json">null</script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="stylesheet" href="/watch/css/watch.css">
+    <link rel="stylesheet" href="/watch/css/responsive.css">
+    <link rel="stylesheet" href="/elements/premium-modals.css">
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script src="/homepage/js/devtools-protection.js"></script>
+    <link rel="stylesheet" href="/elements/variables.css">
+</head>
+
+<body>
+    <header>
+        <a href="/" class="logo-link" aria-label="Ana sayfa">
+            <div class="logo">BL DİZİ</div>
+        </a>
+    </header>
+
+    <div class="content-wrapper">
+        <div class="watch-container">
+            <div class="video-title" id="title">Yükleniyor...</div>
+
+            <div class="source-switcher-container">
+                <div class="source-label">
+                    <i class="fas fa-server"></i> Kaynak Seçimi
+                </div>
+                <div class="source-switcher" id="sourceSwitcher">
+                    <!-- Dinamik olarak butonlar eklenecek -->
+                </div>
+            </div>
+
+            <div class="player-container" id="playerContainer">
+                <div class="video-wrapper">
+                    <div class="video-skeleton">
+                    </div>
+                    <video id="videoPlayer" controlsList="nodownload" oncontextmenu="return false" playsinline
+                        webkit-playsinline>
+                        <source id="videoSource" src="" type="video/mp4">
+                        Tarayıcınız video etiketini desteklemiyor.
+                    </video>
+                    <div id="iframePlayerContainer"
+                        style="display:none; width: 100%; height: 100%; position: absolute; top: 0; left: 0;">
+                        <!-- Iframe buraya gelecek -->
+                    </div>
+                    <div id="adultOverlay" class="adult-overlay">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <h3>+18 Yetişkin İçeriği</h3>
+                        <p>Bu içerik yetişkinlere yöneliktir. İzlemek için onaylayın.</p>
+                        <button id="removeBlurBtn" class="btn-remove-blur">İzlemeye Başla</button>
+                    </div>
+                </div>
+
+                <div class="video-controls">
+                    <div class="progress-container" id="progressContainer">
+                        <div class="progress-bar" id="progressBar">
+                            <div class="progress-knob"></div>
+                        </div>
+                    </div>
+                    <div class="time-display" id="timeDisplay">00:00 / 00:00</div>
+                    <button class="control-button" id="backwardButton"><i class="fas fa-backward"></i> 10s</button>
+                    <div class="volume-control-wrapper">
+                        <i class="fas fa-volume-up"></i>
+                        <input type="range" id="volumeControl" min="0" max="1" step="0.1" value="1">
+                    </div>
+                    <button class="control-button" id="forwardButton">10s <i class="fas fa-forward"></i></button>
+                    <div class="speed-control-wrapper">
+                        <button class="control-button" id="speedButton">1x</button>
+                        <div class="speed-options">
+                            <div class="speed-option" data-speed="0.5">0.5x</div>
+                            <div class="speed-option" data-speed="1">1x</div>
+                            <div class="speed-option" data-speed="1.5">1.5x</div>
+                            <div class="speed-option" data-speed="2">2x</div>
+                            <div class="speed-option" data-speed="3">3x</div>
+                            <div class="speed-option" data-speed="4">4x</div>
+                        </div>
+                    </div>
+                    <button class="control-button" id="fullscreenButton" title="Tam Ekran"><i
+                            class="fas fa-expand"></i></button>
+                </div>
+            </div>
+
+            <div class="info-bar">
+                <span id="videoInfo"></span>
+                <button class="glow-button"><i class="fas fa-plus"></i> İstek Listesine Ekle</button>
+            </div>
+
+            <!-- Episode Selection Drawer -->
+            <div class="episode-selection-section" id="episodeSection">
+                <div class="episode-toggle">
+                    <span>Bölüm Listesi</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+
+                <div class="episode-selection-container">
+                    <div class="season-tabs" id="seasonTabs">
+                        <!-- Season tabs will be populated here -->
+                    </div>
+                    <div class="episodes-grid" id="episodesGrid">
+                        <!-- Episodes will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add to List Modal -->
+            <div id="addToListModal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>İstek Listenize Ekleyin</h3>
+                        <span class="close-modal">&times;</span>
+                    </div>
+                    <div class="modal-body">
+                        <div class="lists-container">
+                            <h4>Mevcut Listeleriniz</h4>
+                            <div id="userLists" class="user-lists">
+                                <!-- Lists will be populated here -->
+                                <div class="loading-spinner">
+                                    <i class="fas fa-spinner fa-spin"></i> Listeler yükleniyor...
+                                </div>
+                            </div>
+                        </div>
+                        <div class="new-list-form">
+                            <h4>Yeni Liste Oluştur</h4>
+                            <div class="input-group">
+                                <input type="text" id="newListName" placeholder="Liste adı girin..." maxlength="100">
+                                <button id="createListBtn" class="btn-create-list">
+                                    <i class="fas fa-plus"></i> Oluştur
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-details-section">
+                <div class="details-toggle">
+                    <span>İçerik Detayları</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+
+                <div class="content-details-container">
+                    <div class="details-grid">
+                        <div class="details-poster">
+                            <div class="img-skeleton">
+                                <img id="contentPoster" src="" alt="Content Poster">
+                            </div>
+                            <div class="rating-badge">
+                                <span id="contentRating">9.2</span>
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                        <div class="details-info">
+                            <h2 id="contentTitle">Yükleniyor...</h2>
+                            <div class="genre-tags" id="genreTags">
+                                <!-- Genre tags will be added dynamically -->
+                            </div>
+                            <div class="details-meta">
+                                <span id="releaseYear">2024</span>
+                                <span class="separator">•</span>
+                                <span id="contentDuration">45 dk</span>
+                                <span class="separator">•</span>
+                                <span id="contentLanguage">Türkçe</span>
+                                <span class="separator">•</span>
+                                <span id="contentCountry"></span>
+                            </div>
+                            <div class="plot-summary">
+                                <p id="contentPlot">Yükleniyor...</p>
+                            </div>
+                            <div class="details-section">
+                                <h3>Oyuncular</h3>
+                                <div class="cast-list" id="castList">
+                                    <!-- Cast members will be added dynamically -->
+                                </div>
+                            </div>
+                            <div class="details-section" id="seasonSection">
+                                <h3>Sezon & Bölüm Bilgisi</h3>
+                                <div class="season-info" id="seasonInfo">
+                                    <span id="seasonNumber">Sezon 1</span>
+                                    <span class="separator">•</span>
+                                    <span id="episodeNumber">Bölüm 1</span>
+                                    <span class="separator">•</span>
+                                    <span id="totalEpisodes">Toplam 10 Bölüm</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="episode-navigation" id="episodeNav">
+                <button id="prevEpisode" class="nav-button" disabled><i class="fas fa-step-backward"></i> Önceki
+                    Bölüm</button>
+                <button id="nextEpisode" class="nav-button"><i class="fas fa-step-forward"></i> Sonraki Bölüm</button>
+            </div>
+        </div>
+
+        <div class="recommendation-section">
+            <h3>Benzer İçerikler</h3>
+            <div class="recommendation-carousel-container">
+                <button class="carousel-nav prev-btn" id="recPrevBtn" aria-label="Önceki">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <div class="recommendation-cards" id="recommendationCards">
+                    <!-- JavaScript ile doldurulacak -->
+                </div>
+                <button class="carousel-nav next-btn" id="recNextBtn" aria-label="Sonraki">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Comments Section -->
+        <div class="comments-section">
+            <h3>Yorumlar</h3>
+            <div class="comments-container">
+                <div id="comments-list">
+                    <!-- Comments will be loaded here -->
+                </div>
+                <div class="comment-form">
+                    <div class="user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <form id="commentForm">
+                        <textarea id="commentText" placeholder="Bu dizi hakkında düşünceleriniz neler?"></textarea>
+                        <div class="form-actions">
+                            <label class="spoiler-toggle">
+                                <input type="checkbox" id="spoilerCheck">
+                                <span class="toggle-text"><i class="fas fa-mask"></i> Spoiler İçerir</span>
+                            </label>
+                            <button type="submit" class="comment-submit-btn"><i class="fas fa-paper-plane"></i> Yorum
+                                Yap</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-links">
+            <a href="/">Anasayfa</a>
+            <a href="/about">Hakkımızda</a>
+            <a href="/privacy_policy">Gizlilik Politikası</a>
+            <a href="/terms_of_use">Kullanım Şartları</a>
+            <a href="/sss">SSS</a>
+        </div>
+        <p>&copy;
+            <script>document.write(new Date().getFullYear())</script> BL Dizi. Tüm hakları saklıdır.
+        </p>
+    </footer>
+    <script src="/elements/heartbeat.js"></script>
+    <script type="module" src="/watch/js/watch.js"></script>
+</body>
+
+</html>

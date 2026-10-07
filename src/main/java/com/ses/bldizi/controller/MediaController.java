@@ -1,25 +1,25 @@
 package com.ses.bldizi.controller;
 
+import com.ses.bldizi.model.VideoSource;
+import com.ses.bldizi.repository.VideoSourceRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
-import org.springframework.http.CacheControl;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.core.io.support.ResourceRegion;
+import org.springframework.http.*;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -29,6 +29,7 @@ public class MediaController {
 
     private static final Logger logger = LoggerFactory.getLogger(MediaController.class);
     private static final String[] EXTENSIONS = { ".jpg", ".jpeg", ".png", ".webp" };
+    private static final long VIDEO_CHUNK_SIZE = 1024 * 1024 * 2; // 2MB
 
     private static final String FALLBACK_SVG = """
         <svg xmlns="http://www.w3.org/2000/svg" width="300" height="450" viewBox="0 0 300 450">
@@ -57,10 +58,15 @@ public class MediaController {
     @Value("${media.profile.images.path:D:\\SourceFiles\\mssql\\media\\images\\profile}")
     private String profileImagesPath;
 
-    private final JdbcTemplate jdbcTemplate;
+    @Value("${media.actor.images.path:D:\\SourceFiles\\mssql\\media\\images\\actors}")
+    private String actorImagesPath;
 
-    public MediaController(JdbcTemplate jdbcTemplate) {
+    private final JdbcTemplate jdbcTemplate;
+    private final VideoSourceRepository videoSourceRepository;
+
+    public MediaController(JdbcTemplate jdbcTemplate, VideoSourceRepository videoSourceRepository) {
         this.jdbcTemplate = jdbcTemplate;
+        this.videoSourceRepository = videoSourceRepository;
     }
 
     @GetMapping("/image/{id}")
@@ -103,7 +109,6 @@ public class MediaController {
                         .body(new UrlResource(imagePath.toUri()));
             }
 
-            // Default placeholder SVG if physical file does not exist on disk
             byte[] svgBytes = FALLBACK_SVG.getBytes(StandardCharsets.UTF_8);
             return ResponseEntity.ok()
                     .contentType(MediaType.parseMediaType("image/svg+xml"))
@@ -140,6 +145,193 @@ public class MediaController {
         } catch (IOException e) {
             logger.error("Error serving profile image {}: {}", id, e.getMessage());
             return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/actor/{id}")
+    public ResponseEntity<Resource> getActorImage(@PathVariable("id") UUID id) {
+        try {
+            Path rootPath = Paths.get(actorImagesPath).toAbsolutePath().normalize();
+            Path imagePath = findExistingImage(rootPath, id);
+
+            if (imagePath == null || !Files.exists(imagePath)) {
+                return ResponseEntity.notFound().build();
+            }
+
+            MediaType mediaType = determineMediaType(imagePath);
+            long lastModified = Files.getLastModifiedTime(imagePath).toMillis();
+
+            return ResponseEntity.ok()
+                    .contentType(mediaType)
+                    .lastModified(lastModified)
+                    .cacheControl(CacheControl.maxAge(7, TimeUnit.DAYS).cachePublic())
+                    .body(new UrlResource(imagePath.toUri()));
+        } catch (IOException e) {
+            logger.error("Error serving actor image {}: {}", id, e.getMessage());
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/video/{id}")
+    public ResponseEntity<ResourceRegion> getVideo(
+            @PathVariable(name = "id") UUID id,
+            @RequestHeader HttpHeaders headers) {
+
+        try {
+            String category = getContentTypeFromDatabase(id);
+            Path basePath = getBasePathForCategory(category);
+
+            if (basePath == null) {
+                logger.warn("Unknown category '{}' for video id: {}", category, id);
+                return ResponseEntity.notFound().build();
+            }
+
+            Path videoPath = basePath.resolve(id + ".mp4").normalize().toAbsolutePath();
+
+            if (!Files.exists(videoPath) && "soap_opera".equalsIgnoreCase(category)) {
+                UUID episodeId = findFirstEpisodeIdForSeries(id);
+                if (episodeId != null) {
+                    id = episodeId;
+                    videoPath = basePath.resolve(id + ".mp4").normalize().toAbsolutePath();
+                }
+            }
+
+            if (!Files.exists(videoPath)) {
+                return ResponseEntity.notFound().build();
+            }
+
+            UrlResource videoResource = new UrlResource(videoPath.toUri());
+            long contentLength = videoResource.contentLength();
+            ResourceRegion region = getResourceRegion(videoResource, headers, contentLength);
+
+            MediaType mediaType = MediaTypeFactory.getMediaType(videoResource)
+                    .orElse(MediaType.APPLICATION_OCTET_STREAM);
+
+            return ResponseEntity
+                    .status(HttpStatus.PARTIAL_CONTENT)
+                    .contentType(mediaType)
+                    .header(HttpHeaders.ACCEPT_RANGES, "bytes")
+                    .body(region);
+
+        } catch (Exception e) {
+            logger.error("Error serving video for id {}: {}", id, e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/video/{id}/sources")
+    public ResponseEntity<List<VideoSource>> getSources(@PathVariable("id") UUID id) {
+        try {
+            List<VideoSource> sources = videoSourceRepository.findByContentId(id);
+            if (sources == null) return ResponseEntity.ok(List.of());
+            return ResponseEntity.ok(sources);
+        } catch (Exception e) {
+            logger.error("Error retrieving video sources for id {}: {}", id, e.getMessage());
+            return ResponseEntity.ok(List.of());
+        }
+    }
+
+    @GetMapping("/video/{id}/playlist.m3u8")
+    public ResponseEntity<Resource> getHlsPlaylist(@PathVariable("id") UUID id) {
+        try {
+            String category = getContentTypeFromDatabase(id);
+            Path basePath = getBasePathForCategory(category);
+            if (basePath == null) return ResponseEntity.notFound().build();
+
+            Path hlsPath = basePath.resolve("hls").resolve(id.toString()).resolve("playlist.m3u8");
+            if (!Files.exists(hlsPath)) {
+                return ResponseEntity.notFound().build();
+            }
+
+            Resource resource = new UrlResource(hlsPath.toUri());
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType("application/vnd.apple.mpegurl"))
+                    .body(resource);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/video/{id}/{segment}.ts")
+    public ResponseEntity<Resource> getHlsSegment(
+            @PathVariable("id") UUID id,
+            @PathVariable("segment") String segment) {
+        try {
+            String category = getContentTypeFromDatabase(id);
+            Path basePath = getBasePathForCategory(category);
+            if (basePath == null) return ResponseEntity.notFound().build();
+
+            Path segmentPath = basePath.resolve("hls").resolve(id.toString()).resolve(segment + ".ts");
+            if (!Files.exists(segmentPath)) {
+                return ResponseEntity.notFound().build();
+            }
+
+            Resource resource = new UrlResource(segmentPath.toUri());
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType("video/MP2T"))
+                    .body(resource);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    private Path getBasePathForCategory(String category) {
+        if (category == null) return null;
+        return switch (category.toLowerCase()) {
+            case "movie" -> Paths.get(moviesPath).toAbsolutePath().normalize();
+            case "soap_opera", "soap-opera", "soapopera", "series", "episode" -> Paths.get(soapOperasPath).toAbsolutePath().normalize();
+            default -> null;
+        };
+    }
+
+    private String getContentTypeFromDatabase(UUID id) {
+        if (id == null) return "unknown";
+        try {
+            Integer countMovie = jdbcTemplate.queryForObject(
+                    "SELECT COUNT(*) FROM Movie WHERE ID = ?", Integer.class, id.toString());
+            if (countMovie != null && countMovie > 0) return "movie";
+
+            Integer countSeries = jdbcTemplate.queryForObject(
+                    "SELECT COUNT(*) FROM Series WHERE ID = ?", Integer.class, id.toString());
+            if (countSeries != null && countSeries > 0) return "soap_opera";
+
+            Integer countEp = jdbcTemplate.queryForObject(
+                    "SELECT COUNT(*) FROM Episode WHERE ID = ?", Integer.class, id.toString());
+            if (countEp != null && countEp > 0) return "soap_opera";
+        } catch (Exception ignored) {}
+        return "unknown";
+    }
+
+    private UUID findFirstEpisodeIdForSeries(UUID seriesId) {
+        try {
+            String sql = "SELECT TOP 1 ID FROM Episode WHERE SeriesId = ? ORDER BY SeasonNumber ASC, EpisodeNumber ASC";
+            String idStr = jdbcTemplate.queryForObject(sql, String.class, seriesId.toString());
+            return idStr != null ? UUID.fromString(idStr) : null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private ResourceRegion getResourceRegion(UrlResource resource, HttpHeaders headers, long contentLength) {
+        String range = headers.getFirst(HttpHeaders.RANGE);
+        if (range == null || range.isEmpty()) {
+            return new ResourceRegion(resource, 0, Math.min(VIDEO_CHUNK_SIZE, contentLength));
+        }
+
+        try {
+            String[] ranges = range.replace("bytes=", "").split("-");
+            long start = Long.parseLong(ranges[0]);
+            if (start >= contentLength) {
+                return new ResourceRegion(resource, 0, Math.min(VIDEO_CHUNK_SIZE, contentLength));
+            }
+
+            long end = ranges.length > 1 && !ranges[1].isEmpty()
+                    ? Math.min(Long.parseLong(ranges[1]), contentLength - 1)
+                    : contentLength - 1;
+
+            return new ResourceRegion(resource, start, Math.min(VIDEO_CHUNK_SIZE, end - start + 1));
+        } catch (NumberFormatException e) {
+            return new ResourceRegion(resource, 0, Math.min(VIDEO_CHUNK_SIZE, contentLength));
         }
     }
 

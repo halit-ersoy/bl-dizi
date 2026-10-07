@@ -1,5 +1,7 @@
 package com.ses.bldizi.controller;
 
+import com.ses.bldizi.repository.MovieRepository;
+import com.ses.bldizi.repository.SeriesRepository;
 import com.ses.bldizi.service.SystemSettingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
@@ -10,15 +12,23 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.Map;
+import java.util.UUID;
 
 @Controller
 public class HomeController {
 
     @Autowired
     private SystemSettingService systemSettingService;
+
+    @Autowired
+    private SeriesRepository seriesRepository;
+
+    @Autowired
+    private MovieRepository movieRepository;
 
     @GetMapping({"/", "/yakinda", "/coming-soon"})
     public ResponseEntity<Resource> getComingSoonPage() {
@@ -53,6 +63,48 @@ public class HomeController {
     @GetMapping("/sss")
     public ResponseEntity<Resource> getFaqPage() {
         return renderHtml("static/sss/html/sss.html");
+    }
+
+    @GetMapping("/profile")
+    public ResponseEntity<Resource> getProfilePage() {
+        return renderHtml("static/profile/html/profile.html");
+    }
+
+    @GetMapping("/settings")
+    public ResponseEntity<Resource> getSettingsPage() {
+        return renderHtml("static/settings/html/settings.html");
+    }
+
+    @GetMapping("/history")
+    public ResponseEntity<Resource> getHistoryPage() {
+        return renderHtml("static/history/html/history.html");
+    }
+
+    @GetMapping("/watch")
+    public ResponseEntity<Resource> getWatchPage() {
+        return renderHtml("static/watch/html/watch.html");
+    }
+
+    @GetMapping("/{slug:[a-zA-Z0-9-'’]+}")
+    public ResponseEntity<Resource> watchPageBySlug(@PathVariable("slug") String slug) {
+        boolean isValid = seriesRepository.isValidSlug(slug) || movieRepository.isValidSlug(slug);
+        if (!isValid) {
+            try {
+                UUID id = UUID.fromString(slug);
+                isValid = seriesRepository.findEpisodeDetails(id) != null
+                        || seriesRepository.findSeriesDetails(id) != null
+                        || movieRepository.findMovieDetails(id) != null;
+            } catch (Exception ignored) {
+            }
+        }
+
+        if (!isValid) {
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, "/")
+                    .build();
+        }
+
+        return renderHtml("static/watch/html/watch.html");
     }
 
     private ResponseEntity<Resource> renderHtml(String classpathLocation) {
