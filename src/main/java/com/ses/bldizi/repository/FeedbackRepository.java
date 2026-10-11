@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @Repository
+@SuppressWarnings({"SqlResolve", "SqlNoDataSourceInspection"})
 public class FeedbackRepository {
 
     private final JdbcTemplate jdbcTemplate;
@@ -45,12 +46,11 @@ public class FeedbackRepository {
             UUID cookieUUID = UUID.fromString(cookie);
 
             // Resolve PersonID from cookie
-            String findUserSql = "SELECT ID FROM [Person] WHERE cookie = ?";
+            String findUserSql = "SELECT [dbo].[ResolveUserIdByCookie](?)";
             UUID userId;
             try {
-                userId = jdbcTemplate.queryForObject(findUserSql,
-                        (rs, rowNum) -> UUID.fromString(rs.getString("ID")),
-                        cookieUUID.toString());
+                String userIdStr = jdbcTemplate.queryForObject(findUserSql, String.class, cookieUUID);
+                userId = userIdStr != null ? UUID.fromString(userIdStr) : null;
             } catch (Exception e) {
                 response.put("success", false);
                 response.put("message", "Geçersiz oturum. Lütfen tekrar giriş yapın.");
@@ -85,6 +85,7 @@ public class FeedbackRepository {
     /**
      * Returns all feedbacks joined with Person info, newest first.
      */
+    @SuppressWarnings("unused")
     public List<Map<String, Object>> getAllFeedbacks() {
         String sql = """
                 SELECT f.ID, p.nickname, p.email, f.Subject, f.Message, f.CreatedAt
@@ -98,8 +99,9 @@ public class FeedbackRepository {
     /**
      * Deletes a feedback record by ID.
      */
-    public void deleteFeedback(UUID feedbackId) {
+    @SuppressWarnings("unused")
+    public boolean deleteFeedback(UUID feedbackId) {
         String sql = "DELETE FROM [Feedback] WHERE ID = ?";
-        jdbcTemplate.update(sql, feedbackId.toString());
+        return jdbcTemplate.update(sql, feedbackId.toString()) > 0;
     }
 }

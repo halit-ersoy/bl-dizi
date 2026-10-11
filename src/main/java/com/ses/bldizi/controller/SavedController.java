@@ -10,6 +10,7 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/saved")
+@SuppressWarnings({"SqlResolve", "SqlNoDataSourceInspection"})
 public class SavedController {
 
     private final JdbcTemplate jdbcTemplate;
@@ -45,7 +46,7 @@ public class SavedController {
         } catch (Exception ignored) {}
 
         try {
-            String sql = "SELECT ID FROM Person WHERE cookie = ?";
+            String sql = "SELECT [dbo].[ResolveUserIdByCookie](TRY_CAST(? AS UNIQUEIDENTIFIER))";
             String idStr = jdbcTemplate.queryForObject(sql, String.class, token);
             return idStr != null ? UUID.fromString(idStr) : null;
         } catch (Exception e) {
@@ -178,10 +179,10 @@ public class SavedController {
                 return ResponseEntity.ok(Map.of("Result", 0, "Message", "List not found"));
             }
 
-            Object listIdObj = listRows.get(0).get("ID");
+            Object listIdObj = listRows.getFirst().get("ID");
             UUID listId = UUID.fromString(listIdObj.toString());
 
-            String videoType = "movie";
+            String videoType;
             UUID targetId = videoId;
 
             Integer existMovie = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM Movie WHERE ID = ?", Integer.class,

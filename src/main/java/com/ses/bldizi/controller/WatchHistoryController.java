@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/history")
+@RequestMapping("/api/watch-history")
 @SuppressWarnings({"SqlResolve", "SqlNoDataSourceInspection"})
 public class WatchHistoryController {
 
@@ -65,7 +65,7 @@ public class WatchHistoryController {
             } catch (Exception ignored) {
             }
 
-            String sql = "SELECT ID FROM Person WHERE cookie = ?";
+            String sql = "SELECT [dbo].[ResolveUserIdByCookie](TRY_CAST(? AS UNIQUEIDENTIFIER))";
             String idStr = jdbcTemplate.queryForObject(sql, String.class, token);
             return idStr != null ? UUID.fromString(idStr) : null;
         } catch (Exception e) {

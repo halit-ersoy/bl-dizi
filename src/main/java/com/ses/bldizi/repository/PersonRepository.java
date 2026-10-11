@@ -3,12 +3,12 @@ package com.ses.bldizi.repository;
 import com.ses.bldizi.model.Person;
 import com.ses.bldizi.service.EmailService;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.SqlParameter;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
 @Repository
+@SuppressWarnings({"SqlResolve", "SqlNoDataSourceInspection"})
 public class PersonRepository {
 
     private final JdbcTemplate jdbcTemplate;
@@ -24,32 +24,27 @@ public class PersonRepository {
     @SuppressWarnings("unchecked")
     public Map<String, Object> loginUser(String usernameOrEmail, String password) {
         Map<String, Object> result = jdbcTemplate.call(connection -> {
-            var callableStatement = connection.prepareCall("{call LoginAndSetCookie(?, ?)}");
+            var callableStatement = connection.prepareCall("{call LoginAndSetCookie(?, ?, 'bldizi')}");
             callableStatement.setString(1, usernameOrEmail);
             callableStatement.setString(2, password);
             return callableStatement;
-        }, new ArrayList<SqlParameter>());
+        }, new ArrayList<>());
 
         Map<String, Object> response = new HashMap<>();
         if (result.containsKey("#result-set-1")) {
             List<Map<String, Object>> resultSet = (List<Map<String, Object>>) result.get("#result-set-1");
             if (!resultSet.isEmpty()) {
-                Map<String, Object> row = resultSet.get(0);
+                Map<String, Object> row = resultSet.getFirst();
                 for (String key : row.keySet()) {
                     String lowerKey = key.toLowerCase();
                     Object value = row.get(key);
-                    if (lowerKey.equals("result")) {
-                        response.put("success", value);
-                    } else if (lowerKey.equals("message")) {
-                        response.put("message", value);
-                    } else if (lowerKey.equals("nickname")) {
-                        response.put("nickname", value);
-                    } else if (lowerKey.equals("cookie")) {
-                        response.put("cookie", value != null ? value.toString() : null);
-                    } else if (lowerKey.equals("isbanned")) {
-                        response.put("isBanned", value);
-                    } else if (lowerKey.equals("banreason")) {
-                        response.put("banReason", value);
+                    switch (lowerKey) {
+                        case "result" -> response.put("success", value);
+                        case "message" -> response.put("message", value);
+                        case "nickname" -> response.put("nickname", value);
+                        case "cookie" -> response.put("cookie", value != null ? value.toString() : null);
+                        case "isbanned" -> response.put("isBanned", value);
+                        case "banreason" -> response.put("banReason", value);
                     }
                 }
                 return response;
@@ -71,13 +66,13 @@ public class PersonRepository {
             callableStatement.setString(4, person.getEmail());
             callableStatement.setString(5, person.getPassword());
             return callableStatement;
-        }, new ArrayList<SqlParameter>());
+        }, new ArrayList<>());
 
         Map<String, Object> response = new HashMap<>();
         if (result.containsKey("#result-set-1")) {
             List<Map<String, Object>> resultSet = (List<Map<String, Object>>) result.get("#result-set-1");
             if (!resultSet.isEmpty()) {
-                Map<String, Object> row = resultSet.get(0);
+                Map<String, Object> row = resultSet.getFirst();
                 response.put("success", row.get("Result"));
                 response.put("message", row.get("Message"));
                 response.put("nickname", row.get("Nickname"));
@@ -110,23 +105,119 @@ public class PersonRepository {
             return p;
         }, usernameOrEmail, usernameOrEmail);
 
-        return list.isEmpty() ? Optional.empty() : Optional.of(list.get(0));
+        return list.isEmpty() ? Optional.empty() : Optional.of(list.getFirst());
     }
 
     public Map<String, Object> getUserInfoByCookie(String cookie) {
+        if (cookie == null || cookie.isBlank()) return null;
         try {
-            UUID cookieUuid = UUID.fromString(cookie);
-            String sql = "SELECT TOP 1 ID, nickname, name, surname, email, isBanned, banReason, role, allowMessages, isVerified FROM [Person] WHERE cookie = ?";
-            return jdbcTemplate.queryForMap(sql, cookieUuid);
+            UUID cookieUuid = UUID.fromString(cookie.trim());
+            String sql = """
+                SELECT TOP 1 P.ID, P.nickname, P.name, P.surname, P.email, P.isBanned, P.banReason, P.role, P.allowMessages, P.isVerified
+                FROM [Person] P
+                WHERE P.cookie = ? OR EXISTS (
+                    SELECT 1 FROM [dbo].[UserSession] US
+                    WHERE US.UserId = P.ID AND US.Token = ?
+                )
+            """;
+            return jdbcTemplate.queryForMap(sql, cookieUuid, cookieUuid);
         } catch (Exception e) {
             return null;
         }
     }
 
+    public UUID findUserIdByCookie(String cookie) {
+        if (cookie == null || cookie.isBlank()) return null;
+        try {
+            UUID cookieUuid = UUID.fromString(cookie.trim());
+            String sql = "SELECT [dbo].[ResolveUserIdByCookie](?)";
+            String userIdStr = jdbcTemplate.queryForObject(sql, String.class, cookieUuid);
+            return userIdStr != null ? UUID.fromString(userIdStr) : null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * Creates a short-lived SSO Ticket for cross-domain single sign-on.
+     */
+    @SuppressWarnings("unchecked")
+    public String createSsoTicket(String cookie, String targetPlatform) {
+        if (cookie == null || cookie.isBlank()) return null;
+        try {
+            Map<String, Object> result = jdbcTemplate.call(connection -> {
+                var callableStatement = connection.prepareCall("{call CreateSsoTicket(?, ?)}");
+                callableStatement.setObject(1, UUID.fromString(cookie.trim()));
+                callableStatement.setString(2, targetPlatform != null ? targetPlatform : "whodatidols");
+                return callableStatement;
+            }, new ArrayList<>());
+
+            if (result.containsKey("#result-set-1")) {
+                List<Map<String, Object>> rows = (List<Map<String, Object>>) result.get("#result-set-1");
+                if (!rows.isEmpty()) {
+                    Map<String, Object> row = rows.getFirst();
+                    Object res = row.get("Result");
+                    boolean success = Boolean.TRUE.equals(res) || (res instanceof Number && ((Number) res).intValue() == 1);
+                    if (success && row.get("Ticket") != null) {
+                        return row.get("Ticket").toString();
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("createSsoTicket error: " + e.getMessage());
+        }
+        return null;
+    }
+
+    /**
+     * Consumes an SSO Ticket, creates a platform session and returns user info + new cookie.
+     */
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> consumeSsoTicket(String ticket, String platform) {
+        Map<String, Object> response = new HashMap<>();
+        if (ticket == null || ticket.isBlank()) {
+            response.put("success", false);
+            response.put("message", "Geçersiz bilet.");
+            return response;
+        }
+        try {
+            String targetPlatform = (platform != null && !platform.isBlank()) ? platform : "bldizi";
+            Map<String, Object> result = jdbcTemplate.call(connection -> {
+                var callableStatement = connection.prepareCall("{call ConsumeSsoTicket(?, ?)}");
+                callableStatement.setObject(1, UUID.fromString(ticket.trim()));
+                callableStatement.setString(2, targetPlatform);
+                return callableStatement;
+            }, new ArrayList<>());
+
+            if (result.containsKey("#result-set-1")) {
+                List<Map<String, Object>> rows = (List<Map<String, Object>>) result.get("#result-set-1");
+                if (!rows.isEmpty()) {
+                    Map<String, Object> row = rows.getFirst();
+                    for (String key : row.keySet()) {
+                        String lower = key.toLowerCase();
+                        switch (lower) {
+                            case "result" -> response.put("success", row.get(key));
+                            case "message" -> response.put("message", row.get(key));
+                            case "cookie" -> response.put("cookie", row.get(key) != null ? row.get(key).toString() : null);
+                            case "nickname" -> response.put("nickname", row.get(key));
+                            case "userid" -> response.put("userId", row.get(key));
+                        }
+                        response.put(key, row.get(key));
+                    }
+                    return response;
+                }
+            }
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+        }
+        return response;
+    }
+
     public Map<String, Object> updatePasswordByCookie(String cookie, String newPassword) {
         try {
             String sql = "EXEC UpdatePasswordByCookie @cookie = ?, @password = ?";
-            Map<String, Object> row = jdbcTemplate.queryForMap(sql, UUID.fromString(cookie), newPassword);
+            Map<String, Object> row = jdbcTemplate.queryForMap(sql, UUID.fromString(cookie.trim()), newPassword);
             boolean result = row.containsKey("Result") && (row.get("Result").equals(1) || Boolean.TRUE.equals(row.get("Result")));
             String message = row.getOrDefault("Message", "Şifre güncellendi.").toString();
             Map<String, Object> response = new HashMap<>();
@@ -154,15 +245,15 @@ public class PersonRepository {
             if (currentUser != null) {
                 String currentEmail = (String) currentUser.get("email");
                 if (currentEmail != null && !currentEmail.equalsIgnoreCase(email)) {
-                    jdbcTemplate.update("UPDATE [Person] SET isVerified = 0 WHERE cookie = ?",
-                            UUID.fromString(cookie));
+                    jdbcTemplate.update("UPDATE [Person] SET isVerified = 0 WHERE ID = [dbo].[ResolveUserIdByCookie](?)",
+                            UUID.fromString(cookie.trim()));
                 }
             }
         } catch (Exception ignored) {
         }
 
         try {
-            Map<String, Object> row = jdbcTemplate.queryForMap(sql, UUID.fromString(cookie), nickname, name, surname, email);
+            Map<String, Object> row = jdbcTemplate.queryForMap(sql, UUID.fromString(cookie.trim()), nickname, name, surname, email);
             boolean result = row.containsKey("Result") && (row.get("Result").equals(1) || Boolean.TRUE.equals(row.get("Result")));
             return Map.of("success", result, "message", row.getOrDefault("Message", "Profil güncellendi."));
         } catch (Exception e) {
@@ -172,8 +263,8 @@ public class PersonRepository {
 
     public void updateAllowMessagesByCookie(String cookie, boolean allow) {
         try {
-            String sql = "UPDATE [Person] SET allowMessages = ? WHERE cookie = ?";
-            jdbcTemplate.update(sql, allow ? 1 : 0, UUID.fromString(cookie));
+            String sql = "UPDATE [Person] SET allowMessages = ? WHERE ID = [dbo].[ResolveUserIdByCookie](?)";
+            jdbcTemplate.update(sql, allow ? 1 : 0, UUID.fromString(cookie.trim()));
         } catch (Exception ignored) {
         }
     }
@@ -210,12 +301,12 @@ public class PersonRepository {
                 callableStatement.setString(3, null);
                 callableStatement.setString(4, code);
                 return callableStatement;
-            }, new ArrayList<SqlParameter>());
+            }, new ArrayList<>());
 
             if (result.containsKey("#result-set-1")) {
                 List<Map<String, Object>> resultSet = (List<Map<String, Object>>) result.get("#result-set-1");
                 if (!resultSet.isEmpty()) {
-                    Map<String, Object> responseMap = resultSet.get(0);
+                    Map<String, Object> responseMap = resultSet.getFirst();
                     boolean isSuccess = (boolean) responseMap.get("Result");
 
                     if (isSuccess && responseMap.containsKey("Email")) {
@@ -250,12 +341,12 @@ public class PersonRepository {
                 callableStatement.setString(3, null);
                 callableStatement.setString(4, code);
                 return callableStatement;
-            }, new ArrayList<SqlParameter>());
+            }, new ArrayList<>());
 
             if (result.containsKey("#result-set-1")) {
                 List<Map<String, Object>> resultSet = (List<Map<String, Object>>) result.get("#result-set-1");
                 if (!resultSet.isEmpty()) {
-                    Map<String, Object> responseMap = resultSet.get(0);
+                    Map<String, Object> responseMap = resultSet.getFirst();
                     boolean isSuccess = (boolean) responseMap.get("Result");
 
                     if (isSuccess && responseMap.containsKey("Email")) {
@@ -317,12 +408,12 @@ public class PersonRepository {
                 callableStatement.setString(3, null);
                 callableStatement.setString(4, null);
                 return callableStatement;
-            }, new ArrayList<SqlParameter>());
+            }, new ArrayList<>());
 
             if (result.containsKey("#result-set-1")) {
                 List<Map<String, Object>> resultSet = (List<Map<String, Object>>) result.get("#result-set-1");
                 if (!resultSet.isEmpty()) {
-                    return resultSet.get(0);
+                    return resultSet.getFirst();
                 }
             }
             return Map.of("Result", false, "Message", "Doğrulama başarısız");
@@ -341,12 +432,12 @@ public class PersonRepository {
                 callableStatement.setString(3, newPassword);
                 callableStatement.setString(4, null);
                 return callableStatement;
-            }, new ArrayList<SqlParameter>());
+            }, new ArrayList<>());
 
             if (result.containsKey("#result-set-1")) {
                 List<Map<String, Object>> resultSet = (List<Map<String, Object>>) result.get("#result-set-1");
                 if (!resultSet.isEmpty()) {
-                    return resultSet.get(0);
+                    return resultSet.getFirst();
                 }
             }
             return Map.of("Result", false, "Message", "Şifre sıfırlama başarısız");

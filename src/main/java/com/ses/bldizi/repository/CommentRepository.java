@@ -11,6 +11,7 @@ import java.time.Instant;
 import java.util.*;
 
 @Repository
+@SuppressWarnings({"SqlResolve", "SqlNoDataSourceInspection"})
 public class CommentRepository {
     private final JdbcTemplate jdbcTemplate;
 
@@ -34,7 +35,7 @@ public class CommentRepository {
                 p.isVerified
             FROM Comments c
             LEFT JOIN Person p ON c.UserId = p.ID
-            LEFT JOIN Person p_me ON p_me.cookie = ?
+            LEFT JOIN Person p_me ON p_me.ID = [dbo].[ResolveUserIdByCookie](TRY_CAST(? AS UNIQUEIDENTIFIER))
             LEFT JOIN CommentLikes cl ON c.ID = cl.CommentId AND cl.UserId = p_me.ID
             WHERE c.ContentId = ? AND (c.IsApproved = 1 OR c.UserId = p_me.ID)
             ORDER BY c.CreatedAt DESC
@@ -73,7 +74,7 @@ public class CommentRepository {
         String sql = """
             INSERT INTO Comments (ContentId, UserId, Text, Spoiler, Nickname, ParentId, IsApproved, CreatedAt)
             SELECT ?, ID, ?, ?, Nickname, ?, CASE WHEN Role IN ('ADMIN', 'SUPER_ADMIN', 'KURUCU', 'GELISTIRICI') THEN 1 ELSE 0 END, ?
-            FROM Person WHERE cookie = ? AND isBanned = 0
+            FROM Person WHERE ID = [dbo].[ResolveUserIdByCookie](TRY_CAST(? AS UNIQUEIDENTIFIER)) AND isBanned = 0
         """;
         int affected = jdbcTemplate.update(sql,
                 contentId.toString(),
@@ -89,7 +90,7 @@ public class CommentRepository {
     }
 
     public void likeComment(UUID commentId, String cookie) {
-        String userSql = "SELECT ID FROM Person WHERE cookie = ? AND isBanned = 0";
+        String userSql = "SELECT ID FROM Person WHERE ID = [dbo].[ResolveUserIdByCookie](TRY_CAST(? AS UNIQUEIDENTIFIER)) AND isBanned = 0";
         try {
             UUID userId = jdbcTemplate.queryForObject(userSql, UUID.class, cookie);
 
@@ -117,7 +118,7 @@ public class CommentRepository {
 
     public String getUserRoleByCookie(String cookie) {
         try {
-            return jdbcTemplate.queryForObject("SELECT Role FROM Person WHERE cookie = ?", String.class, cookie);
+            return jdbcTemplate.queryForObject("SELECT Role FROM Person WHERE ID = [dbo].[ResolveUserIdByCookie](TRY_CAST(? AS UNIQUEIDENTIFIER))", String.class, cookie);
         } catch (Exception e) {
             return "USER";
         }
@@ -131,16 +132,20 @@ public class CommentRepository {
         String ownerSql = "SELECT UserId FROM Comments WHERE ID = ?";
         UUID ownerId;
         try {
-            ownerId = UUID.fromString(jdbcTemplate.queryForObject(ownerSql, String.class, commentId.toString()));
+            String ownerStr = jdbcTemplate.queryForObject(ownerSql, String.class, commentId.toString());
+            if (ownerStr == null) return false;
+            ownerId = UUID.fromString(ownerStr);
         } catch (Exception e) {
             return false;
         }
 
         if (!isAdmin) {
-            String requesterIdSql = "SELECT ID FROM Person WHERE cookie = ?";
+            String requesterIdSql = "SELECT ID FROM Person WHERE ID = [dbo].[ResolveUserIdByCookie](TRY_CAST(? AS UNIQUEIDENTIFIER))";
             UUID requesterId;
             try {
-                requesterId = UUID.fromString(jdbcTemplate.queryForObject(requesterIdSql, String.class, cookie));
+                String reqStr = jdbcTemplate.queryForObject(requesterIdSql, String.class, cookie);
+                if (reqStr == null) return false;
+                requesterId = UUID.fromString(reqStr);
             } catch (Exception e) {
                 return false;
             }

@@ -27,8 +27,8 @@ public class MaintenanceInterceptor implements HandlerInterceptor {
                 return true;
             }
 
-            // Admin ve API/Stats isteklerine izin ver
-            if (uri.startsWith("/admin") || uri.startsWith("/api/")) {
+            // Admin, SSO, Login ve API/Stats isteklerine izin ver
+            if (uri.startsWith("/admin") || uri.startsWith("/api/") || uri.startsWith("/sso-") || uri.equals("/login")) {
                 return true;
             }
 
