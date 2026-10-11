@@ -34,6 +34,9 @@ public class MediaController {
     @Value("${media.source.soap_operas.path}")
     private String soapOperasPath;
 
+    @Value("${media.source.trailers.path:D:\\SourceFiles\\mssql\\media\\videos\\trailers}")
+    private String trailersPath;
+
     @Value("${media.static.images.path}")
     private String staticImagesPath;
 
@@ -54,15 +57,44 @@ public class MediaController {
     @GetMapping("/image/{id}")
     public ResponseEntity<Resource> getImage(@PathVariable("id") UUID id) {
         try {
-            // 1. Try finding in soap-operas
-            Path imagePath = findExistingImage(Paths.get(soapOperasPath), id);
+            // 1. Try finding in trailers (dedicated hero/trailer image)
+            Path imagePath = null;
+            if (trailersPath != null) {
+                imagePath = findExistingImage(Paths.get(trailersPath), id);
+            }
 
-            // 2. Try finding in movies
+            // 2. Try finding in soap-operas
+            if (imagePath == null) {
+                imagePath = findExistingImage(Paths.get(soapOperasPath), id);
+            }
+
+            // 3. Try finding in movies
             if (imagePath == null) {
                 imagePath = findExistingImage(Paths.get(moviesPath), id);
             }
 
-            // 3. Fallback: if it's an episode ID, lookup parent series ID
+            // 4. Fallback: if it's a Hero ID, lookup ReferenceId
+            if (imagePath == null) {
+                try {
+                    String refIdStr = jdbcTemplate.queryForObject(
+                            "SELECT ReferenceId FROM Hero WHERE ID = ?", String.class, id.toString());
+                    if (refIdStr != null) {
+                        UUID refId = UUID.fromString(refIdStr);
+                        if (trailersPath != null) {
+                            imagePath = findExistingImage(Paths.get(trailersPath), refId);
+                        }
+                        if (imagePath == null) {
+                            imagePath = findExistingImage(Paths.get(soapOperasPath), refId);
+                        }
+                        if (imagePath == null) {
+                            imagePath = findExistingImage(Paths.get(moviesPath), refId);
+                        }
+                    }
+                } catch (Exception ignored) {
+                }
+            }
+
+            // 5. Fallback: if it's an episode ID, lookup parent series ID
             if (imagePath == null) {
                 try {
                     String parentSeriesId = jdbcTemplate.queryForObject(
@@ -75,7 +107,7 @@ public class MediaController {
                 }
             }
 
-            // 4. Try static images
+            // 6. Try static images
             if (imagePath == null) {
                 imagePath = findExistingImage(Paths.get(staticImagesPath), id);
             }
@@ -139,8 +171,8 @@ public class MediaController {
             return ResponseEntity.ok()
                     .contentType(mediaType)
                     .lastModified(lastModified)
-                    .cacheControl(CacheControl.maxAge(7, TimeUnit.DAYS).cachePublic())
-                    .body(new UrlResource(imagePath.toUri()));
+                    .cacheControl(CacheControl.maxAge(7, TimeUnit.DAYS).cachePublic()
+                    ).body(new UrlResource(imagePath.toUri()));
         } catch (IOException e) {
             logger.error("Error serving actor image {}: {}", id, e.getMessage());
             return ResponseEntity.notFound().build();
@@ -206,7 +238,7 @@ public class MediaController {
         }
     }
 
-    @GetMapping("/video/{id}/playlist.m3u8")
+    @GetMapping({"/video/{id}/playlist.m3u8", "/video/{id}/master.m3u8"})
     public ResponseEntity<Resource> getHlsPlaylist(@PathVariable("id") UUID id) {
         try {
             String category = getContentTypeFromDatabase(id);
@@ -214,6 +246,9 @@ public class MediaController {
             if (basePath == null) return ResponseEntity.notFound().build();
 
             Path hlsPath = basePath.resolve("hls").resolve(id.toString()).resolve("playlist.m3u8");
+            if (!Files.exists(hlsPath)) {
+                hlsPath = basePath.resolve("hls").resolve(id.toString()).resolve("master.m3u8");
+            }
             if (!Files.exists(hlsPath)) {
                 return ResponseEntity.notFound().build();
             }
@@ -255,6 +290,7 @@ public class MediaController {
         return switch (category.toLowerCase()) {
             case "movie" -> Paths.get(moviesPath).toAbsolutePath().normalize();
             case "soap_opera", "soap-opera", "soapopera", "series", "episode" -> Paths.get(soapOperasPath).toAbsolutePath().normalize();
+            case "trailer", "trailers", "hero" -> Paths.get(trailersPath).toAbsolutePath().normalize();
             default -> null;
         };
     }
@@ -262,6 +298,11 @@ public class MediaController {
     private String getContentTypeFromDatabase(UUID id) {
         if (id == null) return "unknown";
         try {
+            // Check Hero (Trailers)
+            Integer countHero = jdbcTemplate.queryForObject(
+                    "SELECT COUNT(*) FROM Hero WHERE ID = ?", Integer.class, id.toString());
+            if (countHero != null && countHero > 0) return "trailer";
+
             Integer countMovie = jdbcTemplate.queryForObject(
                     "SELECT COUNT(*) FROM Movie WHERE ID = ?", Integer.class, id.toString());
             if (countMovie != null && countMovie > 0) return "movie";
@@ -323,13 +364,15 @@ public class MediaController {
             candidate = basePath.resolve(idStrUpper + ext);
             if (Files.exists(candidate)) return candidate;
         }
+
         return null;
     }
 
     private MediaType determineMediaType(Path path) {
-        String fileName = path.getFileName().toString().toLowerCase();
-        if (fileName.endsWith(".png")) return MediaType.IMAGE_PNG;
-        if (fileName.endsWith(".webp")) return MediaType.parseMediaType("image/webp");
-        return MediaType.IMAGE_JPEG;
+        String filename = path.getFileName().toString().toLowerCase();
+        if (filename.endsWith(".jpg") || filename.endsWith(".jpeg")) return MediaType.IMAGE_JPEG;
+        if (filename.endsWith(".png")) return MediaType.IMAGE_PNG;
+        if (filename.endsWith(".webp")) return MediaType.parseMediaType("image/webp");
+        return MediaType.APPLICATION_OCTET_STREAM;
     }
 }

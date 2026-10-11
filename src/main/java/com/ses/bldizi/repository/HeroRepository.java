@@ -1,12 +1,12 @@
 package com.ses.bldizi.repository;
 
-import com.ses.bldizi.model.HeroVideoDto;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
 @Repository
+@SuppressWarnings({"SqlResolve", "SqlNoDataSourceInspection"})
 public class HeroRepository {
 
     private final JdbcTemplate jdbcTemplate;
@@ -15,104 +15,52 @@ public class HeroRepository {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public List<HeroVideoDto> getHeroVideos() {
-        // 1. First attempt to get from Hero table
-        String heroSql = """
-            SELECT h.ID as HeroId, h.ReferenceId, h.CustomSummary, h.sortOrder, h.isImage,
-                   s.name as SeriesName, s.Summary as SeriesSummary, s.slug as SeriesSlug,
-                   s.Country as Country, s.Language as Language,
-                   (SELECT STRING_AGG(c.Name, ', ') FROM Categories c 
-                    JOIN SeriesCategories sc ON sc.CategoryID = c.ID 
-                    WHERE sc.SeriesID = s.ID) as Category
-            FROM Hero h
-            JOIN Series s ON h.ReferenceId = s.ID
-            WHERE (s.IsHidden = 0 OR s.IsHidden IS NULL)
-              AND s.SeriesType = 'BL'
-            ORDER BY h.sortOrder ASC
-        """;
+    public List<Map<String, Object>> getHeroVideos() {
+        return getHeroVideos("bldizi");
+    }
 
-        List<HeroVideoDto> heroList = jdbcTemplate.query(heroSql, (rs, rowNum) -> {
-            UUID heroId = UUID.fromString(rs.getString("HeroId"));
-            UUID refId = UUID.fromString(rs.getString("ReferenceId"));
-            String title = rs.getString("SeriesName");
-            String customSumm = rs.getString("CustomSummary");
-            String seriesSumm = rs.getString("SeriesSummary");
-            String slug = rs.getString("SeriesSlug");
-            String category = rs.getString("Category");
-            String country = rs.getString("Country");
-            String lang = rs.getString("Language");
-            int sortOrder = rs.getInt("sortOrder");
-            boolean isImage = rs.getBoolean("isImage");
+    public List<Map<String, Object>> getHeroVideos(String platform) {
+        if (platform == null || platform.isBlank()) {
+            platform = "bldizi";
+        }
+        platform = platform.trim().toLowerCase();
 
-            String summary = (customSumm != null && !customSumm.isBlank()) ? customSumm : seriesSumm;
-            String videoUrl = (slug != null && !slug.isEmpty()) ? "/" + slug : "/" + refId;
+        String sql = """
+                SELECT * FROM (
+                  SELECT H.[ID], H.[ReferenceId], M.[name], M.[slug] as [slug],
+                         (SELECT STRING_AGG(C.Name, ', ') FROM Categories C JOIN MovieCategories MC ON MC.CategoryID = C.ID WHERE MC.MovieID = M.ID) as [category],
+                         H.[CustomSummary] as _content, 'Movie' AS [type], H.sortOrder, H.isImage, H.platform
+                  FROM Hero H INNER JOIN Movie M ON H.ReferenceId = M.ID
+                  WHERE H.platform = ? AND (M.IsHidden = 0 OR M.IsHidden IS NULL)
+                  UNION ALL
+                  SELECT H.[ID], H.[ReferenceId], S.[name],
+                         (SELECT TOP 1 E.[slug] FROM Episode E WHERE E.SeriesId = S.ID AND (E.IsHidden = 0 OR E.IsHidden IS NULL) ORDER BY SeasonNumber ASC, EpisodeNumber ASC) as [slug],
+                         (SELECT STRING_AGG(C.Name, ', ') FROM Categories C JOIN SeriesCategories SC ON SC.CategoryID = C.ID WHERE SC.SeriesID = S.ID) as [category],
+                         H.[CustomSummary] as _content, 'SoapOpera' AS [type], H.sortOrder, H.isImage, H.platform
+                  FROM Hero H INNER JOIN Series S ON H.ReferenceId = S.ID
+                  WHERE H.platform = ? AND (S.IsHidden = 0 OR S.IsHidden IS NULL)
+                ) AS Result ORDER BY sortOrder ASC
+                """;
 
-            return HeroVideoDto.builder()
-                    .id(heroId)
-                    .referenceId(refId)
-                    .title(title)
-                    .summary(summary)
-                    .category(category != null ? category : "BL Dizi")
-                    .videoUrl(videoUrl)
-                    .thumbnailUrl("/media/image/" + refId + "?v=2")
-                    .country(country != null ? country.toLowerCase() : "th")
-                    .language(lang)
-                    .sortOrder(sortOrder)
-                    .isImage(isImage)
-                    .build();
-        });
+        List<Map<String, Object>> heroList = jdbcTemplate.queryForList(sql, platform, platform);
 
-        // 2. If fewer than 4 heroes, supplement with top viewed BL series
-        if (heroList.size() < 4) {
-            Set<UUID> existingRefIds = new HashSet<>();
-            for (HeroVideoDto h : heroList) {
-                if (h.getReferenceId() != null) existingRefIds.add(h.getReferenceId());
-            }
-
-            String topSeriesSql = """
-                SELECT TOP 5 s.ID, s.name, s.Summary, s.slug, s.Country, s.Language,
-                       (SELECT STRING_AGG(c.Name, ', ') FROM Categories c 
-                        JOIN SeriesCategories sc2 ON sc2.CategoryID = c.ID 
-                        WHERE sc2.SeriesID = s.ID) as Category
+        // Fallback: If no heroes found for this platform, provide top BL series
+        if (heroList.isEmpty()) {
+            String fallbackSql = """
+                SELECT TOP 5 s.ID as ID, s.ID as ReferenceId, s.name,
+                       (SELECT TOP 1 e.slug FROM Episode e WHERE e.SeriesId = s.ID AND (e.IsHidden = 0 OR e.IsHidden IS NULL) ORDER BY SeasonNumber ASC, EpisodeNumber ASC) as slug,
+                       (SELECT STRING_AGG(c.Name, ', ') FROM Categories c JOIN SeriesCategories sc ON sc.CategoryID = c.ID WHERE sc.SeriesID = s.ID) as category,
+                       s.Summary as _content, 'SoapOpera' as type,
+                       ROW_NUMBER() OVER (ORDER BY s.viewCount DESC) - 1 as sortOrder,
+                       CAST(1 AS BIT) as isImage, ? as platform
                 FROM Series s
                 WHERE s.SeriesType = 'BL'
                   AND (s.IsHidden = 0 OR s.IsHidden IS NULL)
                 ORDER BY s.viewCount DESC
             """;
-
-            List<HeroVideoDto> topSeries = jdbcTemplate.query(topSeriesSql, (rs, rowNum) -> {
-                UUID sId = UUID.fromString(rs.getString("ID"));
-                String title = rs.getString("name");
-                String summary = rs.getString("Summary");
-                String slug = rs.getString("slug");
-                String category = rs.getString("Category");
-                String country = rs.getString("Country");
-                String lang = rs.getString("Language");
-
-                String videoUrl = (slug != null && !slug.isEmpty()) ? "/" + slug : "/" + sId;
-
-                return HeroVideoDto.builder()
-                        .id(sId)
-                        .referenceId(sId)
-                        .title(title)
-                        .summary(summary)
-                        .category(category != null ? category : "BL Dizi")
-                        .videoUrl(videoUrl)
-                        .thumbnailUrl("/media/image/" + sId + "?v=2")
-                        .country(country != null ? country.toLowerCase() : "th")
-                        .language(lang)
-                        .sortOrder(rowNum + 10)
-                        .isImage(true)
-                        .build();
-            });
-
-            for (HeroVideoDto s : topSeries) {
-                if (!existingRefIds.contains(s.getReferenceId())) {
-                    heroList.add(s);
-                    existingRefIds.add(s.getReferenceId());
-                    if (heroList.size() >= 5) break;
-                }
-            }
+            try {
+                return jdbcTemplate.queryForList(fallbackSql, platform);
+            } catch (Exception ignored) {}
         }
 
         return heroList;
