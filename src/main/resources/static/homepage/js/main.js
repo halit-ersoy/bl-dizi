@@ -1,5 +1,5 @@
 import { initHeaderScroll } from './headerScroll.js?v=2';
-import { initHeroCarousel } from './heroCarousel.js?v=3';
+import { initHeroCarousel } from './heroCarousel.js?v=4';
 import { initContentCarousels } from './contentCarousel.js?v=2';
 import { initNewSoapOperasSection } from './newSoapOperasSection.js?v=2';
 import { initNewMoviesSection } from './newMoviesSection.js?v=2';
@@ -7,7 +7,7 @@ import { initWeeklyBestSection } from './weeklyBestSection.js?v=2';
 import { initLogin } from './login.js?v=2';
 import { initRegister } from './register.js?v=2';
 import { initForgotPass } from './forgot-pass.js?v=2';
-import { initFeaturedContent } from "./featuredContent.js?v=2";
+import { initFeaturedContent } from "./featuredContent.js?v=3";
 import { initLoadedEpisodesSection } from "./loadedEpisodesSection.js?v=2";
 import { initHeaderInteractions, initSearchExpansion } from "./searchExpansion.js?v=2";
 import { initCalendar } from "./calendar.js?v=2";
