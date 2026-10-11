@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/watch-history")
+@RequestMapping({"/api/history", "/api/watch-history"})
 @SuppressWarnings({"SqlResolve", "SqlNoDataSourceInspection"})
 public class WatchHistoryController {
 
