@@ -2,6 +2,8 @@ package com.ses.bldizi.controller;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
@@ -13,10 +15,74 @@ import java.util.*;
 @SuppressWarnings({"SqlResolve", "SqlNoDataSourceInspection"})
 public class SavedController {
 
+    private static final Logger logger = LoggerFactory.getLogger(SavedController.class);
     private final JdbcTemplate jdbcTemplate;
 
     public SavedController(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
+        ensureSchema();
+    }
+
+    private void ensureSchema() {
+        try {
+            jdbcTemplate.execute("""
+                    IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='BLDizi_UserLists' AND xtype='U')
+                    BEGIN
+                        CREATE TABLE BLDizi_UserLists (
+                            ID UNIQUEIDENTIFIER DEFAULT NEWID() PRIMARY KEY,
+                            UserID UNIQUEIDENTIFIER NOT NULL,
+                            Name NVARCHAR(100) NOT NULL,
+                            CreatedAt DATETIME DEFAULT GETDATE() NOT NULL,
+                            CONSTRAINT FK_BLDizi_UserLists_Person FOREIGN KEY (UserID) REFERENCES Person(ID) ON DELETE CASCADE
+                        );
+                    END
+                    """);
+
+            jdbcTemplate.execute("""
+                    IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'idx_bldizi_userlists_user' AND object_id = OBJECT_ID('BLDizi_UserLists'))
+                    BEGIN
+                        CREATE NONCLUSTERED INDEX idx_bldizi_userlists_user ON BLDizi_UserLists(UserID);
+                    END
+                    """);
+
+            jdbcTemplate.execute("""
+                    IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'idx_bldizi_userlists_user_name' AND object_id = OBJECT_ID('BLDizi_UserLists'))
+                    BEGIN
+                        CREATE UNIQUE NONCLUSTERED INDEX idx_bldizi_userlists_user_name ON BLDizi_UserLists(UserID, Name);
+                    END
+                    """);
+
+            jdbcTemplate.execute("""
+                    IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='BLDizi_UserListItems' AND xtype='U')
+                    BEGIN
+                        CREATE TABLE BLDizi_UserListItems (
+                            ID UNIQUEIDENTIFIER DEFAULT NEWID() PRIMARY KEY,
+                            ListID UNIQUEIDENTIFIER NOT NULL,
+                            VideoID UNIQUEIDENTIFIER NOT NULL,
+                            VideoType NVARCHAR(20) NOT NULL,
+                            AddedAt DATETIME DEFAULT GETDATE() NOT NULL,
+                            CONSTRAINT FK_BLDizi_UserListItems_List FOREIGN KEY (ListID) REFERENCES BLDizi_UserLists(ID) ON DELETE CASCADE
+                        );
+                    END
+                    """);
+
+            jdbcTemplate.execute("""
+                    IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'idx_bldizi_userlistitems_list' AND object_id = OBJECT_ID('BLDizi_UserListItems'))
+                    BEGIN
+                        CREATE NONCLUSTERED INDEX idx_bldizi_userlistitems_list ON BLDizi_UserListItems(ListID);
+                    END
+                    """);
+
+            jdbcTemplate.execute("""
+                    IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'idx_bldizi_userlistitems_unique' AND object_id = OBJECT_ID('BLDizi_UserListItems'))
+                    BEGIN
+                        CREATE UNIQUE NONCLUSTERED INDEX idx_bldizi_userlistitems_unique ON BLDizi_UserListItems(ListID, VideoID);
+                    END
+                    """);
+            logger.info("BLDizi_UserLists and BLDizi_UserListItems schemas ensured successfully.");
+        } catch (Exception e) {
+            logger.error("Error creating BLDizi_UserLists schemas: {}", e.getMessage(), e);
+        }
     }
 
     private String resolveCookie(String cookie, HttpServletRequest request) {
@@ -48,10 +114,16 @@ public class SavedController {
         try {
             String sql = "SELECT [dbo].[ResolveUserIdByCookie](TRY_CAST(? AS UNIQUEIDENTIFIER))";
             String idStr = jdbcTemplate.queryForObject(sql, String.class, token);
+            if (idStr != null) return UUID.fromString(idStr);
+        } catch (Exception ignored) {}
+
+        try {
+            String sql = "SELECT UserId FROM [dbo].[UserSession] WHERE Token = ? AND ExpiresAt > GETDATE()";
+            String idStr = jdbcTemplate.queryForObject(sql, String.class, token);
             return idStr != null ? UUID.fromString(idStr) : null;
-        } catch (Exception e) {
-            return null;
-        }
+        } catch (Exception ignored) {}
+
+        return null;
     }
 
     @GetMapping("/translated")
@@ -92,7 +164,7 @@ public class SavedController {
                         L.ID as ListID,
                         I.VideoID,
                         COALESCE(M.name, S.name) as VideoName,
-                        M.ReleaseYear as Year,
+                        COALESCE(M.ReleaseYear, YEAR(S.uploadDate)) as Year,
                         CASE
                             WHEN I.VideoType = 'movie' THEN (
                                 SELECT STRING_AGG(C.Name, ', ')
@@ -109,8 +181,8 @@ public class SavedController {
                         END as Category,
                         COALESCE(M.slug, S.slug) as slug,
                         I.VideoType as Type
-                    FROM UserLists L
-                    LEFT JOIN UserListItems I ON I.ListID = L.ID
+                    FROM BLDizi_UserLists L
+                    LEFT JOIN BLDizi_UserListItems I ON I.ListID = L.ID
                     LEFT JOIN Movie M ON I.VideoID = M.ID AND I.VideoType = 'movie'
                     LEFT JOIN Series S ON I.VideoID = S.ID AND I.VideoType = 'series'
                     WHERE L.UserID = ?
@@ -139,14 +211,14 @@ public class SavedController {
                 return ResponseEntity.badRequest().body(Map.of("Result", 0, "Message", "Title cannot be empty"));
 
             Integer count = jdbcTemplate.queryForObject(
-                    "SELECT COUNT(*) FROM UserLists WHERE UserID = ? AND Name = ?",
-                    Integer.class, userId.toString(), title);
+                    "SELECT COUNT(*) FROM BLDizi_UserLists WHERE UserID = ? AND Name = ?",
+                    Integer.class, userId.toString(), title.trim());
 
             if (count != null && count > 0) {
                 return ResponseEntity.ok(Map.of("Result", 0, "Message", "List already exists"));
             }
 
-            jdbcTemplate.update("INSERT INTO UserLists (UserID, Name) VALUES (?, ?)", userId.toString(), title);
+            jdbcTemplate.update("INSERT INTO BLDizi_UserLists (UserID, Name) VALUES (?, ?)", userId.toString(), title.trim());
             return ResponseEntity.ok(Map.of("Result", 1, "Message", "List created"));
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("Result", 0, "Message", "Error: " + e.getMessage()));
@@ -172,8 +244,8 @@ public class SavedController {
             }
 
             List<Map<String, Object>> listRows = jdbcTemplate.queryForList(
-                    "SELECT ID FROM UserLists WHERE UserID = ? AND Name = ?",
-                    userId.toString(), title);
+                    "SELECT ID FROM BLDizi_UserLists WHERE UserID = ? AND Name = ?",
+                    userId.toString(), title.trim());
 
             if (listRows.isEmpty()) {
                 return ResponseEntity.ok(Map.of("Result", 0, "Message", "List not found"));
@@ -212,14 +284,14 @@ public class SavedController {
             }
 
             Integer already = jdbcTemplate.queryForObject(
-                    "SELECT COUNT(*) FROM UserListItems WHERE ListID = ? AND VideoID = ?",
+                    "SELECT COUNT(*) FROM BLDizi_UserListItems WHERE ListID = ? AND VideoID = ?",
                     Integer.class, listId, targetId.toString());
 
             if (already != null && already > 0)
                 return ResponseEntity.ok(Map.of("Result", 1, "Message", "Already in list"));
 
             jdbcTemplate.update(
-                    "INSERT INTO UserListItems (ListID, VideoID, VideoType) VALUES (?, ?, ?)",
+                    "INSERT INTO BLDizi_UserListItems (ListID, VideoID, VideoType) VALUES (?, ?, ?)",
                     listId, targetId.toString(), videoType);
 
             return ResponseEntity.ok(Map.of("Result", 1, "Message", "Added to list"));
@@ -261,8 +333,8 @@ public class SavedController {
             }
 
             jdbcTemplate.update("""
-                    DELETE FROM UserListItems
-                    WHERE VideoID = ? AND ListID IN (SELECT ID FROM UserLists WHERE UserID = ?)
+                    DELETE FROM BLDizi_UserListItems
+                    WHERE VideoID = ? AND ListID IN (SELECT ID FROM BLDizi_UserLists WHERE UserID = ?)
                     """, targetId.toString(), userId.toString());
 
             return ResponseEntity.ok(Map.of("Result", 1, "Message", "Removed from lists"));
@@ -273,7 +345,7 @@ public class SavedController {
 
     @PostMapping("/delete-list")
     public ResponseEntity<?> deleteList(
-            @RequestParam("title") String title,
+            @RequestParam(value = "title", required = false) String titleParam,
             @CookieValue(value = "wdiAuth", required = false) String cookie,
             HttpServletRequest request) {
         try {
@@ -281,7 +353,15 @@ public class SavedController {
             if (userId == null)
                 return ResponseEntity.status(401).build();
 
-            jdbcTemplate.update("DELETE FROM UserLists WHERE UserID = ? AND Name = ?", userId.toString(), title);
+            String title = titleParam;
+            if (title == null || title.isBlank()) {
+                title = request.getParameter("title");
+            }
+            if (title == null || title.isBlank()) {
+                return ResponseEntity.badRequest().body(Map.of("Result", 0, "Message", "Liste adı belirtilmedi"));
+            }
+
+            jdbcTemplate.update("DELETE FROM BLDizi_UserLists WHERE UserID = ? AND Name = ?", userId.toString(), title.trim());
             return ResponseEntity.ok(Map.of("Result", 1, "Message", "List deleted"));
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("Result", 0, "Message", "Error: " + e.getMessage()));
@@ -299,8 +379,12 @@ public class SavedController {
             if (userId == null)
                 return ResponseEntity.status(401).build();
 
-            jdbcTemplate.update("UPDATE UserLists SET Name = ? WHERE UserID = ? AND Name = ?", newTitle,
-                    userId.toString(), title);
+            if (newTitle == null || newTitle.isBlank()) {
+                return ResponseEntity.badRequest().body(Map.of("Result", 0, "Message", "Yeni liste adı boş olamaz"));
+            }
+
+            jdbcTemplate.update("UPDATE BLDizi_UserLists SET Name = ? WHERE UserID = ? AND Name = ?", newTitle.trim(),
+                    userId.toString(), title.trim());
             return ResponseEntity.ok(Map.of("Result", 1, "Message", "List renamed"));
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("Result", 0, "Message", "Error: " + e.getMessage()));

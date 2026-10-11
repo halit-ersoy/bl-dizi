@@ -151,7 +151,7 @@ function closeModal() {
 
 async function loadUserLists() {
     const container = modal.querySelector('#userLists');
-    const token = localStorage.getItem('wdiUserToken');
+    const token = localStorage.getItem('bldiziUserToken') || localStorage.getItem('wdiUserToken') || document.cookie.includes('wdiAuth');
     if (!token) {
         container.innerHTML = `
       <div class="error-message">
@@ -203,7 +203,7 @@ function renderUserLists(listData, container) {
 
     Object.values(groups).forEach(g => {
         const el = document.createElement('div');
-        el.className = `list-item${g.has ? ' has-video' : ''}`;
+        el.className = `list-item${g.has ? ' has-video' : ''}` || '';
         el.innerHTML = `
       <h5>${g.name}</h5>
       <p>${g.videos.length} video</p>

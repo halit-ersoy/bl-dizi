@@ -80,6 +80,11 @@ public class HomeController {
         return renderHtml("static/history/html/history.html");
     }
 
+    @GetMapping({"/favorites", "/favorilerim"})
+    public ResponseEntity<Resource> getFavoritesPage() {
+        return renderHtml("static/favorites/html/favorites.html");
+    }
+
     @GetMapping("/watch")
     public ResponseEntity<Resource> getWatchPage() {
         return renderHtml("static/watch/html/watch.html");
