@@ -5,6 +5,7 @@ import com.ses.bldizi.service.EmailService;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.sql.SQLException;
 import java.util.*;
 
 @Repository
@@ -19,16 +20,214 @@ public class PersonRepository {
     public PersonRepository(JdbcTemplate jdbcTemplate, EmailService emailService) {
         this.jdbcTemplate = jdbcTemplate;
         this.emailService = emailService;
+        ensureSchema();
+    }
+
+    private void ensureSchema() {
+        try {
+            // 1. Ensure UserSession table exists
+            jdbcTemplate.execute("""
+                IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'UserSession')
+                BEGIN
+                    CREATE TABLE [dbo].[UserSession] (
+                        [ID] UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                        [UserId] UNIQUEIDENTIFIER NOT NULL,
+                        [Token] UNIQUEIDENTIFIER NOT NULL,
+                        [Platform] NVARCHAR(50) NOT NULL DEFAULT 'whodatidols',
+                        [CreatedAt] DATETIME NOT NULL DEFAULT GETDATE(),
+                        [LastActiveAt] DATETIME NOT NULL DEFAULT GETDATE()
+                    );
+                    CREATE INDEX [IX_UserSession_Token] ON [dbo].[UserSession]([Token]);
+                    CREATE INDEX [IX_UserSession_UserId] ON [dbo].[UserSession]([UserId]);
+                END
+            """);
+
+            // 2. Ensure SsoTicket table exists
+            jdbcTemplate.execute("""
+                IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'SsoTicket')
+                BEGIN
+                    CREATE TABLE [dbo].[SsoTicket] (
+                        [ID] UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                        [Ticket] UNIQUEIDENTIFIER NOT NULL,
+                        [UserId] UNIQUEIDENTIFIER NOT NULL,
+                        [TargetPlatform] NVARCHAR(50) NULL,
+                        [ExpiresAt] DATETIME NOT NULL,
+                        [CreatedAt] DATETIME NOT NULL DEFAULT GETDATE()
+                    );
+                    CREATE INDEX [IX_SsoTicket_Ticket] ON [dbo].[SsoTicket]([Ticket]);
+                END
+            """);
+
+            // 3. Ensure ResolveUserIdByCookie function exists and is up to date
+            jdbcTemplate.execute("""
+                CREATE OR ALTER FUNCTION [dbo].[ResolveUserIdByCookie](@cookie UNIQUEIDENTIFIER)
+                RETURNS UNIQUEIDENTIFIER
+                AS
+                BEGIN
+                    IF @cookie IS NULL RETURN NULL;
+                    DECLARE @UserId UNIQUEIDENTIFIER;
+
+                    SELECT TOP 1 @UserId = ID FROM [dbo].[Person] WHERE cookie = @cookie;
+
+                    IF @UserId IS NULL
+                    BEGIN
+                        SELECT TOP 1 @UserId = UserId FROM [dbo].[UserSession] WHERE Token = @cookie;
+                    END
+
+                    RETURN @UserId;
+                END;
+            """);
+
+            // 4. Ensure LoginAndSetCookie supports 3 parameters (@Platform) and multi-session
+            jdbcTemplate.execute("""
+                CREATE OR ALTER PROCEDURE [dbo].[LoginAndSetCookie]
+                    @UsernameOrEmail NVARCHAR(255),
+                    @Password NVARCHAR(255),
+                    @Platform NVARCHAR(50) = 'whodatidols'
+                AS
+                BEGIN
+                    SET NOCOUNT ON;
+                    DECLARE @UserId UNIQUEIDENTIFIER, @Nickname NVARCHAR(50), @NewCookie UNIQUEIDENTIFIER, @IsBanned BIT, @BanReason NVARCHAR(500);
+
+                    SELECT @UserId = ID, @Nickname = Nickname, @IsBanned = ISNULL(isBanned, 0), @BanReason = banReason
+                    FROM [dbo].[Person]
+                    WHERE (Email = @UsernameOrEmail OR Nickname = @UsernameOrEmail) AND Password = @Password;
+
+                    IF @UserId IS NOT NULL
+                    BEGIN
+                        IF @IsBanned = 1
+                        BEGIN
+                            SELECT CAST(0 AS BIT) as Result, ISNULL(@BanReason, 'Hesabiniz askiya alinmistir') as Message;
+                            RETURN;
+                        END
+
+                        SET @NewCookie = NEWID();
+
+                        INSERT INTO [dbo].[UserSession] ([UserId], [Token], [Platform], [CreatedAt], [LastActiveAt])
+                        VALUES (@UserId, @NewCookie, ISNULL(@Platform, 'whodatidols'), GETDATE(), GETDATE());
+
+                        UPDATE [dbo].[Person] SET cookie = @NewCookie WHERE ID = @UserId;
+
+                        DELETE FROM [dbo].[UserSession]
+                        WHERE UserId = @UserId AND LastActiveAt < DATEADD(DAY, -30, GETDATE());
+
+                        SELECT CAST(1 AS BIT) as Result, 'Giris basarili' as Message, @Nickname as Nickname, @NewCookie as Cookie;
+                    END
+                    ELSE
+                        SELECT CAST(0 AS BIT) as Result, 'Hatali kullanici adi veya sifre' as Message;
+                END;
+            """);
+
+            // 5. Ensure CreateSsoTicket procedure exists
+            jdbcTemplate.execute("""
+                CREATE OR ALTER PROCEDURE [dbo].[CreateSsoTicket]
+                    @Cookie UNIQUEIDENTIFIER,
+                    @TargetPlatform NVARCHAR(50) = NULL
+                AS
+                BEGIN
+                    SET NOCOUNT ON;
+                    DECLARE @UserId UNIQUEIDENTIFIER;
+                    SET @UserId = [dbo].[ResolveUserIdByCookie](@Cookie);
+
+                    IF @UserId IS NULL
+                    BEGIN
+                        SELECT CAST(0 AS BIT) AS Result, 'Gecersiz oturum' AS Message, NULL AS Ticket;
+                        RETURN;
+                    END
+
+                    DECLARE @Ticket UNIQUEIDENTIFIER = NEWID();
+                    INSERT INTO [dbo].[SsoTicket] ([Ticket], [UserId], [TargetPlatform], [ExpiresAt], [CreatedAt])
+                    VALUES (@Ticket, @UserId, @TargetPlatform, DATEADD(SECOND, 120, GETDATE()), GETDATE());
+
+                    DELETE FROM [dbo].[SsoTicket] WHERE ExpiresAt < GETDATE();
+
+                    SELECT CAST(1 AS BIT) AS Result, 'Bilet olusturuldu' AS Message, @Ticket AS Ticket;
+                END;
+            """);
+
+            // 6. Ensure ConsumeSsoTicket procedure exists
+            jdbcTemplate.execute("""
+                CREATE OR ALTER PROCEDURE [dbo].[ConsumeSsoTicket]
+                    @Ticket UNIQUEIDENTIFIER,
+                    @Platform NVARCHAR(50) = 'whodatidols'
+                AS
+                BEGIN
+                    SET NOCOUNT ON;
+                    DECLARE @UserId UNIQUEIDENTIFIER, @TargetPlatform NVARCHAR(50);
+
+                    SELECT @UserId = UserId, @TargetPlatform = TargetPlatform
+                    FROM [dbo].[SsoTicket]
+                    WHERE Ticket = @Ticket AND ExpiresAt >= GETDATE();
+
+                    IF @UserId IS NULL
+                    BEGIN
+                        SELECT CAST(0 AS BIT) AS Result, 'Gecersiz veya suresi dolmus SSO bileti' AS Message, NULL AS Nickname, NULL AS Cookie;
+                        RETURN;
+                    END
+
+                    DELETE FROM [dbo].[SsoTicket] WHERE Ticket = @Ticket;
+
+                    DECLARE @Nickname NVARCHAR(50), @IsBanned BIT, @BanReason NVARCHAR(500);
+                    SELECT @Nickname = Nickname, @IsBanned = ISNULL(isBanned, 0), @BanReason = banReason
+                    FROM [dbo].[Person] WHERE ID = @UserId;
+
+                    IF @IsBanned = 1
+                    BEGIN
+                        SELECT CAST(0 AS BIT) AS Result, ISNULL(@BanReason, 'Hesabiniz askiya alinmistir') AS Message, NULL AS Nickname, NULL AS Cookie;
+                        RETURN;
+                    END
+
+                    DECLARE @NewToken UNIQUEIDENTIFIER = NEWID();
+                    INSERT INTO [dbo].[UserSession] ([UserId], [Token], [Platform], [CreatedAt], [LastActiveAt])
+                    VALUES (@UserId, @NewToken, ISNULL(@Platform, 'whodatidols'), GETDATE(), GETDATE());
+
+                    SELECT CAST(1 AS BIT) AS Result, 'SSO giris basarili' AS Message, @Nickname AS Nickname, @NewToken AS Cookie, @UserId AS UserId;
+                END;
+            """);
+        } catch (Exception e) {
+            System.err.println("PersonRepository ensureSchema error: " + e.getMessage());
+        }
     }
 
     @SuppressWarnings("unchecked")
     public Map<String, Object> loginUser(String usernameOrEmail, String password) {
-        Map<String, Object> result = jdbcTemplate.call(connection -> {
-            var callableStatement = connection.prepareCall("{call LoginAndSetCookie(?, ?, 'bldizi')}");
-            callableStatement.setString(1, usernameOrEmail);
-            callableStatement.setString(2, password);
-            return callableStatement;
-        }, new ArrayList<>());
+        Map<String, Object> result;
+        try {
+            // First attempt: 3-parameter call with platform 'bldizi'
+            result = jdbcTemplate.call(connection -> {
+                var callableStatement = connection.prepareCall("{call LoginAndSetCookie(?, ?, 'bldizi')}");
+                callableStatement.setString(1, usernameOrEmail);
+                callableStatement.setString(2, password);
+                return callableStatement;
+            }, new ArrayList<>());
+        } catch (Exception e) {
+            // Fallback for SQL Server error code 8144 (too many arguments specified)
+            boolean isTooManyArgs = false;
+            Throwable cause = e;
+            while (cause != null) {
+                if (cause instanceof SQLException sqlEx && sqlEx.getErrorCode() == 8144) {
+                    isTooManyArgs = true;
+                    break;
+                }
+                if (cause.getMessage() != null && cause.getMessage().contains("8144")) {
+                    isTooManyArgs = true;
+                    break;
+                }
+                cause = cause.getCause();
+            }
+
+            if (isTooManyArgs) {
+                // Call legacy 2-parameter procedure
+                result = jdbcTemplate.call(connection -> {
+                    var callableStatement = connection.prepareCall("{call LoginAndSetCookie(?, ?)}");
+                    callableStatement.setString(1, usernameOrEmail);
+                    callableStatement.setString(2, password);
+                    return callableStatement;
+                }, new ArrayList<>());
+            } else {
+                throw e;
+            }
+        }
 
         Map<String, Object> response = new HashMap<>();
         if (result.containsKey("#result-set-1")) {
@@ -47,6 +246,27 @@ public class PersonRepository {
                         case "banreason" -> response.put("banReason", value);
                     }
                 }
+
+                // If fallback legacy call succeeded, record token in UserSession as 'bldizi'
+                Object successObj = response.get("success");
+                boolean isSuccess = Boolean.TRUE.equals(successObj) || (successObj instanceof Number && ((Number) successObj).intValue() == 1);
+                if (isSuccess && response.get("cookie") != null) {
+                    try {
+                        UUID token = UUID.fromString(response.get("cookie").toString());
+                        UUID userId = findUserIdByCookie(token.toString());
+                        if (userId != null) {
+                            jdbcTemplate.update("""
+                                IF EXISTS (SELECT 1 FROM sys.tables WHERE name = 'UserSession')
+                                BEGIN
+                                    INSERT INTO [dbo].[UserSession] ([UserId], [Token], [Platform], [CreatedAt], [LastActiveAt])
+                                    VALUES (?, ?, 'bldizi', GETDATE(), GETDATE());
+                                END
+                            """, userId, token);
+                        }
+                    } catch (Exception ignored) {
+                    }
+                }
+
                 return response;
             }
         }
@@ -54,6 +274,28 @@ public class PersonRepository {
         response.put("success", false);
         response.put("message", "Giriş işlemi başarısız oldu.");
         return response;
+    }
+
+    /**
+     * Cleans up user session from DB (UserSession table and Person.cookie) on logout.
+     */
+    public void logoutUser(String cookie) {
+        if (cookie == null || cookie.isBlank()) return;
+        try {
+            UUID token = UUID.fromString(cookie.trim());
+            // 1. Delete from UserSession
+            try {
+                jdbcTemplate.update("DELETE FROM [dbo].[UserSession] WHERE [Token] = ?", token);
+            } catch (Exception ignored) {
+            }
+
+            // 2. Clear from Person.cookie if matching
+            try {
+                jdbcTemplate.update("UPDATE [dbo].[Person] SET cookie = NULL WHERE cookie = ?", token);
+            } catch (Exception ignored) {
+            }
+        } catch (Exception ignored) {
+        }
     }
 
     @SuppressWarnings("unchecked")

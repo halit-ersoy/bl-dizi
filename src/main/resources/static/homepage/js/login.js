@@ -10,7 +10,6 @@ export function initLogin() {
     const formInputs = document.querySelectorAll('.form-control');
 
     // Kullanıcı giriş durumunu kontrol edip profil oluşturma
-    // Kullanıcı giriş durumunu kontrol edip profil oluşturma
     async function checkAuthStatus() {
         const authCookie = localStorage.getItem('wdiUserToken');
         const userNickname = localStorage.getItem('wdiUserNickname');
@@ -23,7 +22,7 @@ export function initLogin() {
 
                     // IF user is found but banned, clear everything and logout
                     if (data.isBanned) {
-                        handleLogout();
+                        await handleLogout();
                         return;
                     }
 
@@ -93,14 +92,14 @@ export function initLogin() {
 
                     const logoutBtn = document.getElementById('logout-btn');
                     if (logoutBtn) {
-                        logoutBtn.addEventListener('click', (e) => {
+                        logoutBtn.addEventListener('click', async (e) => {
                             e.preventDefault();
-                            handleLogout();
+                            await handleLogout();
                         });
                     }
                 } else if (response.status === 401 || response.status === 404) {
                     // Cookie invalid or not found in DB
-                    handleLogout();
+                    await handleLogout();
                 }
             } catch (error) {
                 console.error('Auth verification failed:', error);
@@ -108,9 +107,16 @@ export function initLogin() {
         }
     }
 
-    function handleLogout() {
+    async function handleLogout() {
+        try {
+            await fetch('/api/user/logout', { credentials: 'same-origin', method: 'POST' });
+        } catch (e) {
+            console.error('Logout error:', e);
+        }
+
         localStorage.removeItem('wdiUserToken');
         localStorage.removeItem('wdiUserNickname');
+        localStorage.removeItem('bldiziUserToken');
         document.cookie = 'wdiAuth=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
 
         const messagesWrapper = document.getElementById('messages-wrapper');

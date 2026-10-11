@@ -6,10 +6,11 @@ import com.ses.bldizi.service.SystemSettingService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -55,14 +56,15 @@ public class AuthController {
             if (isSuccess) {
                 Object cookieObj = result.get("cookie");
                 if (cookieObj != null) {
-                    Cookie authCookie = new Cookie("wdiAuth", cookieObj.toString());
-                    authCookie.setHttpOnly(true);
-                    authCookie.setPath("/");
-                    authCookie.setMaxAge(7 * 24 * 60 * 60);
-                    if (request.isSecure()) {
-                        authCookie.setSecure(true);
-                    }
-                    response.addCookie(authCookie);
+                    boolean isSecure = request.isSecure() || "https".equalsIgnoreCase(request.getHeader("X-Forwarded-Proto"));
+                    ResponseCookie cookie = ResponseCookie.from("wdiAuth", cookieObj.toString())
+                            .path("/")
+                            .httpOnly(true)
+                            .secure(isSecure)
+                            .sameSite("Lax")
+                            .maxAge(7 * 24 * 60 * 60)
+                            .build();
+                    response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
                 }
                 return ResponseEntity.ok(result);
             } else {
@@ -155,14 +157,15 @@ public class AuthController {
             if (isSuccess) {
                 Object cookieObj = result.get("cookie");
                 if (cookieObj != null) {
-                    Cookie authCookie = new Cookie("wdiAuth", cookieObj.toString());
-                    authCookie.setHttpOnly(true);
-                    authCookie.setPath("/");
-                    authCookie.setMaxAge(7 * 24 * 60 * 60);
-                    if (request.isSecure()) {
-                        authCookie.setSecure(true);
-                    }
-                    response.addCookie(authCookie);
+                    boolean isSecure = request.isSecure() || "https".equalsIgnoreCase(request.getHeader("X-Forwarded-Proto"));
+                    ResponseCookie cookie = ResponseCookie.from("wdiAuth", cookieObj.toString())
+                            .path("/")
+                            .httpOnly(true)
+                            .secure(isSecure)
+                            .sameSite("Lax")
+                            .maxAge(7 * 24 * 60 * 60)
+                            .build();
+                    response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
                 }
                 return ResponseEntity.ok(result);
             } else {
@@ -177,11 +180,47 @@ public class AuthController {
     }
 
     @RequestMapping(value = {"/logout", "/api/user/logout"}, method = {RequestMethod.GET, RequestMethod.POST})
-    public ResponseEntity<?> logout(HttpServletResponse response) {
+    public ResponseEntity<?> logout(
+            @CookieValue(name = "wdiAuth", required = false) String cookieVal,
+            HttpServletRequest request,
+            HttpServletResponse response) {
+
+        // 1. If cookie was not received via @CookieValue, check request cookies
+        if (cookieVal == null || cookieVal.isBlank()) {
+            if (request.getCookies() != null) {
+                for (Cookie c : request.getCookies()) {
+                    if ("wdiAuth".equalsIgnoreCase(c.getName()) && c.getValue() != null) {
+                        cookieVal = c.getValue().trim();
+                        break;
+                    }
+                }
+            }
+        }
+
+        // 2. Remove token from database UserSession and Person.cookie
+        if (cookieVal != null && !cookieVal.isBlank()) {
+            personRepository.logoutUser(cookieVal);
+        }
+
+        // 3. Force expire wdiAuth cookie in browser with Set-Cookie header
+        boolean isSecure = request.isSecure() || "https".equalsIgnoreCase(request.getHeader("X-Forwarded-Proto"));
+        ResponseCookie deleteCookie = ResponseCookie.from("wdiAuth", "")
+                .path("/")
+                .httpOnly(true)
+                .secure(isSecure)
+                .sameSite("Lax")
+                .maxAge(0)
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, deleteCookie.toString());
+
+        // Standard servlet cookie backup
         Cookie authCookie = new Cookie("wdiAuth", "");
         authCookie.setHttpOnly(true);
         authCookie.setPath("/");
         authCookie.setMaxAge(0);
+        if (isSecure) {
+            authCookie.setSecure(true);
+        }
         response.addCookie(authCookie);
 
         return ResponseEntity.ok(Map.of("success", true, "message", "Çıkış yapıldı."));
