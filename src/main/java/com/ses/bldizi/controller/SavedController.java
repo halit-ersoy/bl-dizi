@@ -4,6 +4,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
@@ -208,20 +209,27 @@ public class SavedController {
                 return ResponseEntity.status(401).build();
 
             if (title == null || title.isBlank())
-                return ResponseEntity.badRequest().body(Map.of("Result", 0, "Message", "Title cannot be empty"));
+                return ResponseEntity.badRequest().body(Map.of("Result", 0, "Message", "Liste adı boş olamaz"));
+
+            String cleanTitle = title.trim();
 
             Integer count = jdbcTemplate.queryForObject(
                     "SELECT COUNT(*) FROM BLDizi_UserLists WHERE UserID = ? AND Name = ?",
-                    Integer.class, userId.toString(), title.trim());
+                    Integer.class, userId.toString(), cleanTitle);
 
             if (count != null && count > 0) {
-                return ResponseEntity.ok(Map.of("Result", 0, "Message", "List already exists"));
+                return ResponseEntity.ok(Map.of("Result", 0, "Message", "Bu isimde bir listeniz zaten var"));
             }
 
-            jdbcTemplate.update("INSERT INTO BLDizi_UserLists (UserID, Name) VALUES (?, ?)", userId.toString(), title.trim());
-            return ResponseEntity.ok(Map.of("Result", 1, "Message", "List created"));
+            try {
+                jdbcTemplate.update("INSERT INTO BLDizi_UserLists (UserID, Name) VALUES (?, ?)", userId.toString(), cleanTitle);
+            } catch (DuplicateKeyException dke) {
+                return ResponseEntity.ok(Map.of("Result", 0, "Message", "Bu isimde bir listeniz zaten var"));
+            }
+
+            return ResponseEntity.ok(Map.of("Result", 1, "Message", "Liste oluşturuldu"));
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of("Result", 0, "Message", "Error: " + e.getMessage()));
+            return ResponseEntity.status(500).body(Map.of("Result", 0, "Message", "Hata: " + e.getMessage()));
         }
     }
 
@@ -290,9 +298,13 @@ public class SavedController {
             if (already != null && already > 0)
                 return ResponseEntity.ok(Map.of("Result", 1, "Message", "Already in list"));
 
-            jdbcTemplate.update(
-                    "INSERT INTO BLDizi_UserListItems (ListID, VideoID, VideoType) VALUES (?, ?, ?)",
-                    listId, targetId.toString(), videoType);
+            try {
+                jdbcTemplate.update(
+                        "INSERT INTO BLDizi_UserListItems (ListID, VideoID, VideoType) VALUES (?, ?, ?)",
+                        listId, targetId.toString(), videoType);
+            } catch (DuplicateKeyException dke) {
+                return ResponseEntity.ok(Map.of("Result", 1, "Message", "Already in list"));
+            }
 
             return ResponseEntity.ok(Map.of("Result", 1, "Message", "Added to list"));
         } catch (Exception e) {
@@ -383,8 +395,27 @@ public class SavedController {
                 return ResponseEntity.badRequest().body(Map.of("Result", 0, "Message", "Yeni liste adı boş olamaz"));
             }
 
-            jdbcTemplate.update("UPDATE BLDizi_UserLists SET Name = ? WHERE UserID = ? AND Name = ?", newTitle.trim(),
-                    userId.toString(), title.trim());
+            String cleanNew = newTitle.trim();
+            String cleanOld = title.trim();
+
+            if (cleanNew.equalsIgnoreCase(cleanOld)) {
+                return ResponseEntity.ok(Map.of("Result", 1, "Message", "List renamed"));
+            }
+
+            Integer count = jdbcTemplate.queryForObject(
+                    "SELECT COUNT(*) FROM BLDizi_UserLists WHERE UserID = ? AND Name = ?",
+                    Integer.class, userId.toString(), cleanNew);
+            if (count != null && count > 0) {
+                return ResponseEntity.ok(Map.of("Result", 0, "Message", "Bu isimde bir listeniz zaten var"));
+            }
+
+            try {
+                jdbcTemplate.update("UPDATE BLDizi_UserLists SET Name = ? WHERE UserID = ? AND Name = ?", cleanNew,
+                        userId.toString(), cleanOld);
+            } catch (DuplicateKeyException dke) {
+                return ResponseEntity.ok(Map.of("Result", 0, "Message", "Bu isimde bir listeniz zaten var"));
+            }
+
             return ResponseEntity.ok(Map.of("Result", 1, "Message", "List renamed"));
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("Result", 0, "Message", "Error: " + e.getMessage()));

@@ -136,11 +136,24 @@
             }, 2400);
             return;
         }
+
+        saveBtn.disabled = true;
         try {
             if (currentMode === 'create') {
-                await createNewList(title);
-                await initFavorites();
-                flashButton(createListBtn, '<i class="fas fa-check"></i> Oluşturuldu');
+                const res = await createNewList(title);
+                if (res.Result === 1) {
+                    await initFavorites();
+                    flashButton(createListBtn, '<i class="fas fa-check"></i> Oluşturuldu');
+                    closeModal();
+                } else {
+                    nameInput.style.borderColor = '#ff4646';
+                    nameInput.value = '';
+                    nameInput.placeholder = res.Message || 'Bu isimde liste zaten var';
+                    setTimeout(() => {
+                        nameInput.placeholder = 'Liste adını giriniz';
+                        nameInput.style.borderColor = '';
+                    }, 2500);
+                }
             } else {
                 if (title === currentListName) {
                     closeModal();
@@ -149,15 +162,29 @@
                 const res = await renameList(currentListName, title);
                 if (res.Result === 1) {
                     flashButton(createListBtn, '<i class="fas fa-check"></i> Güncellendi');
+                    closeModal();
                     setTimeout(() => location.reload(), 500);
                 } else {
-                    flashButton(createListBtn, '<i class="fas fa-times"></i> Hata');
+                    nameInput.style.borderColor = '#ff4646';
+                    nameInput.value = '';
+                    nameInput.placeholder = res.Message || 'Hata';
+                    setTimeout(() => {
+                        nameInput.placeholder = 'Liste adını giriniz';
+                        nameInput.style.borderColor = '';
+                    }, 2500);
                 }
             }
-            closeModal();
         } catch (err) {
             console.error(err);
-            flashButton(createListBtn, '<i class="fas fa-times"></i> Hata');
+            nameInput.style.borderColor = '#ff4646';
+            nameInput.value = '';
+            nameInput.placeholder = err.message || 'Hata';
+            setTimeout(() => {
+                nameInput.placeholder = 'Liste adını giriniz';
+                nameInput.style.borderColor = '';
+            }, 2500);
+        } finally {
+            saveBtn.disabled = false;
         }
     }
 
@@ -324,7 +351,6 @@
             method: 'POST', credentials: 'include'
         });
         const data = await res.json();
-        if (data.Result !== 1) throw new Error(data.Message || 'Hata');
         return data;
     }
 
@@ -334,7 +360,6 @@
             method: 'POST', credentials: 'include'
         });
         const data = await res.json();
-        if (data.Result !== 1) throw new Error(data.Message || 'Hata');
         return data;
     }
 
@@ -398,8 +423,7 @@
         <div class="no-image-placeholder">
           <i class="fas fa-film"></i>
         </div>
-        ${v.image ? `<img src="${v.image}" loading="lazy" alt="${escapeHtml(v.title)}" onerror="this.remove();">` : ''}
-        
+        ${v.image ? `<img src="${v.image}" loading="lazy" alt="${escapeHtml(v.title)}" onerror="this.remove();">` : ''}\n        
         <div class="play-overlay"><i class="fas fa-play"></i></div>
         <button class="remove-btn" title="Listeden Kaldır"><i class="fas fa-times"></i></button>
         
