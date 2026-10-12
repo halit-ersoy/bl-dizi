@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="pink">
+
+<head>
+    <script src="/elements/theme.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>İçerik İstekleri - BL Dizi</title>
+    <meta name="description" content="İzlemek istediğiniz BL dizi ve filmleri talep edin veya diğer kullanıcıların isteklerine oy verin.">
+    <link rel="canonical" href="https://bldizi.com/requests">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Poppins:wght@300;400;500;600&family=Roboto:wght@400;500;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="stylesheet" href="/elements/variables.css">
+    <link rel="stylesheet" href="/homepage/css/main.css?v=5">
+    <link rel="stylesheet" href="/homepage/css/login.css">
+    <link rel="stylesheet" href="/requests/css/requests.css?v=5">
+    <script src="/homepage/js/devtools-protection.js"></script>
+</head>
+
+<body>
+    <!-- Background subtle ambient lighting -->
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
+
+    <header>
+        <a href="/" class="logo-link" aria-label="Ana sayfa">
+            <div class="logo">BL DİZİ</div>
+        </a>
+    </header>
+
+    <!-- Main Container -->
+    <main class="requests-main">
+        <!-- Hero Header -->
+        <section class="requests-hero">
+            <div class="requests-hero-content">
+                <div class="requests-badge">
+                    <i class="fas fa-bullhorn"></i> Topluluk Talepleri
+                </div>
+                <h1 class="requests-title">İçerik İstekleri</h1>
+                <p class="requests-subtitle">
+                    BL Dizi'de görmek istediğiniz dizi veya filmleri arayıp talep edin ya da topluluğun isteklerini <span class="accent-text">+</span> oylayarak öne çıkarın.
+                </p>
+                <div class="requests-hero-actions">
+                    <button id="openNewRequestBtn" class="btn-primary-glow">
+                        <i class="fas fa-plus-circle"></i> Yeni İstek Oluştur
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Filter & Control Bar -->
+        <section class="requests-controls-card">
+            <div class="controls-left">
+                <!-- Content Type Tabs -->
+                <div class="type-filter-tabs">
+                    <button class="filter-tab active" data-filter="all">
+                        <i class="fas fa-layer-group"></i> Tümü
+                    </button>
+                    <button class="filter-tab" data-filter="series">
+                        <i class="fas fa-tv"></i> Diziler
+                    </button>
+                    <button class="filter-tab" data-filter="movie">
+                        <i class="fas fa-film"></i> Filmler
+                    </button>
+                </div>
+            </div>
+
+            <div class="controls-right">
+                <!-- Sorting Pills -->
+                <div class="sort-selector">
+                    <button class="sort-pill active" data-sort="votes" title="En çok oy alanlar">
+                        <i class="fas fa-fire"></i> Popüler
+                    </button>
+                    <button class="sort-pill" data-sort="newest" title="En son eklenen istekler">
+                        <i class="fas fa-clock"></i> En Yeni
+                    </button>
+                </div>
+
+                <!-- Live search inside list -->
+                <div class="inline-search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="requestsLocalSearch" placeholder="İsteklerde ara...">
+                </div>
+            </div>
+        </section>
+
+        <!-- Requests Grid -->
+        <section class="requests-grid-section">
+            <div id="requestsList" class="requests-grid">
+                <!-- Populated dynamically via JS -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyRequestsState" class="requests-empty-state" style="display: none;">
+                <div class="empty-icon-wrap">
+                    <i class="fas fa-film"></i>
+                </div>
+                <h3>Henüz İstek Bulunmuyor</h3>
+                <p>Aradığınız dizi veya filmi ilk talep eden siz olun!</p>
+                <button class="btn-primary-glow btn-sm" id="emptyStateRequestBtn">
+                    <i class="fas fa-plus"></i> Hemen İstek Gönder
+                </button>
+            </div>
+
+            <!-- Pagination -->
+            <div id="requestsPagination" class="pagination-wrapper" style="display: none;">
+                <button id="prevPageBtn" class="pagination-btn"><i class="fas fa-chevron-left"></i> Önceki</button>
+                <span id="pageInfo" class="page-indicator">Sayfa 1 / 1</span>
+                <button id="nextPageBtn" class="pagination-btn">Sonraki <i class="fas fa-chevron-right"></i></button>
+            </div>
+        </section>
+    </main>
+
+    <!-- NEW REQUEST MODAL -->
+    <div class="modal-overlay" id="newRequestModal" style="display: none;">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <div class="modal-title-wrap">
+                    <div class="modal-icon">
+                        <i class="fas fa-paper-plane"></i>
+                    </div>
+                    <div>
+                        <h2>Yeni İçerik İsteği</h2>
+                        <p class="modal-desc">TMDB veya TVmaze üzerinden arayın veya bilgileri elle doldurun.</p>
+                    </div>
+                </div>
+                <button class="close-modal-btn" id="closeRequestModal" aria-label="Kapat">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <!-- If Not Logged In Notice -->
+                <div id="modalAuthWarning" class="auth-warning-box" style="display: none;">
+                    <i class="fas fa-lock"></i>
+                    <div>
+                        <h4>Giriş Yapmalısınız</h4>
+                        <p>İçerik isteğinde bulunmak ve diğer isteklere oy verebilmek için üye girişi yapmanız gerekmektedir.</p>
+                    </div>
+                    <button class="btn-primary-glow btn-sm" id="modalOpenLoginBtn">Giriş Yap</button>
+                </div>
+
+                <!-- Form Container -->
+                <form id="newRequestForm" class="request-form">
+                    <!-- Type Selector -->
+                    <div class="form-group">
+                        <label class="form-label"><i class="fas fa-shapes"></i> İçerik Türü</label>
+                        <div class="type-selection-radios">
+                            <label class="radio-pill active" data-type="series">
+                                <input type="radio" name="reqType" value="series" checked>
+                                <i class="fas fa-tv"></i> Dizi
+                            </label>
+                            <label class="radio-pill" data-type="movie">
+                                <input type="radio" name="reqType" value="movie">
+                                <i class="fas fa-film"></i> Film
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Already Exists Informational Banner -->
+                    <div id="alreadyExistsBanner" class="already-exists-banner" style="display: none;">
+                        <div class="already-exists-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="already-exists-info">
+                            <strong id="alreadyExistsTitle">Bu içerik zaten sitemizde mevcut!</strong>
+                            <span id="alreadyExistsSubtitle">Yeni bir istek oluşturmanıza gerek yoktur, hemen izleyebilirsiniz.</span>
+                        </div>
+                        <a id="alreadyExistsLink" href="#" class="btn-watch-existing" target="_blank">
+                            <i class="fas fa-play"></i> Hemen İzle
+                        </a>
+                    </div>
+
+                    <!-- External Search Section (TMDB & TVmaze) -->
+                    <div id="externalSearchSection" class="form-group">
+                        <label class="form-label" for="externalSearchInput">
+                            <i class="fas fa-globe"></i> TMDB & TVmaze ile Ara
+                        </label>
+                        <div class="search-input-wrapper">
+                            <i class="fas fa-search search-icon"></i>
+                            <input type="text" id="externalSearchInput" class="form-input"
+                                placeholder="Film veya dizi adını yazın..." autocomplete="off">
+                            <button type="button" id="triggerSearchBtn" class="btn-search-trigger" title="Ara">
+                                <i class="fas fa-arrow-right"></i>
+                            </button>
+                            <div class="search-spinner" id="externalSearchSpinner" style="display: none;">
+                                <i class="fas fa-circle-notch fa-spin"></i>
+                            </div>
+                        </div>
+
+                        <!-- Autocomplete Dropdown -->
+                        <div class="autocomplete-dropdown" id="externalSearchResults" style="display: none;">
+                            <!-- Items injected here -->
+                        </div>
+                    </div>
+
+                    <!-- Selected Item Preview Card -->
+                    <div id="selectedItemPreview" class="selected-preview-card" style="display: none;">
+                        <img id="previewPoster" class="preview-poster" src="" alt="Poster">
+                        <div class="preview-info">
+                            <div class="preview-header-line">
+                                <h4 id="previewTitle" class="preview-title"></h4>
+                                <span id="previewTypeBadge" class="type-pill"></span>
+                            </div>
+                            <div class="preview-meta">
+                                <span id="previewYear"></span>
+                                <span class="dot-separator">•</span>
+                                <span id="previewSource" class="source-tag"></span>
+                            </div>
+                            <p id="previewOverview" class="preview-overview"></p>
+                            <button type="button" id="clearSelectionBtn" class="btn-clear-selection">
+                                <i class="fas fa-times"></i> Seçimi Değiştir
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Manual Entry Toggle -->
+                    <div class="manual-entry-toggle-wrap">
+                        <button type="button" id="toggleManualBtn" class="btn-text-toggle">
+                            <i class="fas fa-pen-nib"></i> <span id="manualToggleText">Listede bulamadınız mı? Elle bilgi girin</span>
+                        </button>
+                    </div>
+
+                    <!-- Manual Fields (Collapsed by default) -->
+                    <div id="manualFieldsGroup" class="manual-fields-group" style="display: none;">
+                        <div class="form-group">
+                            <label class="form-label" for="manualTitleInput">
+                                İçerik Adı <span class="required-star">*</span>
+                            </label>
+                            <input type="text" id="manualTitleInput" class="form-input"
+                                placeholder="Örn: Semantic Error" maxlength="255">
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-half">
+                                <label class="form-label" for="manualYearInput">Çıkış Yılı (İsteğe bağlı)</label>
+                                <input type="number" id="manualYearInput" class="form-input"
+                                    placeholder="Örn: 2024" min="1900" max="2099">
+                            </div>
+                            <div class="form-group col-half">
+                                <label class="form-label" for="manualPosterInput">Afiş Linki (İsteğe bağlı URL)</label>
+                                <input type="url" id="manualPosterInput" class="form-input"
+                                    placeholder="https://.../poster.jpg">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Note / Description -->
+                    <div class="form-group">
+                        <label class="form-label" for="requestNoteInput">
+                            <i class="fas fa-comment-alt"></i> Eklemek İstediğiniz Not (İsteğe bağlı)
+                        </label>
+                        <textarea id="requestNoteInput" class="form-textarea" rows="3"
+                            placeholder="Örn: Bu dizinin Türkçe altyazısını çok merak ediyorum..."
+                            maxlength="1000"></textarea>
+                    </div>
+
+                    <!-- Form Status / Error Message -->
+                    <div id="formFeedbackMsg" class="form-feedback" style="display: none;"></div>
+
+                    <!-- Submit Actions -->
+                    <div class="modal-footer">
+                        <button type="button" class="btn-cancel" id="cancelRequestBtn">Vazgeç</button>
+                        <button type="submit" class="btn-primary-glow" id="submitRequestBtn">
+                            <i class="fas fa-check"></i> İsteği Gönder
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Modal (For direct login within Requests page) -->
+    <div class="login-modal-overlay" id="login-modal">
+        <div class="login-modal">
+            <button class="close-modal" id="close-modal">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="login-header">
+                <div class="login-logo">BL DİZİ</div>
+                <h2 class="login-title">Hoşgeldiniz</h2>
+                <p class="login-subtitle">Hesabınıza giriş yapın</p>
+            </div>
+            <form class="login-form" id="login-form-element" action="javascript:void(0);">
+                <div class="form-group">
+                    <label for="email">E-posta veya kullanıcı adı</label>
+                    <input type="text" class="form-control" id="email" name="username" autocomplete="username" placeholder="E-posta veya kullanıcı adı" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Şifre</label>
+                    <input type="password" class="form-control" id="password" name="password" autocomplete="current-password" placeholder="Şifreniz" required>
+                </div>
+                <button type="submit" class="login-btn-page" id="login-submit">Giriş Yap</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toastNotification" class="toast-container" style="display: none;">
+        <div class="toast-card">
+            <i class="toast-icon fas fa-check-circle"></i>
+            <span class="toast-message" id="toastMessage"></span>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-links">
+            <a href="/">Anasayfa</a>
+            <a href="/about">Hakkımızda</a>
+            <a href="/privacy_policy">Gizlilik Politikası</a>
+            <a href="/terms_of_use">Kullanım Şartları</a>
+            <a href="/sss">SSS</a>
+        </div>
+        <p>&copy;
+            <script>document.write(new Date().getFullYear())</script> BL Dizi. Tüm hakları saklıdır.
+        </p>
+    </footer>
+
+    <script src="/elements/heartbeat.js"></script>
+    <script type="module" src="/requests/js/requests.js?v=5"></script>
+</body>
+
+</html>
