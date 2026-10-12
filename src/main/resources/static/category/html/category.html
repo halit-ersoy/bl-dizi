@@ -1,0 +1,189 @@
+﻿<!DOCTYPE html>
+<html lang="tr" data-theme="pink">
+
+<head>
+    <script src="/elements/theme.js"></script>
+    <!-- Google AdSense (Auto Ads) -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8903433157602253"
+        crossorigin="anonymous"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kategori - BL Dizi</title>
+    <meta name="description" content="En sevdiğiniz BL ve GL dizi ile filmlerini yüksek kalitede BL Dizi'de keşfedin ve izleyin.">
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
+    <!-- Global & Category Styles -->
+    <link rel="stylesheet" href="/elements/variables.css">
+    <link rel="stylesheet" href="/homepage/css/main.css?v=7">
+    <link rel="stylesheet" href="/category/css/category.css?v=1">
+    <script src="/homepage/js/devtools-protection.js"></script>
+</head>
+
+<body>
+    <!-- Subtle Ambient Lighting -->
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
+
+    <div id="loading-screen" style="display: none;">
+        <div class="loader-container">
+            <div class="loader-circle"></div>
+            <div class="loading-text">BL DİZİ</div>
+        </div>
+        <div class="loader-status">Yükleniyor...</div>
+    </div>
+
+    <header id="header">
+        <a href="/" class="logo-link" aria-label="Ana sayfa">
+            <div class="logo">BL DİZİ</div>
+        </a>
+
+        <button class="mobile-menu-toggle" aria-label="Menüyü aç/kapat" id="mobile-menu-toggle">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <nav class="nav-menu" role="navigation" aria-label="Ana navigasyon">
+            <div class="nav-menu-header">
+                <div class="nav-menu-logo">BL DİZİ</div>
+                <button class="nav-menu-close" id="nav-menu-close" aria-label="Menüyü kapat">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <a href="/filmler" class="nav-link" id="nav-movies">Filmler</a>
+            <a href="/diziler" class="nav-link" id="nav-series">Diziler</a>
+            <a href="/requests" class="nav-link" id="nav-requests">İstekler</a>
+            <a href="https://whodatidols.com" class="nav-link" target="_blank" rel="noopener noreferrer">Who Dat Idols?</a>
+            <a href="#" class="nav-link" id="nav-calendar">Takvim</a>
+            <div class="nav-menu-footer">
+                <div class="nav-menu-social">
+                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="#" aria-label="Discord"><i class="fab fa-discord"></i></a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="category-main">
+        <div class="category-header">
+            <div class="category-header-top">
+                <div class="title-with-badge">
+                    <h1 id="page-title">Yükleniyor...</h1>
+                    <span class="count-badge" id="results-count-badge" style="display: none;">0 İçerik</span>
+                </div>
+
+                <!-- BL / GL / Tümü Ayrımı -->
+                <div class="subtype-filter-pills" id="subtype-filter-container">
+                    <button type="button" class="subtype-pill active" data-subtype="all">
+                        <i class="fas fa-layer-group"></i> Tümü
+                    </button>
+                    <button type="button" class="subtype-pill" data-subtype="bl">
+                        <i class="fas fa-heart"></i> BL
+                    </button>
+                    <button type="button" class="subtype-pill" data-subtype="gl">
+                        <i class="fas fa-sparkles"></i> GL
+                    </button>
+                </div>
+            </div>
+
+            <div class="filters-container">
+                <div class="filters-group">
+                    <!-- Kategori -->
+                    <div class="filter-dropdown">
+                        <select id="filter-category" class="filter-select" aria-label="Kategori Seç">
+                            <option value="">Kategori</option>
+                        </select>
+                        <i class="fas fa-chevron-down filter-icon"></i>
+                    </div>
+
+                    <!-- Yayın Durumu (Sadece diziler için) -->
+                    <div class="filter-dropdown" id="filter-status-container">
+                        <select id="filter-status" class="filter-select" aria-label="Yayın Durumu">
+                            <option value="">Yayın Durumu</option>
+                            <option value="1">Tamamlandı</option>
+                            <option value="0">Devam Ediyor</option>
+                        </select>
+                        <i class="fas fa-chevron-down filter-icon"></i>
+                    </div>
+
+                    <!-- Yayın Yılı -->
+                    <div class="filter-dropdown">
+                        <select id="filter-year" class="filter-select" aria-label="Yayın Yılı">
+                            <option value="">Yayın Yılı</option>
+                        </select>
+                        <i class="fas fa-chevron-down filter-icon"></i>
+                    </div>
+
+                    <!-- Ülke -->
+                    <div class="filter-dropdown">
+                        <select id="filter-country" class="filter-select" aria-label="Ülke Seç">
+                            <option value="">Ülke</option>
+                        </select>
+                        <i class="fas fa-chevron-down filter-icon"></i>
+                    </div>
+                </div>
+
+                <div class="filters-actions">
+                    <!-- Sıralama -->
+                    <div class="filter-dropdown sort-dropdown">
+                        <select id="filter-sort" class="filter-select" aria-label="Sıralama Ölçütü">
+                            <option value="newest">Yeniden Eskiye</option>
+                            <option value="oldest">Eskiden Yeniye</option>
+                            <option value="a-z">A - Z</option>
+                            <option value="z-a">Z - A</option>
+                        </select>
+                        <i class="fas fa-sort-amount-down filter-icon"></i>
+                    </div>
+
+                    <!-- Filtreleri Sıfırla -->
+                    <button id="reset-filters-btn" class="reset-btn" type="button">
+                        <i class="fas fa-filter-circle-xmark"></i> Sıfırla
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="category-content">
+            <div id="results-grid" class="results-grid">
+                <!-- İçerik kartları JS ile eklenecektir -->
+            </div>
+
+            <!-- Daha Fazla Yükleniyor Spinner -->
+            <div class="loading-more" id="loading-more" style="display: none;">
+                <div class="spinner"></div>
+            </div>
+
+            <!-- Boş Durum -->
+            <div class="empty-state" id="empty-state" style="display: none;">
+                <i class="fas fa-search"></i>
+                <p>Bu filtrelere uygun içerik bulunamadı.</p>
+                <button class="btn-primary" id="empty-state-reset" type="button">Filtreleri Sıfırla</button>
+            </div>
+
+            <!-- Sayfalama / Daha Fazla Yükle -->
+            <div class="pagination-controls" id="pagination-controls" style="display: none;">
+                <button id="load-more-btn" class="load-more-btn" type="button">Daha Fazla Göster</button>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-links">
+            <a href="/">Anasayfa</a>
+            <a href="/about">Hakkımızda</a>
+            <a href="/privacy_policy">Gizlilik Politikası</a>
+            <a href="/terms_of_use">Kullanım Şartları</a>
+            <a href="/sss">SSS</a>
+        </div>
+        <p class="footer-copy">&copy; <span id="currentYear"></span> BL Dizi. Tüm hakları saklıdır.</p>
+    </footer>
+
+    <script src="/elements/heartbeat.js"></script>
+    <script type="module" src="/category/js/category.js"></script>
+</body>
+
+</html>

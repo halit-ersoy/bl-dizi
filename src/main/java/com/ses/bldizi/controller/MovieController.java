@@ -51,4 +51,24 @@ public class MovieController {
 
         return ResponseEntity.ok(new PageResponse<>(movies, totalPages, page, totalElements));
     }
+
+    @GetMapping("/filter")
+    public ResponseEntity<PageResponse<VideoViewModel>> filterMoviesPaged(
+            @RequestParam(value = "subType", defaultValue = "all") String subType,
+            @RequestParam(value = "categoryId", required = false) Integer categoryId,
+            @RequestParam(value = "year", required = false) Integer year,
+            @RequestParam(value = "country", required = false) String country,
+            @RequestParam(value = "sort", defaultValue = "newest") String sort,
+            @RequestParam(value = "page", defaultValue = "1") int page,
+            @RequestParam(value = "size", defaultValue = "18") int size) {
+
+        int offset = Math.max(0, (page - 1) * size);
+        List<VideoViewModel> filteredMovies = movieRepository.findMoviesWithFilters(
+                subType, categoryId, year, country, sort, offset, size);
+        int totalElements = movieRepository.countMoviesWithFilters(
+                subType, categoryId, year, country);
+        int totalPages = (int) Math.ceil((double) totalElements / size);
+
+        return ResponseEntity.ok(new PageResponse<>(filteredMovies, totalPages, page, totalElements));
+    }
 }

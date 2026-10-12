@@ -85,12 +85,17 @@ public class HomeController {
         return renderHtml("static/favorites/html/favorites.html");
     }
 
+    @GetMapping({"/filmler", "/diziler"})
+    public ResponseEntity<Resource> getCategoryPage() {
+        return renderHtml("static/category/html/category.html");
+    }
+
     @GetMapping("/watch")
     public ResponseEntity<Resource> getWatchPage() {
         return renderHtml("static/watch/html/watch.html");
     }
 
-    @GetMapping("/{slug:[a-zA-Z0-9-'’]+}")
+    @GetMapping("/{slug:[a-zA-Z0-9-’']+}")
     public ResponseEntity<Resource> watchPageBySlug(@PathVariable("slug") String slug) {
         boolean isValid = seriesRepository.isValidSlug(slug) || movieRepository.isValidSlug(slug);
         if (!isValid) {

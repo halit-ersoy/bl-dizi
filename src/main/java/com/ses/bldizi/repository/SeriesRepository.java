@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import java.util.*;
 
 @Repository
+@SuppressWarnings({"SqlResolve", "SqlNoDataSourceInspection", "DuplicatedCode", "unused", "ConstantConditions"})
 public class SeriesRepository {
 
     private final JdbcTemplate jdbcTemplate;
@@ -143,6 +144,130 @@ public class SeriesRepository {
         """;
         String wild = "%" + query.trim() + "%";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, wild);
+        return count != null ? count : 0;
+    }
+
+    public List<VideoViewModel> findSeriesWithFilters(String subType, Integer categoryId, Integer finalStatus,
+                                                      Integer year, String country, String sort, int offset, int limit) {
+        StringBuilder sql = new StringBuilder("""
+            SELECT s.ID, s.name, s.Summary, s.Language, s.Country, s.finalStatus, s.uploadDate, s.slug,
+                   (SELECT COUNT(*) FROM Episode e WHERE e.SeriesId = s.ID AND (e.IsHidden = 0 OR e.IsHidden IS NULL)) as episodeCount,
+                   (SELECT STRING_AGG(c.Name, ', ') FROM Categories c 
+                    JOIN SeriesCategories sc2 ON sc2.CategoryID = c.ID 
+                    WHERE sc2.SeriesID = s.ID) as Category
+            FROM Series s
+            WHERE (s.IsHidden = 0 OR s.IsHidden IS NULL)
+              AND (s.SeriesType = 'BL' OR s.isBl = 1 OR EXISTS (SELECT 1 FROM SeriesCategories sc_all WHERE sc_all.SeriesID = s.ID AND sc_all.CategoryID IN (52, 63)))
+        """);
+
+        List<Object> params = new ArrayList<>();
+
+        if ("gl".equalsIgnoreCase(subType)) {
+            sql.append(" AND EXISTS (SELECT 1 FROM SeriesCategories sc_gl WHERE sc_gl.SeriesID = s.ID AND sc_gl.CategoryID = 63)");
+        } else if ("bl".equalsIgnoreCase(subType)) {
+            sql.append(" AND (s.SeriesType = 'BL' OR s.isBl = 1 OR EXISTS (SELECT 1 FROM SeriesCategories sc_bl WHERE sc_bl.SeriesID = s.ID AND sc_bl.CategoryID = 52)) AND NOT EXISTS (SELECT 1 FROM SeriesCategories sc_gl2 WHERE sc_gl2.SeriesID = s.ID AND sc_gl2.CategoryID = 63)");
+        }
+
+        if (categoryId != null && categoryId > 0) {
+            sql.append(" AND EXISTS (SELECT 1 FROM SeriesCategories sc_cat WHERE sc_cat.SeriesID = s.ID AND sc_cat.CategoryID = ?)");
+            params.add(categoryId);
+        }
+
+        if (finalStatus != null && finalStatus >= 0) {
+            sql.append(" AND s.finalStatus = ?");
+            params.add(finalStatus);
+        }
+
+        if (year != null && year > 0) {
+            sql.append(" AND (EXISTS (SELECT 1 FROM Episode e WHERE e.SeriesId = s.ID AND e.ReleaseYear = ?) OR YEAR(s.uploadDate) = ?)");
+            params.add(year);
+            params.add(year);
+        }
+
+        if (country != null && !country.isEmpty() && !"all".equalsIgnoreCase(country)) {
+            sql.append(" AND LOWER(s.Country) = LOWER(?)");
+            params.add(country.trim());
+        }
+
+        if ("oldest".equalsIgnoreCase(sort)) {
+            sql.append(" ORDER BY s.uploadDate ASC, s.name ASC");
+        } else if ("a-z".equalsIgnoreCase(sort)) {
+            sql.append(" ORDER BY s.name ASC");
+        } else if ("z-a".equalsIgnoreCase(sort)) {
+            sql.append(" ORDER BY s.name DESC");
+        } else {
+            sql.append(" ORDER BY s.uploadDate DESC, s.name ASC");
+        }
+
+        sql.append(" OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+        params.add(offset);
+        params.add(limit);
+
+        return jdbcTemplate.query(sql.toString(), (rs, rowNum) -> {
+            String idStr = rs.getString("ID");
+            UUID seriesId = UUID.fromString(idStr);
+            String name = rs.getString("name");
+            String category = rs.getString("Category");
+            String countryVal = rs.getString("Country");
+            String slug = rs.getString("slug");
+            int epCount = rs.getInt("episodeCount");
+            int fStatus = rs.getInt("finalStatus");
+
+            String mainCategory = category != null && category.contains(",") ? category.split(",")[0].trim() : (category != null ? category : "BL Dizi");
+            String statusText = (fStatus == 1) ? "Tamamlandı" : "Devam Ediyor";
+            String infoText = mainCategory + (epCount > 0 ? " • " + epCount + " Bölüm" : " • " + statusText);
+            String videoUrl = (slug != null && !slug.isEmpty()) ? "/" + slug : "/" + seriesId;
+
+            return VideoViewModel.builder()
+                    .id(seriesId.toString())
+                    .title(name)
+                    .info(infoText)
+                    .thumbnailUrl("/media/image/" + seriesId + "?v=2")
+                    .videoUrl(videoUrl)
+                    .country(countryVal != null ? countryVal.toLowerCase() : "th")
+                    .build();
+        }, params.toArray());
+    }
+
+    public int countSeriesWithFilters(String subType, Integer categoryId, Integer finalStatus, Integer year,
+                                      String country) {
+        StringBuilder sql = new StringBuilder("""
+            SELECT COUNT(DISTINCT s.ID)
+            FROM Series s
+            WHERE (s.IsHidden = 0 OR s.IsHidden IS NULL)
+              AND (s.SeriesType = 'BL' OR s.isBl = 1 OR EXISTS (SELECT 1 FROM SeriesCategories sc_all WHERE sc_all.SeriesID = s.ID AND sc_all.CategoryID IN (52, 63)))
+        """);
+
+        List<Object> params = new ArrayList<>();
+
+        if ("gl".equalsIgnoreCase(subType)) {
+            sql.append(" AND EXISTS (SELECT 1 FROM SeriesCategories sc_gl WHERE sc_gl.SeriesID = s.ID AND sc_gl.CategoryID = 63)");
+        } else if ("bl".equalsIgnoreCase(subType)) {
+            sql.append(" AND (s.SeriesType = 'BL' OR s.isBl = 1 OR EXISTS (SELECT 1 FROM SeriesCategories sc_bl WHERE sc_bl.SeriesID = s.ID AND sc_bl.CategoryID = 52)) AND NOT EXISTS (SELECT 1 FROM SeriesCategories sc_gl2 WHERE sc_gl2.SeriesID = s.ID AND sc_gl2.CategoryID = 63)");
+        }
+
+        if (categoryId != null && categoryId > 0) {
+            sql.append(" AND EXISTS (SELECT 1 FROM SeriesCategories sc_cat WHERE sc_cat.SeriesID = s.ID AND sc_cat.CategoryID = ?)");
+            params.add(categoryId);
+        }
+
+        if (finalStatus != null && finalStatus >= 0) {
+            sql.append(" AND s.finalStatus = ?");
+            params.add(finalStatus);
+        }
+
+        if (year != null && year > 0) {
+            sql.append(" AND (EXISTS (SELECT 1 FROM Episode e WHERE e.SeriesId = s.ID AND e.ReleaseYear = ?) OR YEAR(s.uploadDate) = ?)");
+            params.add(year);
+            params.add(year);
+        }
+
+        if (country != null && !country.isEmpty() && !"all".equalsIgnoreCase(country)) {
+            sql.append(" AND LOWER(s.Country) = LOWER(?)");
+            params.add(country.trim());
+        }
+
+        Integer count = jdbcTemplate.queryForObject(sql.toString(), Integer.class, params.toArray());
         return count != null ? count : 0;
     }
 

@@ -53,6 +53,27 @@ public class SeriesController {
         return ResponseEntity.ok(new PageResponse<>(series, totalPages, page, totalElements));
     }
 
+    @GetMapping("/filter")
+    public ResponseEntity<PageResponse<VideoViewModel>> filterSeriesPaged(
+            @RequestParam(value = "subType", defaultValue = "all") String subType,
+            @RequestParam(value = "categoryId", required = false) Integer categoryId,
+            @RequestParam(value = "finalStatus", required = false) Integer finalStatus,
+            @RequestParam(value = "year", required = false) Integer year,
+            @RequestParam(value = "country", required = false) String country,
+            @RequestParam(value = "sort", defaultValue = "newest") String sort,
+            @RequestParam(value = "page", defaultValue = "1") int page,
+            @RequestParam(value = "size", defaultValue = "18") int size) {
+
+        int offset = Math.max(0, (page - 1) * size);
+        List<VideoViewModel> filteredSeries = seriesRepository.findSeriesWithFilters(
+                subType, categoryId, finalStatus, year, country, sort, offset, size);
+        int totalElements = seriesRepository.countSeriesWithFilters(
+                subType, categoryId, finalStatus, year, country);
+        int totalPages = (int) Math.ceil((double) totalElements / size);
+
+        return ResponseEntity.ok(new PageResponse<>(filteredSeries, totalPages, page, totalElements));
+    }
+
     @GetMapping("/{id}/episodes")
     public ResponseEntity<List<EpisodeViewModel>> getEpisodes(@PathVariable("id") UUID id) {
         return ResponseEntity.ok(seriesRepository.findEpisodesBySeriesId(id));
