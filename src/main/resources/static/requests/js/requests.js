@@ -314,7 +314,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const status = (req.status || 'PENDING').toLowerCase();
             let statusLabel = 'Beklemede';
             let statusClass = 'pending';
-            if (status === 'approved' || status === 'eklendi') {
+            if (status === 'completed' || status === 'approved' || status === 'eklendi') {
                 statusLabel = 'Eklendi';
                 statusClass = 'completed';
             } else if (status === 'in_review' || status === 'inceleniyor') {

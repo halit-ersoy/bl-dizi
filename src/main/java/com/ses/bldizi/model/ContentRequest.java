@@ -17,6 +17,7 @@ public class ContentRequest {
     private String status; // "PENDING", "APPROVED", "COMPLETED", "REJECTED"
     private int voteCount;
     private Instant createdAt;
+    private Instant completedAt;
     private boolean userVoted;
     private boolean isBl = true;
     private String platform = "bldizi";
@@ -150,5 +151,13 @@ public class ContentRequest {
 
     public void setPlatform(String platform) {
         this.platform = platform;
+    }
+
+    public Instant getCompletedAt() {
+        return completedAt;
+    }
+
+    public void setCompletedAt(Instant completedAt) {
+        this.completedAt = completedAt;
     }
 }

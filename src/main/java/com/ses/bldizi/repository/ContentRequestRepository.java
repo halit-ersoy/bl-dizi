@@ -39,6 +39,7 @@ public class ContentRequestRepository {
                         Status NVARCHAR(50) DEFAULT 'PENDING',
                         VoteCount INT DEFAULT 1,
                         CreatedAt DATETIME2 DEFAULT GETUTCDATE(),
+                        CompletedAt DATETIME2 NULL,
                         IsBl BIT DEFAULT 0 NOT NULL,
                         Platform NVARCHAR(50) DEFAULT 'whodatidols' NOT NULL
                     );
@@ -75,8 +76,41 @@ public class ContentRequestRepository {
                         ALTER TABLE ContentRequest ADD Platform NVARCHAR(50) DEFAULT 'whodatidols' NOT NULL;
                     END
                     """);
+
+            jdbcTemplate.execute("""
+                    IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'ContentRequest' AND COLUMN_NAME = 'CompletedAt')
+                    BEGIN
+                        ALTER TABLE ContentRequest ADD CompletedAt DATETIME2 NULL;
+                    END
+                    """);
         } catch (Exception e) {
             System.err.println("Error initializing ContentRequest tables: " + e.getMessage());
+        }
+    }
+
+    public void cleanupExpiredCompletedRequests() {
+        try {
+            // Eklendi olarak isaretlenip uzerinden 24 saat gecmis istekleri ve iliskili oylari sil
+            String deleteVotesSql = """
+                    DELETE FROM ContentRequestVote
+                    WHERE RequestId IN (
+                        SELECT Id FROM ContentRequest
+                        WHERE Status IN ('COMPLETED', 'APPROVED', 'EKLENDI')
+                          AND CompletedAt IS NOT NULL
+                          AND CompletedAt <= DATEADD(HOUR, -24, GETUTCDATE())
+                    )
+                    """;
+            jdbcTemplate.update(deleteVotesSql);
+
+            String deleteRequestsSql = """
+                    DELETE FROM ContentRequest
+                    WHERE Status IN ('COMPLETED', 'APPROVED', 'EKLENDI')
+                      AND CompletedAt IS NOT NULL
+                      AND CompletedAt <= DATEADD(HOUR, -24, GETUTCDATE())
+                    """;
+            jdbcTemplate.update(deleteRequestsSql);
+        } catch (Exception e) {
+            System.err.println("Error cleaning up expired completed requests in bldizi: " + e.getMessage());
         }
     }
 
@@ -89,7 +123,7 @@ public class ContentRequestRepository {
         Instant now = Instant.now();
         Timestamp nowTs = Timestamp.from(now);
 
-        // bldizi'den yapılan istekler her zaman IsBl = 1 ve Platform = 'bldizi' olarak kaydedilir
+        // bldizi'den yapilan istekler her zaman IsBl = 1 ve Platform = 'bldizi' olarak kaydedilir
         String insertRequestSql = """
                 INSERT INTO ContentRequest
                 (Id, UserId, UserNickname, Title, ContentType, PosterUrl, ReleaseYear, TmdbId, TvMazeId, Description, Status, VoteCount, CreatedAt, IsBl, Platform)
@@ -177,16 +211,17 @@ public class ContentRequestRepository {
     }
 
     /**
-     * BL Dizi için istekleri getirir (yalnızca BL olanlar: IsBl = 1 veya Platform = 'bldizi').
+     * BL Dizi icin istekleri getirir (yalnizca BL olanlar: IsBl = 1 veya Platform = 'bldizi').
      */
     public List<ContentRequest> getRequests(String filterType, String sortBy, UUID currentUserId, int limit, int offset) {
         ensureTablesExist();
+        cleanupExpiredCompletedRequests();
 
         StringBuilder sql = new StringBuilder();
         List<Object> params = new ArrayList<>();
 
         sql.append("SELECT r.Id, r.UserId, r.UserNickname, r.Title, r.ContentType, r.PosterUrl, ")
-           .append("r.ReleaseYear, r.TmdbId, r.TvMazeId, r.Description, r.Status, r.VoteCount, r.CreatedAt, ");
+           .append("r.ReleaseYear, r.TmdbId, r.TvMazeId, r.Description, r.Status, r.VoteCount, r.CreatedAt, r.CompletedAt, ");
 
         if (currentUserId != null) {
             sql.append("CASE WHEN EXISTS (SELECT 1 FROM ContentRequestVote v WHERE v.RequestId = r.Id AND v.UserId = ?) THEN 1 ELSE 0 END AS UserVoted ");
@@ -195,7 +230,7 @@ public class ContentRequestRepository {
             sql.append("0 AS UserVoted ");
         }
 
-        // bldizi'de sadece BL olan içerik istekleri listelenir
+        // bldizi'de sadece BL olan icerik istekleri listelenir
         sql.append("FROM ContentRequest r WHERE (r.IsBl = 1 OR r.Platform = 'bldizi') ");
 
         if ("movie".equalsIgnoreCase(filterType)) {
@@ -242,6 +277,11 @@ public class ContentRequestRepository {
                 r.setCreatedAt(ts.toInstant());
             }
 
+            Timestamp compTs = rs.getTimestamp("CompletedAt");
+            if (compTs != null) {
+                r.setCompletedAt(compTs.toInstant());
+            }
+
             r.setUserVoted(rs.getInt("UserVoted") == 1);
             r.setBl(true);
             r.setPlatform("bldizi");
@@ -251,6 +291,7 @@ public class ContentRequestRepository {
 
     public int countRequests(String filterType) {
         ensureTablesExist();
+        cleanupExpiredCompletedRequests();
 
         String sql = "SELECT COUNT(*) FROM ContentRequest WHERE (IsBl = 1 OR Platform = 'bldizi') ";
         if ("movie".equalsIgnoreCase(filterType)) {
@@ -265,7 +306,8 @@ public class ContentRequestRepository {
 
     public Optional<ContentRequest> findById(UUID requestId) {
         ensureTablesExist();
-        String sql = "SELECT Id, UserId, UserNickname, Title, ContentType, PosterUrl, ReleaseYear, TmdbId, TvMazeId, Description, Status, VoteCount, CreatedAt, 0 as UserVoted FROM ContentRequest WHERE Id = ?";
+        cleanupExpiredCompletedRequests();
+        String sql = "SELECT Id, UserId, UserNickname, Title, ContentType, PosterUrl, ReleaseYear, TmdbId, TvMazeId, Description, Status, VoteCount, CreatedAt, CompletedAt, 0 as UserVoted FROM ContentRequest WHERE Id = ?";
         return jdbcTemplate.query(sql, rs -> {
             if (rs.next()) {
                 ContentRequest r = new ContentRequest();
@@ -292,6 +334,11 @@ public class ContentRequestRepository {
                 Timestamp ts = rs.getTimestamp("CreatedAt");
                 if (ts != null) {
                     r.setCreatedAt(ts.toInstant());
+                }
+
+                Timestamp compTs = rs.getTimestamp("CompletedAt");
+                if (compTs != null) {
+                    r.setCompletedAt(compTs.toInstant());
                 }
                 return Optional.of(r);
             }
