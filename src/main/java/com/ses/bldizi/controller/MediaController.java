@@ -46,6 +46,9 @@ public class MediaController {
     @Value("${media.actor.images.path:D:\\SourceFiles\\mssql\\media\\images\\actors}")
     private String actorImagesPath;
 
+    @Value("${media.source.ads.path:D:\\SourceFiles\\mssql\\media\\videos\\ads}")
+    private String adsPath;
+
     private final JdbcTemplate jdbcTemplate;
     private final VideoSourceRepository videoSourceRepository;
 
@@ -291,6 +294,7 @@ public class MediaController {
             case "movie" -> Paths.get(moviesPath).toAbsolutePath().normalize();
             case "soap_opera", "soap-opera", "soapopera", "series", "episode" -> Paths.get(soapOperasPath).toAbsolutePath().normalize();
             case "trailer", "trailers", "hero" -> Paths.get(trailersPath).toAbsolutePath().normalize();
+            case "ad" -> Paths.get(adsPath).toAbsolutePath().normalize();
             default -> null;
         };
     }
@@ -314,6 +318,10 @@ public class MediaController {
             Integer countEp = jdbcTemplate.queryForObject(
                     "SELECT COUNT(*) FROM Episode WHERE ID = ?", Integer.class, id.toString());
             if (countEp != null && countEp > 0) return "soap_opera";
+
+            Integer countAd = jdbcTemplate.queryForObject(
+                    "SELECT COUNT(*) FROM Ad WHERE ID = ?", Integer.class, id.toString());
+            if (countAd != null && countAd > 0) return "ad";
         } catch (Exception ignored) {}
         return "unknown";
     }

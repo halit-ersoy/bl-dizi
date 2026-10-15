@@ -4,6 +4,7 @@ import com.ses.bldizi.model.CastMemberDto;
 import com.ses.bldizi.repository.ActorRepository;
 import com.ses.bldizi.repository.MovieRepository;
 import com.ses.bldizi.repository.SeriesRepository;
+import com.ses.bldizi.service.SystemSettingService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
@@ -18,15 +19,18 @@ public class VideoController {
     private final MovieRepository movieRepository;
     private final ActorRepository actorRepository;
     private final JdbcTemplate jdbcTemplate;
+    private final SystemSettingService systemSettingService;
 
     public VideoController(SeriesRepository seriesRepository,
                            MovieRepository movieRepository,
                            ActorRepository actorRepository,
-                           JdbcTemplate jdbcTemplate) {
+                           JdbcTemplate jdbcTemplate,
+                           SystemSettingService systemSettingService) {
         this.seriesRepository = seriesRepository;
         this.movieRepository = movieRepository;
         this.actorRepository = actorRepository;
         this.jdbcTemplate = jdbcTemplate;
+        this.systemSettingService = systemSettingService;
     }
 
     @GetMapping("/details")
@@ -184,6 +188,15 @@ public class VideoController {
 
     @GetMapping({"/commercial/random", "/ad/random"})
     public ResponseEntity<Map<String, Object>> getRandomAd() {
+        int probability = systemSettingService != null ? systemSettingService.getAdProbability() : 30;
+        if (probability <= 0) {
+            return ResponseEntity.noContent().build();
+        }
+        int roll = new java.util.Random().nextInt(100);
+        if (roll >= probability) {
+            return ResponseEntity.noContent().build();
+        }
+
         try {
             List<Map<String, Object>> ads = jdbcTemplate.queryForList(
                     "SELECT TOP 1 ID, Name FROM Ad WHERE IsHidden = 0 ORDER BY NEWID()");
@@ -197,7 +210,8 @@ public class VideoController {
 
     @GetMapping({"/commercial/probability", "/ad/probability"})
     public ResponseEntity<Map<String, Object>> getAdProbability() {
-        return ResponseEntity.ok(Map.of("probability", 0));
+        int probability = systemSettingService != null ? systemSettingService.getAdProbability() : 30;
+        return ResponseEntity.ok(Map.of("probability", probability));
     }
 }
 

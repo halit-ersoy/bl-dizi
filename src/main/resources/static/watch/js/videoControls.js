@@ -322,6 +322,10 @@ export function initVideoControls(videoId) {
 
     function setupErrorHandling() {
         videoPlayer.addEventListener('error', () => {
+            if (isAdPlaying) {
+                // Ad error recovery is handled gracefully in playAd
+                return;
+            }
             playPauseWrapper.classList.add('loaded'); // Hata durumunda skeleton'ı kaldır ki mesaj görünsün
             if (titleEl) titleEl.innerText = 'Video yüklenirken hata oluştu.';
             if (infoEl) infoEl.innerText = 'Video bulunamadı veya oynatılamıyor.';
@@ -335,8 +339,8 @@ export function initVideoControls(videoId) {
             activeHls.destroy();
             activeHls = null;
         }
-        videoPlayer.src = "";
         videoPlayer.removeAttribute('src');
+        videoPlayer.src = "";
         videoPlayer.load();
 
         if (!id) {
@@ -359,12 +363,12 @@ export function initVideoControls(videoId) {
             activeHls.attachMedia(videoPlayer);
             activeHls.on(Hls.Events.MANIFEST_PARSED, () => {
                 // HLS successfully loaded and attached
-                console.log('HLS loaded successfully');
+                console.log('HLS loaded successfully for id:', id);
                 videoPlayer.play().catch(e => console.log("Auto-play blocked:", e));
             });
             activeHls.on(Hls.Events.ERROR, (event, data) => {
                 if (data.fatal) {
-                    console.warn('HLS fatal error, falling back to MP4:', data.type);
+                    console.warn('HLS fatal error, falling back to MP4:', data.type, data.details);
                     if (activeHls) {
                         activeHls.destroy();
                         activeHls = null;
@@ -386,6 +390,12 @@ export function initVideoControls(videoId) {
     }
 
     function fallbackToMp4(url) {
+        if (activeHls) {
+            activeHls.destroy();
+            activeHls = null;
+        }
+        videoPlayer.removeAttribute('src');
+        videoPlayer.src = url;
         videoSource.src = url;
         videoPlayer.load();
         const onMetadata = () => {
@@ -394,8 +404,6 @@ export function initVideoControls(videoId) {
         };
         videoPlayer.addEventListener('loadedmetadata', onMetadata);
     }
-
-
 
     function disableNativeShortcutsOnVideo() {
         videoPlayer.addEventListener('keydown', e => {
@@ -476,12 +484,14 @@ export function initVideoControls(videoId) {
             wrapper.appendChild(adBadge);
         }
 
-        // Load and play the ad video
-        loadVideo(adId);
-        
-        const onAdEnded = async () => {
+        let adFinished = false;
+        const cleanupAndResumeMain = async () => {
+            if (adFinished) return;
+            adFinished = true;
+
             videoPlayer.removeEventListener('ended', onAdEnded);
-            
+            videoPlayer.removeEventListener('error', onAdError);
+
             // Clean up ad state
             isAdPlaying = false;
             if (adBadge.parentNode) {
@@ -495,8 +505,21 @@ export function initVideoControls(videoId) {
             let hasMainSource = await checkMainSourceAvailability(originalId);
             await loadSources(originalId, hasMainSource);
         };
-        
+
+        const onAdEnded = () => {
+            cleanupAndResumeMain();
+        };
+
+        const onAdError = (e) => {
+            console.warn("Ad encountered playback error, transitioning to original content:", e);
+            cleanupAndResumeMain();
+        };
+
         videoPlayer.addEventListener('ended', onAdEnded);
+        videoPlayer.addEventListener('error', onAdError, { once: true });
+
+        // Load and play the ad video via HLS
+        loadVideo(adId);
     }
 
     async function loadSources(id, hasMainSource) {

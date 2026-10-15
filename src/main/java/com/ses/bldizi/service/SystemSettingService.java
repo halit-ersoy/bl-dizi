@@ -76,4 +76,21 @@ public class SystemSettingService {
         }
         return true;
     }
+
+    public int getAdProbability() {
+        if (jdbcTemplate != null) {
+            try {
+                String val = jdbcTemplate.queryForObject(
+                        "SELECT SettingValue FROM SystemSettings WHERE SettingKey = 'ad_probability'",
+                        String.class
+                );
+                if (val != null) {
+                    return Integer.parseInt(val.trim());
+                }
+            } catch (Exception e) {
+                logger.debug("SystemSettings ad_probability okunamadi: {}", e.getMessage());
+            }
+        }
+        return 30;
+    }
 }
