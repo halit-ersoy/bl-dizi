@@ -204,6 +204,55 @@
                         <p>Bu içerik yetişkinlere yöneliktir. İzlemek için onaylayın.</p>
                         <button id="removeBlurBtn" class="btn-remove-blur">İzlemeye Başla</button>
                     </div>
+                    <!-- Upcoming Countdown Player Overlay -->
+                    <div id="upcomingPlayerOverlay" class="upcoming-player-overlay" style="display: none;">
+                        <div class="upcoming-player-bg" id="upcomingPlayerBg"></div>
+                        <div class="upcoming-player-vignette"></div>
+                        <div class="upcoming-player-content">
+                            <div class="upcoming-player-badge">
+                                <span class="upcoming-pulse-dot"></span>
+                                <span id="upcomingBadgeText">YAYINA KALAN SÜRE</span>
+                            </div>
+                            <h1 class="upcoming-player-title" id="upcomingPlayerTitle"></h1>
+                            <div class="upcoming-player-meta">
+                                <span id="upcomingPlayerCategory" class="upcoming-player-type-tag">DİZİ</span>
+                                <span id="upcomingPlayerDate" class="upcoming-player-date"><i class="far fa-calendar-alt"></i> </span>
+                                <span id="upcomingPlayerTime" class="upcoming-player-time"><i class="far fa-clock"></i> </span>
+                            </div>
+
+                            <!-- Live Countdown -->
+                            <div class="upcoming-player-countdown" id="upcomingPlayerTimer">
+                                <div class="upcoming-timer-box">
+                                    <span class="upcoming-timer-val" id="playerDays">00</span>
+                                    <span class="upcoming-timer-lbl">GÜN</span>
+                                </div>
+                                <span class="upcoming-timer-colon">:</span>
+                                <div class="upcoming-timer-box">
+                                    <span class="upcoming-timer-val" id="playerHours">00</span>
+                                    <span class="upcoming-timer-lbl">SAAT</span>
+                                </div>
+                                <span class="upcoming-timer-colon">:</span>
+                                <div class="upcoming-timer-box">
+                                    <span class="upcoming-timer-val" id="playerMinutes">00</span>
+                                    <span class="upcoming-timer-lbl">DAKİKA</span>
+                                </div>
+                                <span class="upcoming-timer-colon">:</span>
+                                <div class="upcoming-timer-box">
+                                    <span class="upcoming-timer-val" id="playerSeconds">00</span>
+                                    <span class="upcoming-timer-lbl">SANİYE</span>
+                                </div>
+                            </div>
+
+                            <!-- Expired / Yakında Yüklenecek -->
+                            <div class="upcoming-player-expired" id="upcomingPlayerExpired" style="display: none;">
+                                <div class="upcoming-expired-pill">
+                                    <i class="fas fa-bolt"></i> YAKINDA YAYINDA
+                                </div>
+                                <h3 class="upcoming-expired-heading">Bu Bölüm Çok Yakında Yüklenecektir</h3>
+                                <p class="upcoming-expired-text">Çeviri ve hazırlık işlemleri son aşamadadır. Yüklendiği anda buradan izleyebilirsiniz.</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="video-controls">

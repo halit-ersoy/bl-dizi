@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="tr" data-theme="pink">
 
 <head>
@@ -340,8 +340,14 @@
         <div class="weekly-best-grid"></div>
     </section>
     <section class="upcoming-episodes-section">
-        <div class="upcoming-episodes-header">
+        <div class="upcoming-episodes-header section-header">
             <h2 class="upcoming-episodes-title">YÜKLENECEK BÖLÜMLER</h2>
+            <div class="section-actions">
+                <div class="upcoming-episodes-toggle">
+                    <button id="upcoming-tv-toggle" class="upcoming-toggle-btn active" type="button">Diziler</button>
+                    <button id="upcoming-movies-toggle" class="upcoming-toggle-btn" type="button">Filmler</button>
+                </div>
+            </div>
         </div>
         <div class="upcoming-carousel-container">
             <button class="upcoming-carousel-nav upcoming-prev-btn prev-btn" data-carousel="upcoming-episodes-carousel"
@@ -596,7 +602,7 @@
     </div>
 
     <script src="/elements/heartbeat.js"></script>
-    <script type="module" src="/homepage/js/main.js?v=7"></script>
+    <script type="module" src="/homepage/js/main.js?v=8"></script>
     <script src="/homepage/js/updateNotes.js?v=1"></script>
 </body>
 

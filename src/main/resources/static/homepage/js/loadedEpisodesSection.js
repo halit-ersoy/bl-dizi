@@ -1,20 +1,80 @@
-import { handleImageSkeleton } from '../../elements/userLogged.js';
+﻿import { handleImageSkeleton } from '../../elements/userLogged.js';
 
 export function initLoadedEpisodesSection() {
     const carousel = document.getElementById('upcoming-episodes-carousel');
-
-    // To track and clear timers
-    let countdownTimers = [];
+    const tvToggle = document.getElementById('upcoming-tv-toggle');
+    const moviesToggle = document.getElementById('upcoming-movies-toggle');
+    const toggleContainer = document.querySelector('.upcoming-episodes-toggle');
 
     if (!carousel) {
         console.error('Upcoming Episodes Section: Carousel element not found.');
         return;
     }
 
-    // Fetch and populate upcoming episodes
+    let allUpcomingEpisodes = [];
+    let currentMode = 'tv'; // 'tv' (Diziler) or 'movies' (Filmler)
+    let countdownTimers = [];
+
+    // Setup navigation buttons once
+    setupCarouselNavigation();
+
+    // Setup toggle buttons
+    if (tvToggle && moviesToggle && toggleContainer) {
+        tvToggle.addEventListener('click', () => {
+            if (currentMode !== 'tv') {
+                switchMode('tv');
+            }
+        });
+
+        moviesToggle.addEventListener('click', () => {
+            if (currentMode !== 'movies') {
+                switchMode('movies');
+            }
+        });
+    }
+
+    // Fetch and initialize
     fetchUpcomingData().then(data => {
-        populateUpcomingCarousel(data);
+        allUpcomingEpisodes = Array.isArray(data) ? data : [];
+        renderCurrentMode();
     });
+
+    function switchMode(mode) {
+        currentMode = mode;
+        updateToggleState();
+
+        carousel.classList.add('fade-out');
+        setTimeout(() => {
+            renderCurrentMode();
+            carousel.classList.remove('fade-out');
+        }, 200);
+    }
+
+    function updateToggleState() {
+        if (!tvToggle || !moviesToggle || !toggleContainer) return;
+        tvToggle.classList.toggle('active', currentMode === 'tv');
+        moviesToggle.classList.toggle('active', currentMode === 'movies');
+        toggleContainer.classList.toggle('movies-active', currentMode === 'movies');
+    }
+
+    function isTvType(type) {
+        if (!type) return true;
+        const t = String(type).trim().toLowerCase();
+        return t === 'soapopera' || t === 'series' || t === 'tv' || t === 'soap_opera' || t === 'dizi';
+    }
+
+    function isMovieType(type) {
+        if (!type) return false;
+        const t = String(type).trim().toLowerCase();
+        return t === 'movie' || t === 'film';
+    }
+
+    function renderCurrentMode() {
+        const filtered = allUpcomingEpisodes.filter(item => {
+            return currentMode === 'tv' ? isTvType(item.type) : isMovieType(item.type);
+        });
+        populateUpcomingCarousel(filtered);
+    }
 
     function clearAllCountdowns() {
         countdownTimers.forEach(timer => clearInterval(timer));
@@ -35,31 +95,40 @@ export function initLoadedEpisodesSection() {
             });
     }
 
-    function formatDate(dateString) {
+    function formatDateTime(dateString) {
         try {
+            if (!dateString) return { date: '', time: '' };
             const date = new Date(dateString);
-            return date.toLocaleDateString('tr-TR', {
+            if (isNaN(date.getTime())) {
+                return { date: dateString, time: '' };
+            }
+            const formattedDate = date.toLocaleDateString('tr-TR', {
                 day: '2-digit',
                 month: '2-digit',
                 year: 'numeric'
             });
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            return {
+                date: formattedDate,
+                time: (hours === '00' && minutes === '00') ? '' : `${hours}:${minutes}`
+            };
         } catch (error) {
             console.error('Error formatting date:', error);
-            return dateString;
+            return { date: dateString, time: '' };
         }
     }
 
     function calculateTimeRemaining(targetDate) {
-        const now = new Date().getTime();
+        if (!targetDate) return { isPast: true, days: 0, hours: 0, minutes: 0, seconds: 0 };
+        const now = Date.now();
         const target = new Date(targetDate).getTime();
         const difference = target - now;
 
-        // If the date is in the past
-        if (difference <= 0) {
-            return { isPast: true };
+        if (isNaN(difference) || difference <= 0) {
+            return { isPast: true, days: 0, hours: 0, minutes: 0, seconds: 0 };
         }
 
-        // Calculate time units
         const days = Math.floor(difference / (1000 * 60 * 60 * 24));
         const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
         const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
@@ -74,69 +143,88 @@ export function initLoadedEpisodesSection() {
         };
     }
 
+    function getCountdownBadgeHtml(timeRemaining, episodeId) {
+        if (timeRemaining.isPast) {
+            return `<div class="upcoming-status-pill" id="${episodeId}"><i class="fas fa-bolt"></i> Yakında Yüklenecek</div>`;
+        }
+        const dStr = String(timeRemaining.days).padStart(2, '0');
+        const hStr = String(timeRemaining.hours).padStart(2, '0');
+        const mStr = String(timeRemaining.minutes).padStart(2, '0');
+        const sStr = String(timeRemaining.seconds).padStart(2, '0');
+
+        return `
+            <div class="upcoming-countdown-pill" id="${episodeId}">
+                <div class="upcoming-cd-item"><span class="upcoming-cd-val">${dStr}</span><span class="upcoming-cd-unit">g</span></div>
+                <span class="upcoming-cd-colon">:</span>
+                <div class="upcoming-cd-item"><span class="upcoming-cd-val">${hStr}</span><span class="upcoming-cd-unit">s</span></div>
+                <span class="upcoming-cd-colon">:</span>
+                <div class="upcoming-cd-item"><span class="upcoming-cd-val">${mStr}</span><span class="upcoming-cd-unit">d</span></div>
+                <span class="upcoming-cd-colon">:</span>
+                <div class="upcoming-cd-item"><span class="upcoming-cd-val">${sStr}</span><span class="upcoming-cd-unit">s</span></div>
+            </div>
+        `;
+    }
+
     function populateUpcomingCarousel(episodes) {
         clearAllCountdowns();
         carousel.innerHTML = '';
 
         if (episodes && episodes.length > 0) {
-            // Sort episodes: future episodes from furthest to nearest, then past episodes
+            const now = Date.now();
+            // Sort episodes: Future episodes soonest first, then past episodes
             const sortedEpisodes = [...episodes].sort((a, b) => {
-                const aTime = calculateTimeRemaining(a.datetime);
-                const bTime = calculateTimeRemaining(b.datetime);
+                const timeA = new Date(a.datetime).getTime();
+                const timeB = new Date(b.datetime).getTime();
+                const isPastA = isNaN(timeA) || timeA <= now;
+                const isPastB = isNaN(timeB) || timeB <= now;
 
-                // If one is past and one is future, prioritize future
-                if (aTime.isPast && !bTime.isPast) return 1;
-                if (!aTime.isPast && bTime.isPast) return -1;
+                if (!isPastA && isPastB) return -1;
+                if (isPastA && !isPastB) return 1;
 
-                // For future dates, sort by furthest first
-                if (!aTime.isPast && !bTime.isPast) {
-                    return new Date(b.datetime).getTime() - new Date(a.datetime).getTime();
+                if (!isPastA && !isPastB) {
+                    return timeA - timeB;
                 }
 
-                // Keep original order for past dates
-                return 0;
+                return timeB - timeA;
             });
 
             sortedEpisodes.forEach((episode, index) => {
-                const formattedDate = formatDate(episode.datetime);
-                const episodeId = `upcoming-countdown-${index}`;
+                const dt = formatDateTime(episode.datetime);
+                const episodeId = `upcoming-countdown-${currentMode}-${index}`;
                 const timeRemaining = calculateTimeRemaining(episode.datetime);
-
-                let countdownHtml;
-                if (timeRemaining.isPast) {
-                    countdownHtml = `<div class="upcoming-countdown">Çok Yakında</div>`;
-                } else {
-                    countdownHtml = `
-                <div class="upcoming-countdown" id="${episodeId}">
-                    <span class="upcoming-countdown-unit"><span class="upcoming-countdown-value">${timeRemaining.days}</span>gün</span>
-                    <span class="upcoming-countdown-unit"><span class="upcoming-countdown-value">${timeRemaining.hours}</span>saat</span>
-                    <span class="upcoming-countdown-unit"><span class="upcoming-countdown-value">${timeRemaining.minutes}</span>dk</span>
-                    <span class="upcoming-countdown-unit"><span class="upcoming-countdown-value">${timeRemaining.seconds}</span>sn</span>
-                </div>
-            `;
-                }
+                const badgeHtml = getCountdownBadgeHtml(timeRemaining, episodeId);
+                const typeText = isMovieType(episode.type) ? 'Film' : 'Dizi';
 
                 const card = document.createElement('div');
                 card.className = 'upcoming-card';
                 card.onclick = () => {
-                    const path = `/${episode.slug || episode.ID}`;
+                    const path = `/${episode.slug || episode.upcomingId || episode.ID}`;
                     window.location.href = path;
                 };
+
                 card.innerHTML = `
                 <div class="upcoming-card-image img-skeleton">
-                    <img src="/media/image/${episode.ID}" alt="${episode.name}" onerror="this.style.display='none'; this.parentElement.classList.add('no-image');">
+                    <span class="upcoming-type-tag">${typeText}</span>
+                    <img src="/media/image/${episode.upcomingId || episode.ID}" alt="${episode.name || ''}" onerror="this.style.display='none'; this.parentElement.classList.add('no-image');">
                     <div class="upcoming-play-icon">
                         <i class="fas fa-play"></i>
                     </div>
                     <div class="upcoming-no-image-placeholder">
                         <i class="fas fa-film"></i>
                     </div>
+                    <div class="upcoming-poster-overlay">
+                        ${badgeHtml}
+                    </div>
                 </div>
                 <div class="upcoming-card-content">
-                    <h3 class="upcoming-card-title">${episode.name}</h3>
-                    ${countdownHtml}
+                    <h3 class="upcoming-card-title" title="${episode.name || ''}">${episode.name || ''}</h3>
+                    <div class="upcoming-card-footer">
+                        <span class="upcoming-card-date"><i class="far fa-calendar-alt"></i> ${dt.date}</span>
+                        ${dt.time ? `<span class="upcoming-card-time"><i class="far fa-clock"></i> ${dt.time}</span>` : ''}
+                    </div>
                 </div>
                 `;
+
                 handleImageSkeleton(card.querySelector('img'));
                 carousel.appendChild(card);
             });
@@ -145,7 +233,7 @@ export function initLoadedEpisodesSection() {
             sortedEpisodes.forEach((episode, index) => {
                 const timeRemaining = calculateTimeRemaining(episode.datetime);
                 if (!timeRemaining.isPast) {
-                    const countdownElement = document.getElementById(`upcoming-countdown-${index}`);
+                    const countdownElement = document.getElementById(`upcoming-countdown-${currentMode}-${index}`);
                     if (countdownElement) {
                         const timer = setInterval(() => {
                             updateCountdown(countdownElement, episode.datetime);
@@ -157,11 +245,9 @@ export function initLoadedEpisodesSection() {
 
             setTimeout(() => {
                 carousel.style.opacity = '1';
-            }, 100);
-
-            // Add navigation functionality
-            setupCarouselNavigation();
+            }, 50);
         } else {
+            const categoryLabel = currentMode === 'tv' ? 'dizi' : 'film';
             carousel.innerHTML = `
                 <div class="upcoming-no-data">
                     <div class="upcoming-no-data-icon">
@@ -169,13 +255,13 @@ export function initLoadedEpisodesSection() {
                     </div>
                     <div class="upcoming-no-data-text">
                         <h4>Yeni İçerikler Hazırlanıyor</h4>
-                        <p>Ekibimiz sizin için en güncel bölümleri hazırlamak üzere arka planda çalışmaya devam ediyor.</p>
+                        <p>Şu anda planlanan ${categoryLabel} bulunmuyor. Yeni içerikler eklendiğinde burada listelenecektir.</p>
                     </div>
                 </div>
             `;
             setTimeout(() => {
                 carousel.style.opacity = '1';
-            }, 100);
+            }, 50);
         }
     }
 
@@ -183,15 +269,25 @@ export function initLoadedEpisodesSection() {
         const timeRemaining = calculateTimeRemaining(targetDate);
 
         if (timeRemaining.isPast) {
-            element.innerHTML = 'Çok Yakında';
+            element.className = 'upcoming-status-pill';
+            element.innerHTML = '<i class="fas fa-bolt"></i> Yakında Yüklenecek';
             return;
         }
 
+        const dStr = String(timeRemaining.days).padStart(2, '0');
+        const hStr = String(timeRemaining.hours).padStart(2, '0');
+        const mStr = String(timeRemaining.minutes).padStart(2, '0');
+        const sStr = String(timeRemaining.seconds).padStart(2, '0');
+
+        element.className = 'upcoming-countdown-pill';
         element.innerHTML = `
-            <span class="upcoming-countdown-unit"><span class="upcoming-countdown-value">${timeRemaining.days}</span>gün</span>
-            <span class="upcoming-countdown-unit"><span class="upcoming-countdown-value">${timeRemaining.hours}</span>saat</span>
-            <span class="upcoming-countdown-unit"><span class="upcoming-countdown-value">${timeRemaining.minutes}</span>dk</span>
-            <span class="upcoming-countdown-unit"><span class="upcoming-countdown-value">${timeRemaining.seconds}</span>sn</span>
+            <div class="upcoming-cd-item"><span class="upcoming-cd-val">${dStr}</span><span class="upcoming-cd-unit">g</span></div>
+            <span class="upcoming-cd-colon">:</span>
+            <div class="upcoming-cd-item"><span class="upcoming-cd-val">${hStr}</span><span class="upcoming-cd-unit">s</span></div>
+            <span class="upcoming-cd-colon">:</span>
+            <div class="upcoming-cd-item"><span class="upcoming-cd-val">${mStr}</span><span class="upcoming-cd-unit">d</span></div>
+            <span class="upcoming-cd-colon">:</span>
+            <div class="upcoming-cd-item"><span class="upcoming-cd-val">${sStr}</span><span class="upcoming-cd-unit">s</span></div>
         `;
     }
 
@@ -201,11 +297,11 @@ export function initLoadedEpisodesSection() {
 
         if (prevBtn && nextBtn) {
             prevBtn.addEventListener('click', () => {
-                carousel.scrollBy({ left: -800, behavior: 'smooth' });
+                carousel.scrollBy({ left: -600, behavior: 'smooth' });
             });
 
             nextBtn.addEventListener('click', () => {
-                carousel.scrollBy({ left: 800, behavior: 'smooth' });
+                carousel.scrollBy({ left: 600, behavior: 'smooth' });
             });
         }
     }

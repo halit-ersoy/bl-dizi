@@ -130,12 +130,17 @@ public class SavedController {
     @GetMapping("/loaded")
     public ResponseEntity<List<Map<String, Object>>> getLoadedEpisodes() {
         try {
-            List<Map<String, Object>> result = jdbcTemplate.queryForList("EXEC GetUpcoming 'Upcoming'");
-            if (result.isEmpty()) {
-                result = jdbcTemplate.queryForList("EXEC GetUpcoming 'Loaded'");
+            List<Map<String, Object>> result;
+            try {
+                result = jdbcTemplate.queryForList("EXEC GetUpcoming 'Upcoming', 'bldizi'");
+            } catch (Exception ex) {
+                result = jdbcTemplate.queryForList("EXEC GetUpcoming 'Upcoming'");
             }
             if (result.isEmpty()) {
-                result = jdbcTemplate.queryForList("EXEC GetUpcoming");
+                try {
+                    result = jdbcTemplate.queryForList("EXEC GetUpcoming 'Loaded', 'bldizi'");
+                } catch (Exception ignored) {
+                }
             }
             return ResponseEntity.ok(result);
         } catch (Exception e) {

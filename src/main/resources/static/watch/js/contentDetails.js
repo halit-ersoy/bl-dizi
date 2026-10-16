@@ -65,7 +65,11 @@ async function loadContentDetails(id) {
         }
 
         // Update document title with SEO keyword
-        document.title = `${data.title} İzle - BL Dizi`;
+        if (data.isUpcoming || data.type === 'upcoming') {
+            document.title = `${data.title} - Yakında BL Dizi'de!`;
+        } else {
+            document.title = `${data.title} İzle - BL Dizi`;
+        }
 
         // SEO: Update Meta Description and Canonical
         if (data.plot) {
@@ -144,6 +148,15 @@ async function loadContentDetails(id) {
             };
 
             structuredDataEl.textContent = JSON.stringify([contentSchema, breadcrumbSchema]);
+        }
+
+        const ratingBadge = document.querySelector('.rating-badge');
+        if (ratingBadge) {
+            if (data.isUpcoming || data.type === 'upcoming') {
+                ratingBadge.style.display = 'none';
+            } else {
+                ratingBadge.style.display = '';
+            }
         }
 
         const posterImg = document.getElementById('contentPoster');

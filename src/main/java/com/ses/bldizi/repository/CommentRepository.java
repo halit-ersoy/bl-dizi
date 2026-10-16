@@ -21,6 +21,45 @@ public class CommentRepository {
 
     public List<CommentViewModel> getComments(UUID contentId, String cookie) {
         String sql = """
+            WITH TargetContent AS (
+                SELECT TRY_CAST(? AS UNIQUEIDENTIFIER) AS ID
+            ),
+            RelatedIDs AS (
+                SELECT ID FROM TargetContent WHERE ID IS NOT NULL
+                UNION
+                SELECT e.SeriesId FROM Episode e JOIN TargetContent t ON e.ID = t.ID WHERE e.SeriesId IS NOT NULL
+                UNION
+                SELECT e.ID FROM Episode e JOIN TargetContent t ON e.SeriesId = t.ID WHERE e.SeasonNumber = 1 AND e.EpisodeNumber = 1
+                UNION
+                SELECT e1.ID FROM Episode ep JOIN TargetContent t ON ep.ID = t.ID JOIN Episode e1 ON e1.SeriesId = ep.SeriesId WHERE e1.SeasonNumber = 1 AND e1.EpisodeNumber = 1
+                UNION
+                SELECT u.ID FROM Upcoming u
+                JOIN Episode e ON e.ID IN (SELECT ID FROM TargetContent)
+                JOIN Series s ON e.SeriesId = s.ID
+                WHERE u.Name COLLATE Latin1_General_CI_AI = s.Name COLLATE Latin1_General_CI_AI
+                   OR u.ReferenceId = s.ID
+                   OR u.ReferenceId = e.ID
+                UNION
+                SELECT u.ID FROM Upcoming u
+                JOIN Series s ON s.ID IN (SELECT ID FROM TargetContent)
+                WHERE u.Name COLLATE Latin1_General_CI_AI = s.Name COLLATE Latin1_General_CI_AI
+                   OR u.ReferenceId = s.ID
+                UNION
+                SELECT u.ID FROM Upcoming u
+                JOIN Movie m ON m.ID IN (SELECT ID FROM TargetContent)
+                WHERE u.Name COLLATE Latin1_General_CI_AI = m.Name COLLATE Latin1_General_CI_AI
+                   OR u.ReferenceId = m.ID
+                UNION
+                SELECT u.ReferenceId FROM Upcoming u JOIN TargetContent t ON u.ID = t.ID WHERE u.ReferenceId IS NOT NULL
+                UNION
+                SELECT s.ID FROM Series s JOIN Upcoming u ON s.Name COLLATE Latin1_General_CI_AI = u.Name COLLATE Latin1_General_CI_AI JOIN TargetContent t ON u.ID = t.ID
+                UNION
+                SELECT e.ID FROM Episode e JOIN Series s ON e.SeriesId = s.ID JOIN Upcoming u ON s.Name COLLATE Latin1_General_CI_AI = u.Name COLLATE Latin1_General_CI_AI JOIN TargetContent t ON u.ID = t.ID WHERE e.SeasonNumber = 1 AND e.EpisodeNumber = 1
+                UNION
+                SELECT e.ID FROM Episode e JOIN Upcoming u ON e.SeriesId = u.ReferenceId JOIN TargetContent t ON u.ID = t.ID WHERE e.SeasonNumber = 1 AND e.EpisodeNumber = 1
+                UNION
+                SELECT m.ID FROM Movie m JOIN Upcoming u ON m.Name COLLATE Latin1_General_CI_AI = u.Name COLLATE Latin1_General_CI_AI JOIN TargetContent t ON u.ID = t.ID
+            )
             SELECT
                 c.ID, c.Text as comment, c.CreatedAt as date, c.Spoiler,
                 COALESCE(p.Nickname, c.Nickname) as nickname,
@@ -37,13 +76,13 @@ public class CommentRepository {
             LEFT JOIN Person p ON c.UserId = p.ID
             LEFT JOIN Person p_me ON p_me.ID = [dbo].[ResolveUserIdByCookie](TRY_CAST(? AS UNIQUEIDENTIFIER))
             LEFT JOIN CommentLikes cl ON c.ID = cl.CommentId AND cl.UserId = p_me.ID
-            WHERE c.ContentId = ? AND (c.IsApproved = 1 OR c.UserId = p_me.ID)
+            WHERE c.ContentId IN (SELECT ID FROM RelatedIDs) AND (c.IsApproved = 1 OR c.UserId = p_me.ID)
             ORDER BY c.CreatedAt DESC
         """;
 
         List<CommentViewModel> allComments = jdbcTemplate.query(sql, new CommentRowMapper(),
-                cookie,
-                contentId.toString());
+                contentId != null ? contentId.toString() : null,
+                cookie);
 
         return buildCommentTree(allComments);
     }

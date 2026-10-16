@@ -392,3 +392,278 @@ video {
 .fullscreen-mode .episode-navigation {
     display: none;
 }
+
+
+/* ==========================================================================
+   Upcoming Countdown Player Overlay
+   ========================================================================== */
+.upcoming-player-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: 14px;
+}
+
+.upcoming-player-bg {
+    position: absolute;
+    top: -20px;
+    left: -20px;
+    right: -20px;
+    bottom: -20px;
+    background-size: cover;
+    background-position: center;
+    filter: blur(24px) brightness(0.35);
+    transform: scale(1.08);
+    z-index: 1;
+}
+
+.upcoming-player-vignette {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at center, rgba(15, 15, 20, 0.45) 0%, rgba(10, 10, 14, 0.96) 85%);
+    z-index: 2;
+}
+
+.upcoming-player-content {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 24px;
+    max-width: 90%;
+    color: #fff;
+    animation: upcoming-player-pop 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes upcoming-player-pop {
+    from { opacity: 0; transform: scale(0.95) translateY(10px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.upcoming-player-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(var(--primary-rgb), 0.15);
+    border: 1px solid rgba(var(--primary-rgb), 0.45);
+    padding: 6px 16px;
+    border-radius: 30px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    color: var(--primary-color);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    box-shadow: 0 0 20px rgba(var(--primary-rgb), 0.25);
+}
+
+.upcoming-pulse-dot {
+    width: 8px;
+    height: 8px;
+    background-color: var(--primary-color);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--primary-color);
+    animation: upcoming-pulse 1.8s infinite;
+}
+
+@keyframes upcoming-pulse {
+    0% { transform: scale(0.9); opacity: 0.6; }
+    50% { transform: scale(1.3); opacity: 1; }
+    100% { transform: scale(0.9); opacity: 0.6; }
+}
+
+.upcoming-player-title {
+    font-size: 2.2rem;
+    font-weight: 800;
+    margin: 0 0 10px 0;
+    color: #fff;
+    font-family: 'Montserrat', sans-serif;
+    letter-spacing: 0.5px;
+    text-shadow: 0 4px 16px rgba(0, 0, 0, 0.8);
+    line-height: 1.25;
+}
+
+.upcoming-player-meta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 22px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.upcoming-player-type-tag {
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    padding: 3px 10px;
+    font-weight: 700;
+    font-size: 11px;
+    color: #fff;
+    text-transform: uppercase;
+}
+
+.upcoming-player-date,
+.upcoming-player-time {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Digital Countdown Grid */
+.upcoming-player-countdown {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    background: rgba(14, 14, 20, 0.75);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    padding: 18px 28px;
+    border-radius: 18px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 25px rgba(var(--primary-rgb), 0.15);
+}
+
+.upcoming-timer-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 65px;
+}
+
+.upcoming-timer-val {
+    font-size: 2.4rem;
+    font-weight: 800;
+    color: var(--primary-color);
+    font-family: 'Montserrat', sans-serif;
+    line-height: 1;
+    filter: drop-shadow(0 0 12px rgba(var(--primary-rgb), 0.5));
+}
+
+.upcoming-timer-lbl {
+    font-size: 10px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.65);
+    letter-spacing: 1px;
+    margin-top: 6px;
+}
+
+.upcoming-timer-colon {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.35);
+    margin-bottom: 12px;
+}
+
+/* Expired Status Card */
+.upcoming-player-expired {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(14, 14, 20, 0.8);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(var(--primary-rgb), 0.45);
+    padding: 26px 36px;
+    border-radius: 18px;
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.7), 0 0 30px rgba(var(--primary-rgb), 0.2);
+    max-width: 550px;
+}
+
+.upcoming-expired-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, rgba(var(--primary-rgb), 0.35) 0%, rgba(var(--primary-rgb), 0.15) 100%);
+    border: 1px solid rgba(var(--primary-rgb), 0.6);
+    color: var(--primary-color);
+    padding: 8px 18px;
+    border-radius: 25px;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    box-shadow: 0 0 15px rgba(var(--primary-rgb), 0.3);
+}
+
+.upcoming-expired-heading {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0 0 8px 0;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.upcoming-expired-text {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.75);
+    margin: 0;
+    line-height: 1.5;
+    max-width: 440px;
+}
+
+@media (max-width: 768px) {
+    .upcoming-player-title {
+        font-size: 1.5rem;
+    }
+
+    .upcoming-player-meta {
+        font-size: 11px;
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+
+    .upcoming-player-countdown {
+        padding: 10px 14px;
+        gap: 6px;
+        border-radius: 12px;
+    }
+
+    .upcoming-timer-box {
+        min-width: 44px;
+    }
+
+    .upcoming-timer-val {
+        font-size: 1.5rem;
+    }
+
+    .upcoming-timer-lbl {
+        font-size: 8px;
+    }
+
+    .upcoming-timer-colon {
+        font-size: 1.2rem;
+        margin-bottom: 8px;
+    }
+
+    .upcoming-player-expired {
+        padding: 18px 20px;
+        border-radius: 14px;
+    }
+
+    .upcoming-expired-heading {
+        font-size: 1.15rem;
+    }
+
+    .upcoming-expired-text {
+        font-size: 12px;
+    }
+}

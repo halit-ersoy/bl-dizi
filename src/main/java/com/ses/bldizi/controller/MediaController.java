@@ -37,6 +37,9 @@ public class MediaController {
     @Value("${media.source.trailers.path:D:\\SourceFiles\\mssql\\media\\videos\\trailers}")
     private String trailersPath;
 
+    @Value("${media.source.upcoming.path:D:\\SourceFiles\\mssql\\media\\videos\\upcoming}")
+    private String upcomingPath;
+
     @Value("${media.static.images.path}")
     private String staticImagesPath;
 
@@ -110,7 +113,24 @@ public class MediaController {
                 }
             }
 
-            // 6. Try static images
+            // 6. Try upcoming images
+            if (imagePath == null && upcomingPath != null && !upcomingPath.isEmpty()) {
+                Path upcomingDir = Paths.get(upcomingPath);
+                imagePath = findExistingImage(upcomingDir, id);
+                if (imagePath == null) {
+                    try {
+                        String upcomingIdStr = jdbcTemplate.queryForObject(
+                                "SELECT TOP 1 CAST(ID AS NVARCHAR(36)) FROM Upcoming WHERE ReferenceId = ? ORDER BY [Datetime] DESC",
+                                String.class, id.toString());
+                        if (upcomingIdStr != null) {
+                            imagePath = findExistingImage(upcomingDir, UUID.fromString(upcomingIdStr));
+                        }
+                    } catch (Exception ignored) {
+                    }
+                }
+            }
+
+            // 7. Try static images
             if (imagePath == null) {
                 imagePath = findExistingImage(Paths.get(staticImagesPath), id);
             }

@@ -110,6 +110,131 @@ public class VideoController {
             return ResponseEntity.ok(response);
         }
 
+        // 3. Try Upcoming
+        try {
+            List<Map<String, Object>> upcomings = jdbcTemplate.queryForList(
+                    "SELECT TOP 1 * FROM Upcoming WHERE ID = ? AND (isBl = 1 OR Genre IN ('BL', 'GL'))", id);
+            if (!upcomings.isEmpty()) {
+                Map<String, Object> u = upcomings.get(0);
+                String title = (String) u.get("name");
+                String upcomingType = (String) u.get("type");
+                boolean isMovie = upcomingType != null && upcomingType.equalsIgnoreCase("Movie");
+                Object refIdObj = u.get("ReferenceId");
+                UUID refId = refIdObj != null ? UUID.fromString(refIdObj.toString()) : null;
+
+                response.put("id", u.get("ID").toString());
+                response.put("title", title);
+                response.put("name", title);
+                response.put("type", "upcoming");
+                response.put("isUpcoming", true);
+                response.put("category", upcomingType);
+                response.put("datetime", u.get("datetime") != null ? u.get("datetime").toString() : "");
+                response.put("status", u.get("status"));
+                response.put("poster", "/media/image/" + u.get("ID"));
+                response.put("adult", false);
+
+                String plot = (String) u.get("Summary");
+                Object year = u.get("ReleaseYear");
+                String country = (String) u.get("Country");
+                String language = (String) u.get("Language");
+                String duration = (String) u.get("Duration");
+                String slug = (String) u.get("Slug");
+                List<String> genres = new ArrayList<>();
+                List<CastMemberDto> cast = Collections.emptyList();
+
+                Map<String, Object> linkedSeries = null;
+                Map<String, Object> linkedMovie = null;
+
+                if (refId != null) {
+                    linkedSeries = seriesRepository.findSeriesDetails(refId);
+                    if (linkedSeries == null) {
+                        linkedMovie = movieRepository.findMovieDetails(refId);
+                    }
+                    if (linkedSeries == null && linkedMovie == null) {
+                        Map<String, Object> ep = seriesRepository.findEpisodeDetails(refId);
+                        if (ep != null && ep.get("SeriesId") != null) {
+                            linkedSeries = seriesRepository.findSeriesDetails(UUID.fromString(ep.get("SeriesId").toString()));
+                        }
+                    }
+                }
+
+                if (linkedSeries == null && linkedMovie == null && title != null) {
+                    try {
+                        String sId = jdbcTemplate.queryForObject("SELECT TOP 1 CAST(ID AS NVARCHAR(36)) FROM Series WHERE Name = ?", String.class, title);
+                        if (sId != null) linkedSeries = seriesRepository.findSeriesDetails(UUID.fromString(sId));
+                    } catch (Exception ignored) {}
+
+                    if (linkedSeries == null) {
+                        try {
+                            String mId = jdbcTemplate.queryForObject("SELECT TOP 1 CAST(ID AS NVARCHAR(36)) FROM Movie WHERE Name = ?", String.class, title);
+                            if (mId != null) linkedMovie = movieRepository.findMovieDetails(UUID.fromString(mId));
+                        } catch (Exception ignored) {}
+                    }
+                }
+
+                if (linkedSeries != null) {
+                    if (plot == null || plot.isBlank()) plot = (String) linkedSeries.get("Summary");
+                    if (country == null || country.isBlank()) country = (String) linkedSeries.get("Country");
+                    if (language == null || language.isBlank()) language = (String) linkedSeries.get("Language");
+                    if (slug == null || slug.isBlank()) slug = (String) linkedSeries.get("slug");
+                    String catStr = (String) linkedSeries.get("Category");
+                    if (catStr != null && !catStr.isBlank()) {
+                        genres = List.of(catStr.split(","));
+                    }
+                    if (linkedSeries.get("ID") != null) {
+                        cast = actorRepository.getCastForSeries(UUID.fromString(linkedSeries.get("ID").toString()));
+                    }
+                } else if (linkedMovie != null) {
+                    if (plot == null || plot.isBlank()) plot = (String) linkedMovie.get("Summary");
+                    if (year == null) year = linkedMovie.get("ReleaseYear");
+                    if (country == null || country.isBlank()) country = (String) linkedMovie.get("Country");
+                    if (language == null || language.isBlank()) language = (String) linkedMovie.get("Language");
+                    if (duration == null || duration.isBlank()) {
+                        Object dur = linkedMovie.get("DurationMinutes");
+                        duration = (dur != null && ((Number) dur).intValue() > 0) ? dur + " dk" : "";
+                    }
+                    if (slug == null || slug.isBlank()) slug = (String) linkedMovie.get("slug");
+                    String catStr = (String) linkedMovie.get("Category");
+                    if (catStr != null && !catStr.isBlank()) {
+                        genres = List.of(catStr.split(","));
+                    }
+                    if (linkedMovie.get("ID") != null) {
+                        cast = actorRepository.getCastForMovie(UUID.fromString(linkedMovie.get("ID").toString()));
+                    }
+                }
+
+                if (plot == null || plot.isBlank()) {
+                    plot = "Bu yapım çok yakında BL Dizi platformunda yayınlanacaktır. Yayın tarihini ve geri sayımı takip edebilirsiniz.";
+                }
+                if (genres.isEmpty()) {
+                    String g = (String) u.get("Genre");
+                    if (g != null && !g.isBlank() && !g.equalsIgnoreCase("Normal")) {
+                        genres = List.of(isMovie ? "Film" : "Dizi", g);
+                    } else {
+                        genres = List.of(isMovie ? "Film" : "Dizi");
+                    }
+                }
+                if (year == null && u.get("datetime") != null) {
+                    try {
+                        java.sql.Timestamp ts = (java.sql.Timestamp) u.get("datetime");
+                        year = ts.toInstant().atZone(java.time.ZoneId.systemDefault()).getYear();
+                    } catch (Exception ignored) {}
+                }
+
+                response.put("plot", plot);
+                response.put("year", year != null ? year.toString() : "");
+                response.put("country", country != null ? country : "");
+                response.put("language", language != null ? language : "");
+                response.put("duration", duration != null ? duration : "");
+                response.put("slug", slug != null ? slug : id.toString());
+                response.put("genres", genres);
+                response.put("cast", cast);
+
+                return ResponseEntity.ok(response);
+            }
+        } catch (Exception ignored) {
+        }
+
         return ResponseEntity.notFound().build();
     }
 
@@ -143,6 +268,16 @@ public class VideoController {
                 return ResponseEntity.ok(Map.of("id", m.get("ID").toString(), "type", "movie"));
             }
 
+            // Check Upcoming by ID
+            try {
+                List<Map<String, Object>> upcomings = jdbcTemplate.queryForList(
+                        "SELECT TOP 1 ID FROM Upcoming WHERE ID = ? AND (isBl = 1 OR Genre IN ('BL', 'GL'))", id);
+                if (!upcomings.isEmpty()) {
+                    return ResponseEntity.ok(Map.of("id", id.toString(), "type", "upcoming"));
+                }
+            } catch (Exception ignored) {
+            }
+
             return ResponseEntity.notFound().build();
         }
 
@@ -166,6 +301,16 @@ public class VideoController {
             }
         }
 
+        // Check Upcoming by slug or name
+        try {
+            List<Map<String, Object>> upcomings = jdbcTemplate.queryForList(
+                    "SELECT TOP 1 ID FROM Upcoming WHERE (slug = ? OR name = ?) AND (isBl = 1 OR Genre IN ('BL', 'GL'))", slug, slug);
+            if (!upcomings.isEmpty()) {
+                return ResponseEntity.ok(Map.of("id", upcomings.get(0).get("ID").toString(), "type", "upcoming"));
+            }
+        } catch (Exception ignored) {
+        }
+
         return ResponseEntity.notFound().build();
     }
 
@@ -182,7 +327,27 @@ public class VideoController {
 
     @GetMapping("/similar")
     public ResponseEntity<List<Map<String, Object>>> getSimilarContent(@RequestParam("id") UUID id) {
-        List<Map<String, Object>> similar = seriesRepository.findSimilarContent(id, 12);
+        UUID contentIdForSearch = id;
+        try {
+            List<Map<String, Object>> upcomings = jdbcTemplate.queryForList(
+                    "SELECT TOP 1 * FROM Upcoming WHERE ID = ? AND (isBl = 1 OR Genre IN ('BL', 'GL'))", id);
+            if (!upcomings.isEmpty()) {
+                Map<String, Object> u = upcomings.get(0);
+                Object refIdObj = u.get("ReferenceId");
+                if (refIdObj != null) {
+                    contentIdForSearch = UUID.fromString(refIdObj.toString());
+                } else {
+                    String name = (String) u.get("name");
+                    try {
+                        String sId = jdbcTemplate.queryForObject("SELECT TOP 1 CAST(ID AS NVARCHAR(36)) FROM Series WHERE Name = ? AND (SeriesType IN ('BL', 'GL') OR isBl = 1)", String.class, name);
+                        if (sId != null) contentIdForSearch = UUID.fromString(sId);
+                    } catch (Exception ignored) {}
+                }
+            }
+        } catch (Exception ignored) {
+        }
+
+        List<Map<String, Object>> similar = seriesRepository.findSimilarContent(contentIdForSearch, 12);
         return ResponseEntity.ok(similar);
     }
 

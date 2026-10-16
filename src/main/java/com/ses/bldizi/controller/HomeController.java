@@ -30,6 +30,9 @@ public class HomeController {
     @Autowired
     private MovieRepository movieRepository;
 
+    @Autowired
+    private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
+
     @GetMapping({"/", "/yakinda", "/coming-soon"})
     public ResponseEntity<Resource> getComingSoonPage() {
         return renderHtml("static/index.html");
@@ -104,6 +107,18 @@ public class HomeController {
                 isValid = seriesRepository.findEpisodeDetails(id) != null
                         || seriesRepository.findSeriesDetails(id) != null
                         || movieRepository.findMovieDetails(id) != null;
+            } catch (Exception ignored) {
+            }
+        }
+
+        if (!isValid && jdbcTemplate != null) {
+            try {
+                Integer count = jdbcTemplate.queryForObject(
+                        "SELECT COUNT(*) FROM Upcoming WHERE (slug = ? OR TRY_CAST(ID AS NVARCHAR(50)) = ?) AND (isBl = 1 OR Genre IN ('BL', 'GL'))",
+                        Integer.class, slug, slug);
+                if (count != null && count > 0) {
+                    isValid = true;
+                }
             } catch (Exception ignored) {
             }
         }
