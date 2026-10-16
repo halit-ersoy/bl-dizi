@@ -3,7 +3,8 @@ package com.ses.bldizi.repository;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
 @Repository
 @SuppressWarnings({"SqlResolve", "SqlNoDataSourceInspection"})
@@ -54,7 +55,7 @@ public class HeroRepository {
                        ROW_NUMBER() OVER (ORDER BY s.viewCount DESC) - 1 as sortOrder,
                        CAST(1 AS BIT) as isImage, ? as platform
                 FROM Series s
-                WHERE s.SeriesType = 'BL'
+                WHERE (s.SeriesType IN ('BL', 'GL') OR s.isBl = 1 OR EXISTS (SELECT 1 FROM SeriesCategories sc WHERE sc.SeriesID = s.ID AND sc.CategoryID IN (52, 63)))
                   AND (s.IsHidden = 0 OR s.IsHidden IS NULL)
                 ORDER BY s.viewCount DESC
             """;

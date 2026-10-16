@@ -91,7 +91,7 @@ public class AiCatalogRepository {
                 ISNULL((SELECT STRING_AGG(C.Name, ', ') FROM Categories C JOIN SeriesCategories SC ON SC.CategoryID = C.ID WHERE SC.SeriesID = S.ID), '') AS category
             FROM Series S
             WHERE (S.IsHidden = 0 OR S.IsHidden IS NULL)
-              AND (S.SeriesType = 'BL' OR S.isBl = 1)
+              AND (S.SeriesType IN ('BL', 'GL') OR S.isBl = 1 OR EXISTS (SELECT 1 FROM SeriesCategories SC_BL WHERE SC_BL.SeriesID = S.ID AND SC_BL.CategoryID IN (52, 63)))
         """;
 
         try {

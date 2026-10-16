@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
+@SuppressWarnings({"SqlResolve", "SqlNoDataSourceInspection"})
 public class NotificationRepository {
     private final JdbcTemplate jdbcTemplate;
 
@@ -57,12 +58,12 @@ public class NotificationRepository {
                            END as slug
                     FROM Notifications N
                     WHERE (
-                        (N.Type = 'Movie' AND EXISTS (SELECT 1 FROM MovieCategories MC WHERE MC.MovieID = N.ContentID AND MC.CategoryID IN (52, 63)))
+                        (N.Type = 'Movie' AND (EXISTS (SELECT 1 FROM MovieCategories MC WHERE MC.MovieID = N.ContentID AND MC.CategoryID IN (52, 63)) OR EXISTS (SELECT 1 FROM Movie M WHERE M.ID = N.ContentID AND (M.MovieType IN ('BL', 'GL') OR M.isBl = 1))))
                         OR
                         (N.Type = 'SoapOpera' AND (
-                            EXISTS (SELECT 1 FROM Episode E JOIN Series S ON S.ID = E.SeriesId WHERE E.ID = N.ContentID AND S.SeriesType = 'BL')
+                            EXISTS (SELECT 1 FROM Episode E JOIN Series S ON S.ID = E.SeriesId WHERE E.ID = N.ContentID AND (S.SeriesType IN ('BL', 'GL') OR S.isBl = 1 OR EXISTS (SELECT 1 FROM SeriesCategories SC WHERE SC.SeriesID = S.ID AND SC.CategoryID IN (52, 63))))
                             OR
-                            EXISTS (SELECT 1 FROM Series S WHERE S.ID = N.ContentID AND S.SeriesType = 'BL')
+                            EXISTS (SELECT 1 FROM Series S WHERE S.ID = N.ContentID AND (S.SeriesType IN ('BL', 'GL') OR S.isBl = 1 OR EXISTS (SELECT 1 FROM SeriesCategories SC WHERE SC.SeriesID = S.ID AND SC.CategoryID IN (52, 63))))
                         ))
                     )
                     ORDER BY N.CreatedAt DESC
@@ -80,12 +81,12 @@ public class NotificationRepository {
                     SELECT COUNT(*) FROM Notifications N
                     WHERE N.IsRead = 0
                       AND (
-                        (N.Type = 'Movie' AND EXISTS (SELECT 1 FROM MovieCategories MC WHERE MC.MovieID = N.ContentID AND MC.CategoryID IN (52, 63)))
+                        (N.Type = 'Movie' AND (EXISTS (SELECT 1 FROM MovieCategories MC WHERE MC.MovieID = N.ContentID AND MC.CategoryID IN (52, 63)) OR EXISTS (SELECT 1 FROM Movie M WHERE M.ID = N.ContentID AND (M.MovieType IN ('BL', 'GL') OR M.isBl = 1))))
                         OR
                         (N.Type = 'SoapOpera' AND (
-                            EXISTS (SELECT 1 FROM Episode E JOIN Series S ON S.ID = E.SeriesId WHERE E.ID = N.ContentID AND S.SeriesType = 'BL')
+                            EXISTS (SELECT 1 FROM Episode E JOIN Series S ON S.ID = E.SeriesId WHERE E.ID = N.ContentID AND (S.SeriesType IN ('BL', 'GL') OR S.isBl = 1 OR EXISTS (SELECT 1 FROM SeriesCategories SC WHERE SC.SeriesID = S.ID AND SC.CategoryID IN (52, 63))))
                             OR
-                            EXISTS (SELECT 1 FROM Series S WHERE S.ID = N.ContentID AND S.SeriesType = 'BL')
+                            EXISTS (SELECT 1 FROM Series S WHERE S.ID = N.ContentID AND (S.SeriesType IN ('BL', 'GL') OR S.isBl = 1 OR EXISTS (SELECT 1 FROM SeriesCategories SC WHERE SC.SeriesID = S.ID AND SC.CategoryID IN (52, 63))))
                         ))
                       )
                 """;

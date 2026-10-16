@@ -6,7 +6,12 @@ import com.ses.bldizi.model.VideoViewModel;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @Repository
 @SuppressWarnings({"SqlResolve", "SqlNoDataSourceInspection", "DuplicatedCode", "unused", "ConstantConditions"})
@@ -25,7 +30,7 @@ public class SeriesRepository {
                     JOIN SeriesCategories sc2 ON sc2.CategoryID = c.ID 
                     WHERE sc2.SeriesID = s.ID) as Category
             FROM Series s
-            WHERE s.SeriesType = 'BL'
+            WHERE (s.SeriesType IN ('BL', 'GL') OR s.isBl = 1 OR EXISTS (SELECT 1 FROM SeriesCategories sc WHERE sc.SeriesID = s.ID AND sc.CategoryID IN (52, 63)))
               AND (s.IsHidden = 0 OR s.IsHidden IS NULL)
             ORDER BY s.viewCount DESC
         """;
@@ -59,7 +64,7 @@ public class SeriesRepository {
                     JOIN SeriesCategories sc2 ON sc2.CategoryID = c.ID 
                     WHERE sc2.SeriesID = s.ID) as Category
             FROM Series s
-            WHERE s.SeriesType = 'BL'
+            WHERE (s.SeriesType IN ('BL', 'GL') OR s.isBl = 1 OR EXISTS (SELECT 1 FROM SeriesCategories sc WHERE sc.SeriesID = s.ID AND sc.CategoryID IN (52, 63)))
               AND (s.IsHidden = 0 OR s.IsHidden IS NULL)
             ORDER BY s.uploadDate DESC
             OFFSET ? ROWS FETCH NEXT ? ROWS ONLY
@@ -91,7 +96,7 @@ public class SeriesRepository {
         String sql = """
             SELECT COUNT(*)
             FROM Series s
-            WHERE s.SeriesType = 'BL'
+            WHERE (s.SeriesType IN ('BL', 'GL') OR s.isBl = 1 OR EXISTS (SELECT 1 FROM SeriesCategories sc WHERE sc.SeriesID = s.ID AND sc.CategoryID IN (52, 63)))
               AND (s.IsHidden = 0 OR s.IsHidden IS NULL)
         """;
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
@@ -105,7 +110,7 @@ public class SeriesRepository {
                     JOIN SeriesCategories sc2 ON sc2.CategoryID = c.ID 
                     WHERE sc2.SeriesID = s.ID) as Category
             FROM Series s
-            WHERE s.SeriesType = 'BL'
+            WHERE (s.SeriesType IN ('BL', 'GL') OR s.isBl = 1 OR EXISTS (SELECT 1 FROM SeriesCategories sc WHERE sc.SeriesID = s.ID AND sc.CategoryID IN (52, 63)))
               AND (s.IsHidden = 0 OR s.IsHidden IS NULL)
               AND s.name LIKE ?
             ORDER BY s.uploadDate DESC
@@ -138,7 +143,7 @@ public class SeriesRepository {
         String sql = """
             SELECT COUNT(*)
             FROM Series s
-            WHERE s.SeriesType = 'BL'
+            WHERE (s.SeriesType IN ('BL', 'GL') OR s.isBl = 1 OR EXISTS (SELECT 1 FROM SeriesCategories sc WHERE sc.SeriesID = s.ID AND sc.CategoryID IN (52, 63)))
               AND (s.IsHidden = 0 OR s.IsHidden IS NULL)
               AND s.name LIKE ?
         """;
@@ -157,15 +162,15 @@ public class SeriesRepository {
                     WHERE sc2.SeriesID = s.ID) as Category
             FROM Series s
             WHERE (s.IsHidden = 0 OR s.IsHidden IS NULL)
-              AND (s.SeriesType = 'BL' OR s.isBl = 1 OR EXISTS (SELECT 1 FROM SeriesCategories sc_all WHERE sc_all.SeriesID = s.ID AND sc_all.CategoryID IN (52, 63)))
+              AND (s.SeriesType IN ('BL', 'GL') OR s.isBl = 1 OR EXISTS (SELECT 1 FROM SeriesCategories sc_all WHERE sc_all.SeriesID = s.ID AND sc_all.CategoryID IN (52, 63)))
         """);
 
         List<Object> params = new ArrayList<>();
 
         if ("gl".equalsIgnoreCase(subType)) {
-            sql.append(" AND EXISTS (SELECT 1 FROM SeriesCategories sc_gl WHERE sc_gl.SeriesID = s.ID AND sc_gl.CategoryID = 63)");
+            sql.append(" AND (s.SeriesType = 'GL' OR EXISTS (SELECT 1 FROM SeriesCategories sc_gl WHERE sc_gl.SeriesID = s.ID AND sc_gl.CategoryID = 63))");
         } else if ("bl".equalsIgnoreCase(subType)) {
-            sql.append(" AND (s.SeriesType = 'BL' OR s.isBl = 1 OR EXISTS (SELECT 1 FROM SeriesCategories sc_bl WHERE sc_bl.SeriesID = s.ID AND sc_bl.CategoryID = 52)) AND NOT EXISTS (SELECT 1 FROM SeriesCategories sc_gl2 WHERE sc_gl2.SeriesID = s.ID AND sc_gl2.CategoryID = 63)");
+            sql.append(" AND (s.SeriesType = 'BL' OR (s.isBl = 1 AND (s.SeriesType != 'GL' OR s.SeriesType IS NULL)) OR EXISTS (SELECT 1 FROM SeriesCategories sc_bl WHERE sc_bl.SeriesID = s.ID AND sc_bl.CategoryID = 52)) AND NOT EXISTS (SELECT 1 FROM SeriesCategories sc_gl2 WHERE sc_gl2.SeriesID = s.ID AND sc_gl2.CategoryID = 63) AND (s.SeriesType != 'GL' OR s.SeriesType IS NULL)");
         }
 
         if (categoryId != null && categoryId > 0) {
@@ -235,15 +240,15 @@ public class SeriesRepository {
             SELECT COUNT(DISTINCT s.ID)
             FROM Series s
             WHERE (s.IsHidden = 0 OR s.IsHidden IS NULL)
-              AND (s.SeriesType = 'BL' OR s.isBl = 1 OR EXISTS (SELECT 1 FROM SeriesCategories sc_all WHERE sc_all.SeriesID = s.ID AND sc_all.CategoryID IN (52, 63)))
+              AND (s.SeriesType IN ('BL', 'GL') OR s.isBl = 1 OR EXISTS (SELECT 1 FROM SeriesCategories sc_all WHERE sc_all.SeriesID = s.ID AND sc_all.CategoryID IN (52, 63)))
         """);
 
         List<Object> params = new ArrayList<>();
 
         if ("gl".equalsIgnoreCase(subType)) {
-            sql.append(" AND EXISTS (SELECT 1 FROM SeriesCategories sc_gl WHERE sc_gl.SeriesID = s.ID AND sc_gl.CategoryID = 63)");
+            sql.append(" AND (s.SeriesType = 'GL' OR EXISTS (SELECT 1 FROM SeriesCategories sc_gl WHERE sc_gl.SeriesID = s.ID AND sc_gl.CategoryID = 63))");
         } else if ("bl".equalsIgnoreCase(subType)) {
-            sql.append(" AND (s.SeriesType = 'BL' OR s.isBl = 1 OR EXISTS (SELECT 1 FROM SeriesCategories sc_bl WHERE sc_bl.SeriesID = s.ID AND sc_bl.CategoryID = 52)) AND NOT EXISTS (SELECT 1 FROM SeriesCategories sc_gl2 WHERE sc_gl2.SeriesID = s.ID AND sc_gl2.CategoryID = 63)");
+            sql.append(" AND (s.SeriesType = 'BL' OR (s.isBl = 1 AND (s.SeriesType != 'GL' OR s.SeriesType IS NULL)) OR EXISTS (SELECT 1 FROM SeriesCategories sc_bl WHERE sc_bl.SeriesID = s.ID AND sc_bl.CategoryID = 52)) AND NOT EXISTS (SELECT 1 FROM SeriesCategories sc_gl2 WHERE sc_gl2.SeriesID = s.ID AND sc_gl2.CategoryID = 63) AND (s.SeriesType != 'GL' OR s.SeriesType IS NULL)");
         }
 
         if (categoryId != null && categoryId > 0) {
@@ -279,7 +284,7 @@ public class SeriesRepository {
                        ROW_NUMBER() OVER (PARTITION BY E.SeriesId ORDER BY E.uploadDate DESC, E.SeasonNumber DESC, E.EpisodeNumber DESC) as rn
                 FROM Episode E
                 JOIN Series S ON E.SeriesId = S.ID
-                WHERE S.SeriesType = 'BL'
+                WHERE (S.SeriesType IN ('BL', 'GL') OR S.isBl = 1 OR EXISTS (SELECT 1 FROM SeriesCategories sc WHERE sc.SeriesID = S.ID AND sc.CategoryID IN (52, 63)))
                   AND (E.IsHidden = 0 OR E.IsHidden IS NULL)
                   AND (S.IsHidden = 0 OR S.IsHidden IS NULL)
             )
@@ -330,7 +335,7 @@ public class SeriesRepository {
                 SELECT DISTINCT E.SeriesId
                 FROM Episode E
                 JOIN Series S ON E.SeriesId = S.ID
-                WHERE S.SeriesType = 'BL'
+                WHERE (S.SeriesType IN ('BL', 'GL') OR S.isBl = 1 OR EXISTS (SELECT 1 FROM SeriesCategories sc WHERE sc.SeriesID = S.ID AND sc.CategoryID IN (52, 63)))
                   AND (E.IsHidden = 0 OR E.IsHidden IS NULL)
                   AND (S.IsHidden = 0 OR S.IsHidden IS NULL)
             )
@@ -347,7 +352,7 @@ public class SeriesRepository {
                     JOIN SeriesCategories sc2 ON sc2.CategoryID = c.ID 
                     WHERE sc2.SeriesID = s.ID) as Category
             FROM Series s
-            WHERE s.SeriesType = 'BL'
+            WHERE (s.SeriesType IN ('BL', 'GL') OR s.isBl = 1 OR EXISTS (SELECT 1 FROM SeriesCategories sc WHERE sc.SeriesID = s.ID AND sc.CategoryID IN (52, 63)))
               AND (s.IsHidden = 0 OR s.IsHidden IS NULL)
               AND s.name LIKE ?
             UNION
@@ -567,7 +572,7 @@ public class SeriesRepository {
                 JOIN SeriesCategories SC ON S.ID = SC.SeriesID
                 WHERE SC.CategoryID IN (SELECT CategoryID FROM TargetCategories)
                   AND S.ID <> ?
-                  AND S.SeriesType = 'BL'
+                  AND (S.SeriesType IN ('BL', 'GL') OR S.isBl = 1 OR EXISTS (SELECT 1 FROM SeriesCategories sc2 WHERE sc2.SeriesID = S.ID AND sc2.CategoryID IN (52, 63)))
                   AND (S.IsHidden = 0 OR S.IsHidden IS NULL)
                 GROUP BY S.ID, S.Name, S.viewCount
             ),
@@ -613,7 +618,7 @@ public class SeriesRepository {
                                (SELECT STRING_AGG(c.Name, ', ') FROM Categories c JOIN SeriesCategories sc2 ON sc2.CategoryID = c.ID WHERE sc2.SeriesID = s.ID) as Category,
                                (SELECT TOP 1 e.slug FROM Episode e WHERE e.SeriesId = s.ID AND (e.IsHidden = 0 OR e.IsHidden IS NULL) ORDER BY SeasonNumber ASC, EpisodeNumber ASC) as slug
                         FROM Series s
-                        WHERE s.SeriesType = 'BL'
+                        WHERE (s.SeriesType IN ('BL', 'GL') OR s.isBl = 1 OR EXISTS (SELECT 1 FROM SeriesCategories sc WHERE sc.SeriesID = s.ID AND sc.CategoryID IN (52, 63)))
                           AND s.ID <> ?
                           AND (s.IsHidden = 0 OR s.IsHidden IS NULL)
                         UNION ALL
