@@ -20,6 +20,119 @@
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <script src="/homepage/js/devtools-protection.js"></script>
     <link rel="stylesheet" href="/elements/variables.css">
+    <style>
+        .ad-slot-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 20px auto;
+            text-align: center;
+            overflow: hidden;
+            max-width: 100%;
+            clear: both;
+        }
+        .ad-slot-wrapper iframe {
+            max-width: 100%;
+        }
+        .ad-row-wrapper {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin: 24px auto;
+            max-width: 100%;
+            clear: both;
+        }
+        .ad-slot-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            overflow: hidden;
+            max-width: 100%;
+        }
+        .ad-slot-box iframe {
+            max-width: 100%;
+        }
+        .ad-slot-third {
+            display: flex;
+        }
+        @media (max-width: 1024px), (orientation: portrait) {
+            .ad-slot-third {
+                display: none !important;
+            }
+        }
+        .ad-label {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.4);
+            letter-spacing: 1.5px;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+        .ad-desktop {
+            display: flex;
+        }
+        .ad-mobile {
+            display: none;
+        }
+        /* Skyscraper side ads */
+        .ad-skyscraper {
+            position: fixed;
+            top: 85px;
+            width: 160px;
+            height: 620px;
+            z-index: 90;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            pointer-events: auto;
+        }
+        .ad-skyscraper-left {
+            left: 10px;
+        }
+        .ad-skyscraper-right {
+            right: 10px;
+        }
+        @media (min-width: 1780px) {
+            .ad-skyscraper-left {
+                left: calc(50% - 700px - 175px);
+            }
+            .ad-skyscraper-right {
+                right: calc(50% - 700px - 175px);
+            }
+        }
+        @media (min-width: 1280px) and (max-width: 1779px) {
+            .content-wrapper {
+                padding-left: 180px !important;
+                padding-right: 180px !important;
+            }
+        }
+        @media (max-width: 1279px) {
+            .ad-skyscraper {
+                display: none !important;
+            }
+        }
+        @media (max-width: 768px) {
+            .ad-desktop {
+                display: none !important;
+            }
+            .ad-mobile {
+                display: flex !important;
+            }
+            .ad-slot-wrapper {
+                margin: 14px auto;
+            }
+            .ad-row-wrapper {
+                margin: 14px auto;
+                gap: 15px;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -28,6 +141,36 @@
             <div class="logo">BL DİZİ</div>
         </a>
     </header>
+
+    <!-- Skyscraper Left (160x600) -->
+    <div class="ad-skyscraper ad-skyscraper-left">
+        <div class="ad-label">REKLAM</div>
+        <script>
+            atOptions = {
+                'key' : '5f256aa9c8403cccbcce1f5327e5f351',
+                'format' : 'iframe',
+                'height' : 600,
+                'width' : 160,
+                'params' : {}
+            };
+        </script>
+        <script src="https://bancadeltempoidea.org/22/5f256aa9c8403cccbcce1f5327e5f351"></script>
+    </div>
+
+    <!-- Skyscraper Right (160x600) -->
+    <div class="ad-skyscraper ad-skyscraper-right">
+        <div class="ad-label">REKLAM</div>
+        <script>
+            atOptions = {
+                'key' : '5f256aa9c8403cccbcce1f5327e5f351',
+                'format' : 'iframe',
+                'height' : 600,
+                'width' : 160,
+                'params' : {}
+            };
+        </script>
+        <script src="https://bancadeltempoidea.org/22/5f256aa9c8403cccbcce1f5327e5f351"></script>
+    </div>
 
     <div class="content-wrapper">
         <div class="watch-container">
@@ -95,6 +238,35 @@
             <div class="info-bar">
                 <span id="videoInfo"></span>
                 <button class="glow-button"><i class="fas fa-plus"></i> İstek Listesine Ekle</button>
+            </div>
+
+            <!-- Ad Slot: Leaderboard (728x90 Desktop / 320x50 Mobile) -->
+            <div class="ad-slot-wrapper ad-desktop">
+                <div class="ad-label">REKLAM</div>
+                <script>
+                    atOptions = {
+                        'key' : '9f553d1d5e39403f50fc5139cb85a860',
+                        'format' : 'iframe',
+                        'height' : 90,
+                        'width' : 728,
+                        'params' : {}
+                    };
+                </script>
+                <script src="https://bancadeltempoidea.org/22/9f553d1d5e39403f50fc5139cb85a860"></script>
+            </div>
+
+            <div class="ad-slot-wrapper ad-mobile">
+                <div class="ad-label">REKLAM</div>
+                <script>
+                    atOptions = {
+                        'key' : '584cbc0646e7ba45f934ef857f5813be',
+                        'format' : 'iframe',
+                        'height' : 50,
+                        'width' : 320,
+                        'params' : {}
+                    };
+                </script>
+                <script src="https://bancadeltempoidea.org/22/584cbc0646e7ba45f934ef857f5813be"></script>
             </div>
 
             <!-- Episode Selection Drawer -->
@@ -206,6 +378,49 @@
             </div>
         </div>
 
+        <!-- Ad Slot: 3x Medium Rectangle (300x250) -->
+        <div class="ad-row-wrapper">
+            <div class="ad-slot-box">
+                <div class="ad-label">REKLAM</div>
+                <script>
+                    atOptions = {
+                        'key' : '0b55fda1ba7c736d2bbdb0f9c35638ba',
+                        'format' : 'iframe',
+                        'height' : 250,
+                        'width' : 300,
+                        'params' : {}
+                    };
+                </script>
+                <script src="https://bancadeltempoidea.org/22/0b55fda1ba7c736d2bbdb0f9c35638ba"></script>
+            </div>
+            <div class="ad-slot-box">
+                <div class="ad-label">REKLAM</div>
+                <script>
+                    atOptions = {
+                        'key' : '0b55fda1ba7c736d2bbdb0f9c35638ba',
+                        'format' : 'iframe',
+                        'height' : 250,
+                        'width' : 300,
+                        'params' : {}
+                    };
+                </script>
+                <script src="https://bancadeltempoidea.org/22/0b55fda1ba7c736d2bbdb0f9c35638ba"></script>
+            </div>
+            <div class="ad-slot-box ad-slot-third">
+                <div class="ad-label">REKLAM</div>
+                <script>
+                    atOptions = {
+                        'key' : '0b55fda1ba7c736d2bbdb0f9c35638ba',
+                        'format' : 'iframe',
+                        'height' : 250,
+                        'width' : 300,
+                        'params' : {}
+                    };
+                </script>
+                <script src="https://bancadeltempoidea.org/22/0b55fda1ba7c736d2bbdb0f9c35638ba"></script>
+            </div>
+        </div>
+
         <div class="recommendation-section">
             <h3>Benzer İçerikler</h3>
             <div class="recommendation-carousel-container">
@@ -219,6 +434,35 @@
                     <i class="fas fa-chevron-right"></i>
                 </button>
             </div>
+        </div>
+
+        <!-- Ad Slot: Horizontal Leaderboard (728x90 Desktop / 320x50 Mobile) Above Comments -->
+        <div class="ad-slot-wrapper ad-desktop">
+            <div class="ad-label">REKLAM</div>
+            <script>
+                atOptions = {
+                    'key' : '9f553d1d5e39403f50fc5139cb85a860',
+                    'format' : 'iframe',
+                    'height' : 90,
+                    'width' : 728,
+                    'params' : {}
+                };
+            </script>
+            <script src="https://bancadeltempoidea.org/22/9f553d1d5e39403f50fc5139cb85a860"></script>
+        </div>
+
+        <div class="ad-slot-wrapper ad-mobile">
+            <div class="ad-label">REKLAM</div>
+            <script>
+                atOptions = {
+                    'key' : '584cbc0646e7ba45f934ef857f5813be',
+                    'format' : 'iframe',
+                    'height' : 50,
+                    'width' : 320,
+                    'params' : {}
+                };
+            </script>
+            <script src="https://bancadeltempoidea.org/22/584cbc0646e7ba45f934ef857f5813be"></script>
         </div>
 
         <!-- Comments Section -->
