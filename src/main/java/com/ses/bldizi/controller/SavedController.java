@@ -127,20 +127,16 @@ public class SavedController {
         return null;
     }
 
-    @GetMapping("/translated")
-    public ResponseEntity<List<Map<String, Object>>> getTranslatedEpisodes() {
-        try {
-            List<Map<String, Object>> result = jdbcTemplate.queryForList("EXEC GetUpcoming 'Translated'");
-            return ResponseEntity.ok(result);
-        } catch (Exception e) {
-            return ResponseEntity.ok(new ArrayList<>());
-        }
-    }
-
     @GetMapping("/loaded")
     public ResponseEntity<List<Map<String, Object>>> getLoadedEpisodes() {
         try {
-            List<Map<String, Object>> result = jdbcTemplate.queryForList("EXEC GetUpcoming 'Loaded'");
+            List<Map<String, Object>> result = jdbcTemplate.queryForList("EXEC GetUpcoming 'Upcoming'");
+            if (result.isEmpty()) {
+                result = jdbcTemplate.queryForList("EXEC GetUpcoming 'Loaded'");
+            }
+            if (result.isEmpty()) {
+                result = jdbcTemplate.queryForList("EXEC GetUpcoming");
+            }
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             return ResponseEntity.ok(new ArrayList<>());

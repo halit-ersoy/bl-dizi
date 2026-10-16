@@ -30,9 +30,24 @@ public class SeriesRepository {
                     JOIN SeriesCategories sc2 ON sc2.CategoryID = c.ID 
                     WHERE sc2.SeriesID = s.ID) as Category
             FROM Series s
-            WHERE (s.SeriesType IN ('BL', 'GL') OR s.isBl = 1 OR EXISTS (SELECT 1 FROM SeriesCategories sc WHERE sc.SeriesID = s.ID AND sc.CategoryID IN (52, 63)))
-              AND (s.IsHidden = 0 OR s.IsHidden IS NULL)
-            ORDER BY s.viewCount DESC
+            LEFT JOIN (
+                SELECT SeriesId, COUNT(*) as WeeklyViews
+                FROM (
+                    SELECT E.SeriesId
+                    FROM Episode E
+                    JOIN [dbo].[ContentViewLog] VL ON E.ID = VL.ContentId
+                    WHERE VL.ViewedAt >= DATEADD(day, -7, GETDATE())
+                    UNION ALL
+                    SELECT VL.ContentId as SeriesId
+                    FROM [dbo].[ContentViewLog] VL
+                    WHERE VL.ViewedAt >= DATEADD(day, -7, GETDATE())
+                      AND EXISTS (SELECT 1 FROM Series WHERE ID = VL.ContentId)
+                ) Combined
+                GROUP BY SeriesId
+            ) V ON s.ID = V.SeriesId
+            WHERE (s.IsHidden = 0 OR s.IsHidden IS NULL)
+              AND (s.SeriesType IN ('BL', 'GL') OR s.isBl = 1 OR EXISTS (SELECT 1 FROM SeriesCategories sc WHERE sc.SeriesID = s.ID AND sc.CategoryID IN (52, 63)))
+            ORDER BY ISNULL(V.WeeklyViews, 0) DESC, s.viewCount DESC, s.name ASC
         """;
 
         return jdbcTemplate.query(sql, (rs, rowNum) -> {

@@ -27,11 +27,15 @@ public class MovieRepository {
                     JOIN MovieCategories mc2 ON mc2.CategoryID = c.ID 
                     WHERE mc2.MovieID = m.ID) as Category
             FROM Movie m
-            JOIN MovieCategories mc ON m.ID = mc.MovieID
-            WHERE mc.CategoryID IN (52, 63)
-              AND (m.IsHidden = 0 OR m.IsHidden IS NULL)
-            GROUP BY m.ID, m.name, m.Summary, m.DurationMinutes, m.Language, m.Country, m.ReleaseYear, m.slug, m.viewCount
-            ORDER BY m.viewCount DESC
+            LEFT JOIN (
+                SELECT ContentId, COUNT(*) as WeeklyViews
+                FROM [dbo].[ContentViewLog]
+                WHERE [ViewedAt] >= DATEADD(day, -7, GETDATE())
+                GROUP BY ContentId
+            ) V ON m.ID = V.ContentId
+            WHERE (m.IsHidden = 0 OR m.IsHidden IS NULL)
+              AND (m.MovieType IN ('BL', 'GL') OR m.isBl = 1 OR EXISTS (SELECT 1 FROM MovieCategories mc WHERE mc.MovieID = m.ID AND mc.CategoryID IN (52, 63)))
+            ORDER BY ISNULL(V.WeeklyViews, 0) DESC, m.viewCount DESC, m.name ASC
         """;
 
         return jdbcTemplate.query(sql, (rs, rowNum) -> {
