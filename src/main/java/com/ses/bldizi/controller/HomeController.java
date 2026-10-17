@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @Controller
+@SuppressWarnings({"SqlResolve", "SqlNoDataSourceInspection"})
 public class HomeController {
 
     @Autowired
@@ -124,9 +125,13 @@ public class HomeController {
         }
 
         if (!isValid) {
-            return ResponseEntity.status(HttpStatus.FOUND)
-                    .header(HttpHeaders.LOCATION, "/")
-                    .build();
+            Resource notFoundPage = new ClassPathResource("static/error/html/error.html");
+            if (notFoundPage.exists()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .header(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_HTML_VALUE)
+                        .body(notFoundPage);
+            }
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
 
         return renderHtml("static/watch/html/watch.html");

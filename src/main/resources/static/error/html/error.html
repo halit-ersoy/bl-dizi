@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <script src="/elements/theme.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>404 - Sayfa Bulunamadı | BL Dizi</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Poppins:wght@300;400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="stylesheet" href="/error/css/error.css">
+    <script src="/homepage/js/devtools-protection.js"></script>
+    <link rel="stylesheet" href="/elements/variables.css">
+</head>
+
+<body>
+
+    <header>
+        <a href="/" class="logo-link">
+            <div class="logo">BL Dizi</div>
+        </a>
+        <a href="/" class="back-button"><i class="fas fa-arrow-left"></i> Ana Sayfaya Dön</a>
+    </header>
+
+    <main class="error-container">
+        <div class="glow-circle"></div>
+        <div class="content-wrapper">
+            <div class="error-code-wrapper">
+                <h1 class="error-code" id="errorCode">404</h1>
+            </div>
+            <h2 class="main-title">SAYFA BULUNAMADI</h2>
+            <p class="subtitle">Aradığınız sayfa <span class="highlight">silinmiş</span>, taşınmış veya hiç var olmamış olabilir.</p>
+
+            <div class="error-animation">
+                <i class="fas fa-compass"></i>
+            </div>
+
+            <a href="/" class="home-btn"><i class="fas fa-home" style="margin-right: 8px;"></i> ANA SAYFAYA DÖN</a>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-links">
+            <a href="/">Anasayfa</a>
+            <a href="/about">Hakkımızda</a>
+            <a href="/privacy_policy">Gizlilik Politikası</a>
+            <a href="/terms_of_use">Kullanım Şartları</a>
+            <a href="/sss">SSS</a>
+        </div>
+        <p>&copy;
+            <script>document.write(new Date().getFullYear())</script> BL Dizi. Tüm hakları saklıdır.
+        </p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const status = params.get('status');
+            if (status === '500') {
+                const codeEl = document.getElementById('errorCode');
+                const titleEl = document.querySelector('.main-title');
+                const subEl = document.querySelector('.subtitle');
+                if (codeEl) codeEl.textContent = '500';
+                if (titleEl) titleEl.textContent = 'SUNUCU HATASI';
+                if (subEl) subEl.innerHTML = 'Bir şeyler <span class="highlight">ters gitti</span>. Lütfen daha sonra tekrar deneyiniz.';
+            }
+        });
+    </script>
+</body>
+
+</html>

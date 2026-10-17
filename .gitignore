@@ -29,3 +29,7 @@ nbdist/
 
 ### Log files ###
 *.log
+
+run-bldizi.bat
+run.log
+bldizi_run.log
