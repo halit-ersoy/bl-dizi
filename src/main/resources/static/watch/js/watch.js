@@ -47,19 +47,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     if (detailsData && detailsData.isUpcoming) {
+        const canonicalId = detailsData.id || videoId;
         setupUpcomingWatch(detailsData);
-        initListModal(videoId);
-        initCommentsSection(videoId);
-        initContentDetails(videoId);
-        initSimilarContent(videoId);
-
-        // Auto-expand content details section for upcoming content
-        const detailsToggle = document.querySelector('.details-toggle');
-        const detailsContainer = document.querySelector('.content-details-container');
-        if (detailsToggle && detailsContainer) {
-            detailsToggle.classList.add('active');
-            detailsContainer.classList.add('open');
-        }
+        initListModal(canonicalId);
+        initCommentsSection(canonicalId);
+        initContentDetails(canonicalId);
+        initSimilarContent(canonicalId);
 
         document.querySelectorAll('.rec-card .rec-image img').forEach(img => {
             handleImageSkeleton(img);
