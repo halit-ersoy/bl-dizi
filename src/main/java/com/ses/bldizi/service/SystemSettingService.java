@@ -7,6 +7,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
+@SuppressWarnings({"SqlResolve", "SqlNoDataSourceInspection", "unused"})
 public class SystemSettingService {
     private static final Logger logger = LoggerFactory.getLogger(SystemSettingService.class);
 
@@ -70,6 +71,21 @@ public class SystemSettingService {
                         String.class
                 );
                 return val == null || "true".equalsIgnoreCase(val);
+            } catch (Exception e) {
+                return true;
+            }
+        }
+        return true;
+    }
+
+    public boolean isAdVideoEnabled() {
+        if (jdbcTemplate != null) {
+            try {
+                String val = jdbcTemplate.queryForObject(
+                        "SELECT SettingValue FROM SystemSettings WHERE SettingKey = 'ad_video_enabled'",
+                        String.class
+                );
+                return val == null || !"false".equalsIgnoreCase(val.trim());
             } catch (Exception e) {
                 return true;
             }

@@ -693,8 +693,56 @@
             window.addEventListener('load', scan);
         })();
     </script>
-    <!-- Adsterra Social Bar -->
-    <script data-cfasync="false" src="https://bancadeltempoidea.org/14/9b5fca9daf27f593dfb167c8ace770b1"></script>
+    <!-- Dynamic Ad Settings Controller & Social Bar Loader -->
+    <script>
+        (function() {
+            var socialBarScriptUrl = 'https://bancadeltempoidea.org/14/9b5fca9daf27f593dfb167c8ace770b1';
+
+            function applyAdSettings(ads) {
+                // 1. Destek Butonu (Smartlink)
+                if (ads.supportButton === false) {
+                    var btn = document.querySelector('.btn-support-header');
+                    if (btn) btn.style.setProperty('display', 'none', 'important');
+                }
+
+                // 2. Kule (Skyscraper) Reklamlari (160x600)
+                if (ads.skyscraperAds === false) {
+                    var skies = document.querySelectorAll('.ad-skyscraper');
+                    for (var i = 0; i < skies.length; i++) skies[i].remove();
+                }
+
+                // 3. Sayfa Ici Banner Reklamlari (728x90 & 300x250)
+                if (ads.bannerAds === false) {
+                    var banners = document.querySelectorAll('.ad-slot-wrapper, .ad-row-wrapper');
+                    for (var j = 0; j < banners.length; j++) banners[j].remove();
+                }
+
+                // 4. Social Bar
+                if (ads.socialBar !== false) {
+                    var s = document.createElement('script');
+                    s.src = socialBarScriptUrl;
+                    s.setAttribute('data-cfasync', 'false');
+                    document.body.appendChild(s);
+                }
+            }
+
+            fetch('/api/settings/ads')
+                .then(function(res) {
+                    if (!res.ok) throw new Error('status ' + res.status);
+                    return res.json();
+                })
+                .then(applyAdSettings)
+                .catch(function() {
+                    applyAdSettings({
+                        videoAds: true,
+                        socialBar: true,
+                        skyscraperAds: true,
+                        bannerAds: true,
+                        supportButton: true
+                    });
+                });
+        })();
+    </script>
 </body>
 
 </html>

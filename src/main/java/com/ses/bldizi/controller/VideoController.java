@@ -13,6 +13,7 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/video")
+@SuppressWarnings({"SqlResolve", "SqlNoDataSourceInspection"})
 public class VideoController {
 
     private final SeriesRepository seriesRepository;
@@ -115,7 +116,7 @@ public class VideoController {
             List<Map<String, Object>> upcomings = jdbcTemplate.queryForList(
                     "SELECT TOP 1 * FROM Upcoming WHERE ID = ? AND (isBl = 1 OR Genre IN ('BL', 'GL'))", id);
             if (!upcomings.isEmpty()) {
-                Map<String, Object> u = upcomings.get(0);
+                Map<String, Object> u = upcomings.getFirst();
                 String title = (String) u.get("name");
                 String upcomingType = (String) u.get("type");
                 boolean isMovie = upcomingType != null && upcomingType.equalsIgnoreCase("Movie");
@@ -306,7 +307,7 @@ public class VideoController {
             List<Map<String, Object>> upcomings = jdbcTemplate.queryForList(
                     "SELECT TOP 1 ID FROM Upcoming WHERE (slug = ? OR name = ?) AND (isBl = 1 OR Genre IN ('BL', 'GL'))", slug, slug);
             if (!upcomings.isEmpty()) {
-                return ResponseEntity.ok(Map.of("id", upcomings.get(0).get("ID").toString(), "type", "upcoming"));
+                return ResponseEntity.ok(Map.of("id", upcomings.getFirst().get("ID").toString(), "type", "upcoming"));
             }
         } catch (Exception ignored) {
         }
@@ -332,7 +333,7 @@ public class VideoController {
             List<Map<String, Object>> upcomings = jdbcTemplate.queryForList(
                     "SELECT TOP 1 * FROM Upcoming WHERE ID = ? AND (isBl = 1 OR Genre IN ('BL', 'GL'))", id);
             if (!upcomings.isEmpty()) {
-                Map<String, Object> u = upcomings.get(0);
+                Map<String, Object> u = upcomings.getFirst();
                 Object refIdObj = u.get("ReferenceId");
                 if (refIdObj != null) {
                     contentIdForSearch = UUID.fromString(refIdObj.toString());
@@ -353,6 +354,9 @@ public class VideoController {
 
     @GetMapping({"/commercial/random", "/ad/random"})
     public ResponseEntity<Map<String, Object>> getRandomAd() {
+        if (systemSettingService != null && !systemSettingService.isAdVideoEnabled()) {
+            return ResponseEntity.noContent().build();
+        }
         int probability = systemSettingService != null ? systemSettingService.getAdProbability() : 30;
         if (probability <= 0) {
             return ResponseEntity.noContent().build();
@@ -366,7 +370,7 @@ public class VideoController {
             List<Map<String, Object>> ads = jdbcTemplate.queryForList(
                     "SELECT TOP 1 ID, Name FROM Ad WHERE IsHidden = 0 ORDER BY NEWID()");
             if (!ads.isEmpty()) {
-                Map<String, Object> ad = ads.get(0);
+                Map<String, Object> ad = ads.getFirst();
                 return ResponseEntity.ok(Map.of("id", ad.get("ID"), "name", ad.get("Name")));
             }
         } catch (Exception ignored) {}
