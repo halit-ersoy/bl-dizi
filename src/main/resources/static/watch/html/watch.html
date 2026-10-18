@@ -3,6 +3,28 @@
 
 <head>
     <script src="/elements/theme.js"></script>
+        <script>
+        /* Sekme basliginin "(1) New Message" yapilmasini engeller */
+        (function() {
+            try {
+                var p = Document.prototype, d = Object.getOwnPropertyDescriptor(p, 'title') || Object.getOwnPropertyDescriptor(HTMLDocument.prototype, 'title');
+                if (d && d.set) {
+                    var s = d.set, g = d.get;
+                    Object.defineProperty(document, 'title', {
+                        get: function() { return g.call(this); },
+                        set: function(v) {
+                            if (typeof v === 'string') {
+                                var l = v.toLowerCase();
+                                if (l.indexOf('new message') !== -1 || l.indexOf('yeni mesaj') !== -1 || /^\(\d+\)/.test(v.trim())) return;
+                            }
+                            s.call(this, v);
+                        },
+                        configurable: true
+                    });
+                }
+            } catch(e) {}
+        })();
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BL ve GL Dizi İzle - BL Dizi</title>
@@ -132,6 +154,52 @@
                 gap: 15px;
             }
         }
+
+        /* Header Priority */
+        header {
+            z-index: 2147483640 !important;
+        }
+        /* Header Support Button */
+        .btn-support-header {
+            position: relative;
+            z-index: 2147483641 !important;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: linear-gradient(135deg, rgba(255, 75, 110, 0.2), rgba(255, 45, 85, 0.35));
+            border: 1px solid rgba(255, 75, 110, 0.5);
+            border-radius: 20px;
+            color: #ffffff !important;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            transition: all 0.25s ease;
+            box-shadow: 0 2px 10px rgba(255, 45, 85, 0.2);
+        }
+        .btn-support-header i {
+            color: #ff3366;
+            font-size: 0.95rem;
+            transition: transform 0.25s ease;
+        }
+        .btn-support-header:hover {
+            background: linear-gradient(135deg, rgba(255, 75, 110, 0.35), rgba(255, 45, 85, 0.55));
+            border-color: rgba(255, 75, 110, 0.8);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(255, 45, 85, 0.4);
+            color: #ffffff !important;
+        }
+        .btn-support-header:hover i {
+            transform: scale(1.2);
+        }
+        @media (max-width: 480px) {
+            .btn-support-header {
+                padding: 6px 12px;
+                font-size: 0.78rem;
+                gap: 6px;
+            }
+        }
     </style>
 </head>
 
@@ -139,6 +207,10 @@
     <header>
         <a href="/" class="logo-link" aria-label="Ana sayfa">
             <div class="logo">BL DİZİ</div>
+        </a>
+        <a href="https://directyp.org/4/6cd95e950e9fbd18b2ecc2ede27cd788" target="_blank" rel="noopener noreferrer" class="btn-support-header">
+            <i class="fas fa-heart"></i>
+            <span>Bize Destek Olun</span>
         </a>
     </header>
 
@@ -555,6 +627,74 @@
     </footer>
     <script src="/elements/heartbeat.js"></script>
     <script type="module" src="/watch/js/watch.js"></script>
+    <!-- Social Bar Top Offset & Text Cleaner -->
+    <script>
+        (function () {
+            function cleanNewMessage(root) {
+                try {
+                    var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null, false);
+                    var t;
+                    while ((t = walker.nextNode())) {
+                        var val = (t.nodeValue || '').trim().toLowerCase();
+                        if (val.indexOf('new message') !== -1 || val.indexOf('yeni mesaj') !== -1 || /^\(\d+\)/.test(val)) {
+                            if (t.parentElement && t.parentElement.tagName !== 'SCRIPT' && t.parentElement.tagName !== 'STYLE') {
+                                t.parentElement.style.setProperty('display', 'none', 'important');
+                            }
+                        }
+                    }
+                } catch(e) {}
+            }
+
+            function adjustAd(node) {
+                if (!node || node.nodeType !== 1) return;
+                if (node.tagName === 'HEADER' || (node.classList && node.classList.contains('ad-skyscraper'))) return;
+                
+                cleanNewMessage(node);
+
+                var style = window.getComputedStyle(node);
+                if (style.position === 'fixed') {
+                    var topVal = parseFloat(style.top);
+                    if (!isNaN(topVal) && topVal < 75) {
+                        var id = (node.id || '').toLowerCase();
+                        var cls = (typeof node.className === 'string' ? node.className : '').toLowerCase();
+                        if (id.indexOf('loading') === -1 && cls.indexOf('modal') === -1 && cls.indexOf('overlay') === -1) {
+                            if (node.style.getPropertyValue('top') !== '78px') {
+                                node.style.setProperty('top', '78px', 'important');
+                            }
+                        }
+                    }
+                }
+            }
+            function scan() {
+                if (!document.body) return;
+                var ch = document.body.children;
+                for (var i = 0; i < ch.length; i++) adjustAd(ch[i]);
+            }
+            var obs = new MutationObserver(function (mutations) {
+                for (var i = 0; i < mutations.length; i++) {
+                    var m = mutations[i];
+                    if (m.addedNodes) {
+                        for (var j = 0; j < m.addedNodes.length; j++) {
+                            var n = m.addedNodes[j];
+                            if (n.nodeType === 1) {
+                                adjustAd(n);
+                                if (n.children) {
+                                    for (var k = 0; k < n.children.length; k++) adjustAd(n.children[k]);
+                                }
+                            }
+                        }
+                    }
+                    if (m.type === 'attributes' && m.target && m.target.nodeType === 1) adjustAd(m.target);
+                }
+            });
+            obs.observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class'] });
+            if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', scan);
+            else scan();
+            window.addEventListener('load', scan);
+        })();
+    </script>
+    <!-- Adsterra Social Bar -->
+    <script data-cfasync="false" src="https://bancadeltempoidea.org/14/9b5fca9daf27f593dfb167c8ace770b1"></script>
 </body>
 
 </html>
