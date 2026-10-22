@@ -24,7 +24,8 @@ public class SitemapController {
             .withZone(ZoneId.of("UTC"));
 
     private static final Set<String> BLACKLISTED_SLUGS = Set.of(
-            "delete", "edit", "admin", "login", "register", "panel", "api", "logout", "error", "404", "watch"
+            "delete", "edit", "admin", "login", "register", "panel", "api", "logout", "error", "404", "watch",
+            "messages", "settings", "profile", "favorites", "history", "login-admin", "banned"
     );
 
     public SitemapController(JdbcTemplate jdbcTemplate) {

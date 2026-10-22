@@ -1,4 +1,12 @@
 User-agent: *
+Disallow: /messages
+Disallow: /profile
+Disallow: /settings
+Disallow: /favorites
+Disallow: /history
+Disallow: /panel
+Disallow: /login-admin
+Disallow: /api/
 Allow: /
 
 Sitemap: https://bldizi.com/sitemap.xml
