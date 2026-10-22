@@ -667,3 +667,289 @@ video {
         font-size: 12px;
     }
 }
+
+
+/* ==========================================================================
+   VIDEO USTU REKLAM ROZETI & ANIMASYONLU BAGLANTI BUTONLARI
+   ========================================================================== */
+.player-ad-overlay {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 100;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    max-width: calc(100% - 40px);
+    pointer-events: none;
+    font-family: 'Montserrat', sans-serif;
+    animation: adOverlayFadeIn 0.35s ease-out forwards;
+}
+
+@keyframes adOverlayFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* "Reklam" Rozeti - Sol Tarafta */
+.ad-badge-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.78);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: #ffffff;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    border-left: 3px solid var(--primary-color, #e50914);
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.55);
+    pointer-events: auto;
+    user-select: none;
+    flex-shrink: 0;
+}
+
+.ad-tag-pulse {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--primary-color, #e50914);
+    box-shadow: 0 0 8px var(--primary-color, #e50914);
+    animation: adPulseDot 1.4s infinite ease-in-out;
+}
+
+@keyframes adPulseDot {
+    0% { transform: scale(0.8); opacity: 0.7; }
+    50% { transform: scale(1.3); opacity: 1; box-shadow: 0 0 12px var(--primary-color, #e50914); }
+    100% { transform: scale(0.8); opacity: 0.7; }
+}
+
+/* "Reklam" Rozetinin Saginda Cikan Butonlar Listesi */
+.ad-badge-links-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    pointer-events: auto;
+}
+
+/* Animasyonlu Baglanti Butonu */
+.ad-overlay-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 50px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    color: #ffffff !important;
+    text-decoration: none !important;
+    cursor: pointer;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+    position: relative;
+    overflow: hidden;
+    user-select: none;
+    pointer-events: auto;
+    white-space: nowrap;
+    opacity: 0;
+    transform: translateX(-15px) scale(0.92);
+    animation: adBtnSlideRight 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+@keyframes adBtnSlideRight {
+    0% {
+        opacity: 0;
+        transform: translateX(-18px) scale(0.9);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
+.ad-overlay-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+    transform: skewX(-20deg);
+    transition: 0.5s;
+}
+
+.ad-overlay-btn:hover::before {
+    left: 140%;
+}
+
+.ad-overlay-btn:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.65);
+}
+
+.ad-overlay-btn:active {
+    transform: translateY(0) scale(0.98);
+}
+
+.ad-btn-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.05rem;
+}
+
+.ad-btn-arrow {
+    font-size: 0.68rem;
+    opacity: 0.8;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.ad-overlay-btn:hover .ad-btn-arrow {
+    transform: translate(2px, -2px);
+    opacity: 1;
+}
+
+/* Marka / Link Türlerine Özel Canlı Renkler */
+.btn-cta-appstore {
+    background: linear-gradient(135deg, rgba(30, 30, 36, 0.95), rgba(0, 0, 0, 0.95));
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    box-shadow: 0 4px 15px rgba(255, 255, 255, 0.15);
+}
+.btn-cta-appstore:hover {
+    border-color: #ffffff;
+    box-shadow: 0 6px 24px rgba(255, 255, 255, 0.35);
+}
+
+.btn-cta-googleplay {
+    background: linear-gradient(135deg, rgba(0, 230, 118, 0.35), rgba(0, 160, 80, 0.5));
+    border: 1px solid #00e676;
+    box-shadow: 0 4px 16px rgba(0, 230, 118, 0.3);
+}
+.btn-cta-googleplay:hover {
+    background: linear-gradient(135deg, #00e676, #00b0ff);
+    color: #000000 !important;
+    box-shadow: 0 6px 24px rgba(0, 230, 118, 0.6);
+}
+
+.btn-cta-website {
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.88), rgba(29, 78, 216, 0.92));
+    border: 1px solid #60a5fa;
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.35);
+}
+.btn-cta-website:hover {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    box-shadow: 0 6px 24px rgba(59, 130, 246, 0.6);
+}
+
+.btn-cta-download {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.88), rgba(5, 150, 105, 0.92));
+    border: 1px solid #34d399;
+    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.35);
+}
+.btn-cta-download:hover {
+    background: linear-gradient(135deg, #10b981, #059669);
+    box-shadow: 0 6px 24px rgba(16, 185, 129, 0.6);
+}
+
+.btn-cta-instagram {
+    background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 4px 16px rgba(253, 29, 29, 0.4);
+}
+.btn-cta-instagram:hover {
+    box-shadow: 0 6px 25px rgba(253, 29, 29, 0.65);
+}
+
+.btn-cta-youtube {
+    background: linear-gradient(135deg, rgba(220, 38, 38, 0.9), rgba(185, 28, 28, 0.95));
+    border: 1px solid #f87171;
+    box-shadow: 0 4px 16px rgba(220, 38, 38, 0.4);
+}
+.btn-cta-youtube:hover {
+    background: #ef4444;
+    box-shadow: 0 6px 24px rgba(239, 68, 68, 0.65);
+}
+
+.btn-cta-discord {
+    background: linear-gradient(135deg, rgba(88, 101, 242, 0.9), rgba(71, 82, 196, 0.95));
+    border: 1px solid #818cf8;
+    box-shadow: 0 4px 16px rgba(88, 101, 242, 0.4);
+}
+.btn-cta-discord:hover {
+    background: #5865f2;
+    box-shadow: 0 6px 24px rgba(88, 101, 242, 0.65);
+}
+
+.btn-cta-telegram {
+    background: linear-gradient(135deg, rgba(2, 132, 199, 0.9), rgba(3, 105, 161, 0.95));
+    border: 1px solid #38bdf8;
+    box-shadow: 0 4px 16px rgba(2, 132, 199, 0.4);
+}
+.btn-cta-telegram:hover {
+    background: #0284c7;
+    box-shadow: 0 6px 24px rgba(56, 189, 248, 0.65);
+}
+
+.btn-cta-twitter {
+    background: #000000;
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+.btn-cta-twitter:hover {
+    border-color: #ffffff;
+    box-shadow: 0 6px 22px rgba(255, 255, 255, 0.3);
+}
+
+.btn-cta-shop {
+    background: linear-gradient(135deg, rgba(217, 119, 6, 0.9), rgba(180, 83, 9, 0.95));
+    border: 1px solid #fbbf24;
+    box-shadow: 0 4px 16px rgba(217, 119, 6, 0.4);
+}
+.btn-cta-shop:hover {
+    background: #f59e0b;
+    box-shadow: 0 6px 24px rgba(245, 158, 11, 0.65);
+}
+
+.btn-cta-custom {
+    background: rgba(var(--primary-rgb), 0.35);
+    border: 1px solid var(--primary);
+    color: #ffffff !important;
+    box-shadow: 0 4px 16px rgba(var(--primary-rgb), 0.3);
+}
+.btn-cta-custom:hover {
+    background: var(--primary);
+    color: #000000 !important;
+    box-shadow: 0 6px 24px rgba(var(--primary-rgb), 0.65);
+}
+
+@media (max-width: 600px) {
+    .player-ad-overlay {
+        top: 12px;
+        left: 12px;
+        max-width: calc(100% - 24px);
+        gap: 8px;
+    }
+    .ad-badge-tag {
+        padding: 6px 12px;
+        font-size: 11px;
+    }
+    .ad-overlay-btn {
+        padding: 6px 12px;
+        font-size: 11px;
+    }
+}

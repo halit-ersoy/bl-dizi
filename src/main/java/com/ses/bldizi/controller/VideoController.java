@@ -368,10 +368,14 @@ public class VideoController {
 
         try {
             List<Map<String, Object>> ads = jdbcTemplate.queryForList(
-                    "SELECT TOP 1 ID, Name FROM Ad WHERE IsHidden = 0 ORDER BY NEWID()");
+                    "SELECT TOP 1 ID, Name, LinkButtons FROM Ad WHERE IsHidden = 0 ORDER BY NEWID()");
             if (!ads.isEmpty()) {
                 Map<String, Object> ad = ads.getFirst();
-                return ResponseEntity.ok(Map.of("id", ad.get("ID"), "name", ad.get("Name")));
+                Map<String, Object> res = new HashMap<>();
+                res.put("id", ad.get("ID"));
+                res.put("name", ad.get("Name"));
+                res.put("linkButtons", ad.get("LinkButtons"));
+                return ResponseEntity.ok(res);
             }
         } catch (Exception ignored) {}
         return ResponseEntity.noContent().build();

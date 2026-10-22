@@ -181,7 +181,6 @@ export function initVideoControls(videoId) {
         const timeDisplay = document.getElementById('timeDisplay');
 
         if (!progressContainer || !progressBar) return;
-
         const formatTime = (seconds) => {
             if (isNaN(seconds)) return "00:00";
             const mins = Math.floor(seconds / 60);
@@ -437,7 +436,7 @@ export function initVideoControls(videoId) {
             if (adRes.ok && adRes.status === 200) {
                 const adData = await adRes.json();
                 if (adData && adData.id) {
-                    playAd(adData.id, id);
+                    playAd(adData.id, id, adData);
                     return;
                 }
             }
@@ -451,7 +450,7 @@ export function initVideoControls(videoId) {
         await loadSources(id, hasMainSource);
     }
 
-    function playAd(adId, originalId) {
+    function playAd(adId, originalId, adData) {
         isAdPlaying = true;
         
         // Hide source switcher container during ad
@@ -460,28 +459,13 @@ export function initVideoControls(videoId) {
             switcherContainer.style.display = 'none';
         }
 
-        // Add ad badge
-        const adBadge = document.createElement('div');
-        adBadge.id = 'playerAdBadge';
-        adBadge.innerText = 'Reklam';
-        adBadge.style.position = 'absolute';
-        adBadge.style.top = '20px';
-        adBadge.style.left = '20px';
-        adBadge.style.background = 'rgba(0, 0, 0, 0.7)';
-        adBadge.style.color = '#fff';
-        adBadge.style.padding = '8px 16px';
-        adBadge.style.borderRadius = '4px';
-        adBadge.style.fontSize = '14px';
-        adBadge.style.fontWeight = 'bold';
-        adBadge.style.zIndex = '100';
-        adBadge.style.pointerEvents = 'none';
-        adBadge.style.fontFamily = 'Montserrat, sans-serif';
-        adBadge.style.borderLeft = '3px solid var(--primary-color, #e50914)';
+        // Create player ad overlay (contains "Reklam" badge and animated link buttons to its right)
+        const adOverlay = createPlayerAdOverlay(adData);
         
         // Append to player wrapper
         const wrapper = document.querySelector('.video-wrapper');
-        if (wrapper) {
-            wrapper.appendChild(adBadge);
+        if (wrapper && adOverlay) {
+            wrapper.appendChild(adOverlay);
         }
 
         let adFinished = false;
@@ -494,8 +478,8 @@ export function initVideoControls(videoId) {
 
             // Clean up ad state
             isAdPlaying = false;
-            if (adBadge.parentNode) {
-                adBadge.parentNode.removeChild(adBadge);
+            if (adOverlay && adOverlay.parentNode) {
+                adOverlay.parentNode.removeChild(adOverlay);
             }
             if (switcherContainer) {
                 switcherContainer.style.display = '';
@@ -520,6 +504,89 @@ export function initVideoControls(videoId) {
 
         // Load and play the ad video via HLS
         loadVideo(adId);
+    }
+
+    // --- REKLAM ROZETI & ANIMASYONLU BAGLANTI BUTONLARI YONETIMI ---
+    const AD_CTA_TYPE_ICONS = {
+        appstore: { icon: 'fab fa-apple', class: 'btn-cta-appstore', label: "App Store'dan İndir" },
+        googleplay: { icon: 'fab fa-google-play', class: 'btn-cta-googleplay', label: "Google Play'den İndir" },
+        website: { icon: 'fas fa-globe', class: 'btn-cta-website', label: 'Siteyi Ziyaret Et' },
+        download: { icon: 'fas fa-download', class: 'btn-cta-download', label: 'Hemen İndir' },
+        instagram: { icon: 'fab fa-instagram', class: 'btn-cta-instagram', label: "Instagram'da İncele" },
+        youtube: { icon: 'fab fa-youtube', class: 'btn-cta-youtube', label: "YouTube'da İzle" },
+        discord: { icon: 'fab fa-discord', class: 'btn-cta-discord', label: "Discord'a Katıl" },
+        telegram: { icon: 'fab fa-telegram', class: 'btn-cta-telegram', label: "Telegram'a Katıl" },
+        twitter: { icon: 'fab fa-x-twitter', class: 'btn-cta-twitter', label: "X'te Takip Et" },
+        shop: { icon: 'fas fa-shopping-bag', class: 'btn-cta-shop', label: 'Satın Al / İncele' },
+        custom: { icon: 'fas fa-external-link-alt', class: 'btn-cta-custom', label: 'Detaylı Bilgi' }
+    };
+
+    function createPlayerAdOverlay(adData) {
+        const overlay = document.createElement('div');
+        overlay.id = 'playerAdOverlay';
+        overlay.className = 'player-ad-overlay';
+
+        // Reklam Rozeti
+        const badgeTag = document.createElement('div');
+        badgeTag.className = 'ad-badge-tag';
+        badgeTag.innerHTML = '<span class="ad-tag-pulse"></span><span>Reklam</span>';
+        overlay.appendChild(badgeTag);
+
+        // Reklam Rozetinin Sağına Gelen Butonlar Konteyneri
+        let links = [];
+        if (adData && adData.linkButtons) {
+            try {
+                links = typeof adData.linkButtons === 'string' ? JSON.parse(adData.linkButtons) : adData.linkButtons;
+            } catch (e) {
+                console.warn('Could not parse ad link buttons:', e);
+            }
+        }
+
+        if (Array.isArray(links) && links.length > 0) {
+            const linksWrap = document.createElement('div');
+            linksWrap.className = 'ad-badge-links-wrap';
+
+            links.forEach((link, idx) => {
+                if (!link || !link.url) return;
+                const typeKey = (link.type || 'website').toLowerCase();
+                const config = AD_CTA_TYPE_ICONS[typeKey] || AD_CTA_TYPE_ICONS.custom;
+                const btnText = link.title && link.title.trim() ? link.title.trim() : config.label;
+
+                const a = document.createElement('a');
+                a.href = link.url;
+                a.target = '_blank';
+                a.rel = 'noopener noreferrer';
+                a.className = `ad-overlay-btn ${config.class}`;
+                // Staggered slide-in animation from the right of the "Reklam" badge
+                a.style.animationDelay = `${0.12 + (idx * 0.1)}s`;
+                a.innerHTML = `
+                    <span class="ad-btn-icon"><i class="${config.icon}"></i></span>
+                    <span class="ad-btn-label">${escapeHtmlCta(btnText)}</span>
+                    <i class="fas fa-arrow-up-right-from-square ad-btn-arrow"></i>
+                `;
+                a.addEventListener('click', (e) => {
+                    // Linke tıklandığında oynat/duraklat tetiklenmesin
+                    e.stopPropagation();
+                });
+                linksWrap.appendChild(a);
+            });
+
+            if (linksWrap.children.length > 0) {
+                overlay.appendChild(linksWrap);
+            }
+        }
+
+        return overlay;
+    }
+
+    function escapeHtmlCta(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
     }
 
     async function loadSources(id, hasMainSource) {
