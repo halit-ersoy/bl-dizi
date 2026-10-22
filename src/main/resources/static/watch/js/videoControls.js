@@ -556,6 +556,8 @@ export function initVideoControls(videoId) {
                 a.href = link.url;
                 a.target = '_blank';
                 a.rel = 'noopener noreferrer';
+                a.title = btnText;
+                a.setAttribute('aria-label', btnText);
                 a.className = `ad-overlay-btn ${config.class}`;
                 // Staggered slide-in animation from the right of the "Reklam" badge
                 a.style.animationDelay = `${0.12 + (idx * 0.1)}s`;
