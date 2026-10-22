@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @Repository
+@SuppressWarnings({"SqlResolve", "SqlDialectInspection", "RedundantOrderingDirection", "unused"})
 public class MessageRepository {
 
     private final JdbcTemplate jdbcTemplate;
@@ -36,6 +37,9 @@ public class MessageRepository {
             String alterSql = "IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('UserMessages') AND name = 'IsDelivered') "
                     + "BEGIN ALTER TABLE UserMessages ADD IsDelivered BIT DEFAULT 0; END";
             jdbcTemplate.execute(alterSql);
+            String orderSql = "IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('UserMessages') AND name = 'MsgOrder') "
+                    + "BEGIN ALTER TABLE UserMessages ADD MsgOrder BIGINT IDENTITY(1,1); END";
+            jdbcTemplate.execute(orderSql);
         } catch (Exception e) {
             System.err.println("Error creating UserMessages table: " + e.getMessage());
         }
@@ -78,21 +82,35 @@ public class MessageRepository {
         }
     }
 
-    public void sendMessage(UUID senderId, UUID receiverId, String content) {
+    public Message sendMessage(UUID senderId, UUID receiverId, String content) {
         ensureMessageTableExists();
-        String sql = "INSERT INTO UserMessages (SenderID, ReceiverID, Content, Timestamp) VALUES (?, ?, ?, ?)";
-        jdbcTemplate.update(sql, senderId, receiverId, content, java.sql.Timestamp.from(Instant.now()));
+        UUID id = UUID.randomUUID();
+        Instant now = Instant.now();
+        //noinspection SqlResolve
+        String sql = "INSERT INTO UserMessages (ID, SenderID, ReceiverID, Content, Timestamp) VALUES (?, ?, ?, ?, ?)";
+        jdbcTemplate.update(sql, id, senderId, receiverId, content, java.sql.Timestamp.from(now));
+
+        Message m = new Message();
+        m.setId(id);
+        m.setSenderId(senderId);
+        m.setReceiverId(receiverId);
+        m.setContent(content);
+        m.setTimestamp(now);
+        m.setRead(false);
+        m.setDelivered(false);
+        return m;
     }
 
     public List<Message> getChatHistory(UUID user1, UUID user2) {
         ensureMessageTableExists();
+        //noinspection SqlResolve
         String sql = "SELECT m.ID, m.SenderID, m.ReceiverID, m.Content, m.Timestamp, m.IsRead, m.IsDelivered, " +
                 "p1.nickname as SenderNickname, p2.nickname as ReceiverNickname, p1.role as SenderRole, p2.role as ReceiverRole, p1.isVerified as SenderVerified, p2.isVerified as ReceiverVerified "
                 + "FROM UserMessages m " +
                 "JOIN Person p1 ON m.SenderID = p1.ID " +
                 "JOIN Person p2 ON m.ReceiverID = p2.ID " +
                 "WHERE (m.SenderID = ? AND m.ReceiverID = ?) OR (m.SenderID = ? AND m.ReceiverID = ?) " +
-                "ORDER BY m.Timestamp ASC";
+                "ORDER BY m.Timestamp, m.MsgOrder";
 
         return jdbcTemplate.query(sql, (rs, rowNum) -> {
             Message m = new Message();
@@ -116,14 +134,15 @@ public class MessageRepository {
 
     public List<Message> getConversationList(UUID userId) {
         ensureMessageTableExists();
+        //noinspection SqlResolve
         String sqlServerPart = "SELECT ID, SenderID, ReceiverID, Content, Timestamp, IsRead, IsDelivered, SenderNickname, ReceiverNickname, SenderRole, ReceiverRole, SenderVerified, ReceiverVerified FROM ("
                 + "  SELECT m.*, p1.nickname as SenderNickname, p2.nickname as ReceiverNickname, p1.role as SenderRole, p2.role as ReceiverRole, p1.isVerified as SenderVerified, p2.isVerified as ReceiverVerified, "
-                + "  ROW_NUMBER() OVER (PARTITION BY CASE WHEN SenderID < ReceiverID THEN CAST(SenderID AS VARCHAR(36)) + CAST(ReceiverID AS VARCHAR(36)) ELSE CAST(ReceiverID AS VARCHAR(36)) + CAST(SenderID AS VARCHAR(36)) END ORDER BY Timestamp DESC) as RowNum "
+                + "  ROW_NUMBER() OVER (PARTITION BY CASE WHEN SenderID < ReceiverID THEN CAST(SenderID AS VARCHAR(36)) + CAST(ReceiverID AS VARCHAR(36)) ELSE CAST(ReceiverID AS VARCHAR(36)) + CAST(SenderID AS VARCHAR(36)) END ORDER BY Timestamp DESC, MsgOrder DESC) as RowNum "
                 + "  FROM UserMessages m "
                 + "  JOIN Person p1 ON m.SenderID = p1.ID "
                 + "  JOIN Person p2 ON m.ReceiverID = p2.ID "
                 + "  WHERE m.SenderID = ? OR m.ReceiverID = ?"
-                + ") x WHERE RowNum = 1 ORDER BY Timestamp DESC";
+                + ") x WHERE RowNum = 1 ORDER BY Timestamp DESC, MsgOrder DESC";
 
         return jdbcTemplate.query(sqlServerPart, (rs, rowNum) -> {
             Message m = new Message();

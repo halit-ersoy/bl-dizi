@@ -154,7 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const otherUserId = isSentByMe ? c.receiverId : c.senderId;
             const isActive = otherUser === currentReceiver;
             const isUnread = !c.read && c.receiverNickname === myNickname;
-            const time = formatTime(new Date(c.timestamp));
+            const time = formatTime(new Date(c.timestamp), false);
 
             let statusIcon = '';
             if (isSentByMe) {
@@ -399,7 +399,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="message-bubble ${bubbleClass}" data-id="${m.id}">
                             ${m.content}
                             <div class="message-footer">
-                                <span class="message-time">${formatTime(new Date(m.timestamp))}</span>
+                                <span class="message-time">${formatTime(new Date(m.timestamp), true)}</span>
                                 ${isSent ? statusIcon : ''}
                             </div>
                         </div>
@@ -462,14 +462,51 @@ document.addEventListener('DOMContentLoaded', () => {
             });
     }
 
-    function formatTime(date) {
+    function formatTime(date, isChatBubble = false) {
+        if (!date || isNaN(date.getTime())) return "";
+
         const now = new Date();
-        const isToday = date.toDateString() === now.toDateString();
+
+        // Saat:dakika (Kullanicinin kendi yerel cihaz saatine gore, 24 saat formati)
+        const timeStr = date.toLocaleTimeString("tr-TR", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false
+        });
+
+        // Kullanicinin yerel takvim gunune gore karsilastirma
+        const dateYear = date.getFullYear();
+        const dateMonth = date.getMonth();
+        const dateDay = date.getDate();
+
+        const nowYear = now.getFullYear();
+        const nowMonth = now.getMonth();
+        const nowDay = now.getDate();
+
+        const isToday = (dateYear === nowYear && dateMonth === nowMonth && dateDay === nowDay);
 
         if (isToday) {
-            return date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+            return timeStr;
+        }
+
+        const yesterday = new Date(nowYear, nowMonth, nowDay - 1);
+        const isYesterday = (dateYear === yesterday.getFullYear() && dateMonth === yesterday.getMonth() && dateDay === yesterday.getDate());
+
+        const dayMonthStr = date.toLocaleDateString("tr-TR", {
+            day: "2-digit",
+            month: "2-digit"
+        });
+
+        if (isChatBubble) {
+            if (isYesterday) {
+                return "Dün " + timeStr;
+            }
+            return dayMonthStr + " " + timeStr;
         } else {
-            return date.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit' });
+            if (isYesterday) {
+                return "Dün";
+            }
+            return dayMonthStr;
         }
     }
 
@@ -631,7 +668,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="message-bubble ${bubbleClass}" data-id="${m.id}">
                 ${m.content}
                 <div class="message-footer">
-                    <span class="message-time">${formatTime(new Date(m.timestamp))}</span>
+                    <span class="message-time">${formatTime(new Date(m.timestamp), true)}</span>
                     ${isSent ? statusIcon : ''}
                 </div>
             </div>
