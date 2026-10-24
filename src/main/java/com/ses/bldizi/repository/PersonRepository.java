@@ -14,6 +14,7 @@ public class PersonRepository {
 
     private final JdbcTemplate jdbcTemplate;
     private final EmailService emailService;
+    private static volatile boolean schemaEnsured = false;
 
     private static final String CALL_VERIFY_GENERATE_CODE = "{call VerifyOrGenerateCode(?, ?, ?, ?)}";
 
@@ -24,9 +25,12 @@ public class PersonRepository {
     }
 
     private void ensureSchema() {
-        try {
+        if (schemaEnsured) return;
+        synchronized (PersonRepository.class) {
+            if (schemaEnsured) return;
+            try {
             // 1. Ensure UserSession table exists
-            jdbcTemplate.execute("""
+            executeSqlWithRetry("""
                 IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'UserSession')
                 BEGIN
                     CREATE TABLE [dbo].[UserSession] (
@@ -43,7 +47,7 @@ public class PersonRepository {
             """);
 
             // 2. Ensure SsoTicket table exists
-            jdbcTemplate.execute("""
+            executeSqlWithRetry("""
                 IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'SsoTicket')
                 BEGIN
                     CREATE TABLE [dbo].[SsoTicket] (
@@ -59,7 +63,7 @@ public class PersonRepository {
             """);
 
             // 3. Ensure ResolveUserIdByCookie function exists and is up to date
-            jdbcTemplate.execute("""
+            executeSqlWithRetry("""
                 CREATE OR ALTER FUNCTION [dbo].[ResolveUserIdByCookie](@cookie UNIQUEIDENTIFIER)
                 RETURNS UNIQUEIDENTIFIER
                 AS
@@ -79,7 +83,7 @@ public class PersonRepository {
             """);
 
             // 4. Ensure LoginAndSetCookie supports 3 parameters (@Platform) and multi-session
-            jdbcTemplate.execute("""
+            executeSqlWithRetry("""
                 CREATE OR ALTER PROCEDURE [dbo].[LoginAndSetCookie]
                     @UsernameOrEmail NVARCHAR(255),
                     @Password NVARCHAR(255),
@@ -119,7 +123,7 @@ public class PersonRepository {
             """);
 
             // 5. Ensure CreateSsoTicket procedure exists
-            jdbcTemplate.execute("""
+            executeSqlWithRetry("""
                 CREATE OR ALTER PROCEDURE [dbo].[CreateSsoTicket]
                     @Cookie UNIQUEIDENTIFIER,
                     @TargetPlatform NVARCHAR(50) = NULL
@@ -146,7 +150,7 @@ public class PersonRepository {
             """);
 
             // 6. Ensure ConsumeSsoTicket procedure exists
-            jdbcTemplate.execute("""
+            executeSqlWithRetry("""
                 CREATE OR ALTER PROCEDURE [dbo].[ConsumeSsoTicket]
                     @Ticket UNIQUEIDENTIFIER,
                     @Platform NVARCHAR(50) = 'whodatidols'
@@ -184,11 +188,29 @@ public class PersonRepository {
                     SELECT CAST(1 AS BIT) AS Result, 'SSO giris basarili' AS Message, @Nickname AS Nickname, @NewToken AS Cookie, @UserId AS UserId;
                 END;
             """);
-        } catch (Exception e) {
-            System.err.println("PersonRepository ensureSchema error: " + e.getMessage());
+                schemaEnsured = true;
+            } catch (Exception e) {
+                System.err.println("PersonRepository ensureSchema error: " + e.getMessage());
+            }
         }
     }
 
+    private void executeSqlWithRetry(String sql) {
+        int maxRetries = 3;
+        for (int retry = 0; retry < maxRetries; retry++) {
+            try {
+                jdbcTemplate.execute(sql);
+                return;
+            } catch (Exception e) {
+                if (retry == maxRetries - 1) {
+                    throw e;
+                }
+                try {
+                    Thread.sleep(250);
+                } catch (InterruptedException ignored) {}
+            }
+        }
+    }
     @SuppressWarnings("unchecked")
     public Map<String, Object> loginUser(String usernameOrEmail, String password) {
         Map<String, Object> result;

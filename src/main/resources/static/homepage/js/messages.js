@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const userSearchResults = document.getElementById('user-search-results');
     const conversationsList = document.getElementById('conversations-list');
     const chatArea = document.getElementById('chat-area');
+    const messagesContainer = document.querySelector('.messages-container');
 
     let currentReceiver = null;
     let currentReceiverRole = null;
@@ -60,6 +61,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Connect to WebSocket for real-time messaging
     connectWebSocket();
+
+    // Check URL parameters for direct conversation opening (e.g., /messages?user=nickname)
+    const urlParams = new URLSearchParams(window.location.search);
+    const targetUser = urlParams.get('user');
+    if (targetUser) {
+        startConversation(targetUser, null, null, false, false);
+    }
+
+    // Popstate handling for native mobile back button navigation
+    window.addEventListener('popstate', (e) => {
+        if (!e.state || !e.state.chatOpen) {
+            if (messagesContainer && messagesContainer.classList.contains('chat-active')) {
+                closeConversation(false);
+            }
+        }
+    });
 
     // 2. User Search Logic
     let searchTimeout = null;
@@ -200,7 +217,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const otherId = item.dataset.id;
 
                 // Only start if it's a different person to avoid flash
-                if (currentReceiver !== nickname) {
+                if (currentReceiver !== nickname || !messagesContainer.classList.contains('chat-active')) {
                     startConversation(nickname, role, otherId, verified);
                 }
             });
@@ -208,9 +225,47 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 4. Chat Logic
-    function startConversation(nickname, role = null, receiverId = null, verified = false) {
+    function closeConversation(shouldGoBack = true) {
+        if (messagesContainer) {
+            messagesContainer.classList.remove('chat-active');
+        }
+        currentReceiver = null;
+        currentReceiverRole = null;
+        document.body.removeAttribute('data-active-chat');
+        clearInterval(chatInterval);
+
+        chatArea.innerHTML = `
+            <div class="chat-empty-state">
+                <i class="fas fa-comments"></i>
+                <h3>Sohbet Başlat</h3>
+                <p>Mesajlaşmak için soldan birini seçin veya kullanıcı arayın.</p>
+            </div>
+        `;
+
+        conversationsList.querySelectorAll('.conversation-item.active').forEach(item => {
+            item.classList.remove('active');
+        });
+
+        if (shouldGoBack && history.state && history.state.chatOpen) {
+            history.back();
+        }
+    }
+
+    function startConversation(nickname, role = null, receiverId = null, verified = false, pushToHistory = true) {
         currentReceiver = nickname;
         currentReceiverRole = role;
+
+        if (messagesContainer) {
+            messagesContainer.classList.add('chat-active');
+        }
+
+        if (pushToHistory) {
+            if (!history.state || !history.state.chatOpen) {
+                history.pushState({ chatOpen: true, user: nickname }, '');
+            } else {
+                history.replaceState({ chatOpen: true, user: nickname }, '');
+            }
+        }
 
         // Expose active chat partner globally for the notification manager
         document.body.dataset.activeChat = nickname;
@@ -221,6 +276,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Update UI
         chatArea.innerHTML = `
             <div class="chat-header">
+                <button class="chat-back-btn" id="chat-back-btn" aria-label="Geri">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
                 <div class="receiver-avatar" style="position: relative; overflow: hidden; color: white;">
                     ${initial}
                     ${avatarUrl ? `<img src="${avatarUrl}" onerror="this.style.display='none'" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">` : ''}
@@ -260,6 +318,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             </div>
         `;
+
+        const backBtn = document.getElementById('chat-back-btn');
+        if (backBtn) {
+            backBtn.addEventListener('click', () => closeConversation(true));
+        }
 
         updateBlockStatus(nickname);
 

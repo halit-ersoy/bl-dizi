@@ -2,6 +2,8 @@
 :root {
     --bg-card: #222222;
     --bg-card-hover: #333333;
+    --bg-color: #0f0f0f;
+    --text-primary: #ffffff;
     --bg-input: #121212;
     --bg-main: #0f0f0f;
     --bg-secondary: #181818;

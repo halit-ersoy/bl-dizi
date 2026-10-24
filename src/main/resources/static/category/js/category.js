@@ -61,23 +61,8 @@ document.addEventListener('DOMContentLoaded', () => {
         loadMoreBtn: document.getElementById('load-more-btn'),
         paginationControls: document.getElementById('pagination-controls'),
         countBadge: document.getElementById('results-count-badge'),
-        subtypePills: document.querySelectorAll('.subtype-pill'),
-        mobileToggle: document.getElementById('mobile-menu-toggle'),
-        navClose: document.getElementById('nav-menu-close'),
-        navMenu: document.querySelector('.nav-menu')
+        subtypePills: document.querySelectorAll('.subtype-pill')
     };
-
-    // Mobile menu handlers
-    if (els.mobileToggle && els.navMenu) {
-        els.mobileToggle.addEventListener('click', () => {
-            els.navMenu.classList.toggle('active');
-        });
-    }
-    if (els.navClose && els.navMenu) {
-        els.navClose.addEventListener('click', () => {
-            els.navMenu.classList.remove('active');
-        });
-    }
 
     // Initialize
     async function init() {
