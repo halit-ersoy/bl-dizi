@@ -413,6 +413,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 const myNickname = localStorage.getItem('wdiUserNickname');
                 const wasAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 100;
 
+                // Defensively sort by sequential msgOrder, fallback to timestamp
+                if (Array.isArray(messages)) {
+                    messages.sort((a, b) => {
+                        if (a.msgOrder && b.msgOrder) return a.msgOrder - b.msgOrder;
+                        return new Date(a.timestamp) - new Date(b.timestamp);
+                    });
+                }
+
                 if (silent && messages.length === lastMessagesCount) {
                     // Update only ticks/status if count is same
                     messages.forEach(m => {

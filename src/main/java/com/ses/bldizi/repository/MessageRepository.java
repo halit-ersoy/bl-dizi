@@ -86,9 +86,16 @@ public class MessageRepository {
         ensureMessageTableExists();
         UUID id = UUID.randomUUID();
         Instant now = Instant.now();
-        //noinspection SqlResolve
-        String sql = "INSERT INTO UserMessages (ID, SenderID, ReceiverID, Content, Timestamp) VALUES (?, ?, ?, ?, ?)";
-        jdbcTemplate.update(sql, id, senderId, receiverId, content, java.sql.Timestamp.from(now));
+        Long msgOrder = null;
+        try {
+            //noinspection SqlResolve
+            String sql = "INSERT INTO UserMessages (ID, SenderID, ReceiverID, Content, Timestamp) OUTPUT INSERTED.MsgOrder VALUES (?, ?, ?, ?, ?)";
+            msgOrder = jdbcTemplate.queryForObject(sql, Long.class, id, senderId, receiverId, content, java.sql.Timestamp.from(now));
+        } catch (Exception e) {
+            //noinspection SqlResolve
+            String fallbackSql = "INSERT INTO UserMessages (ID, SenderID, ReceiverID, Content, Timestamp) VALUES (?, ?, ?, ?, ?)";
+            jdbcTemplate.update(fallbackSql, id, senderId, receiverId, content, java.sql.Timestamp.from(now));
+        }
 
         Message m = new Message();
         m.setId(id);
@@ -96,6 +103,7 @@ public class MessageRepository {
         m.setReceiverId(receiverId);
         m.setContent(content);
         m.setTimestamp(now);
+        m.setMsgOrder(msgOrder);
         m.setRead(false);
         m.setDelivered(false);
         return m;
@@ -104,13 +112,13 @@ public class MessageRepository {
     public List<Message> getChatHistory(UUID user1, UUID user2) {
         ensureMessageTableExists();
         //noinspection SqlResolve
-        String sql = "SELECT m.ID, m.SenderID, m.ReceiverID, m.Content, m.Timestamp, m.IsRead, m.IsDelivered, " +
+        String sql = "SELECT m.ID, m.SenderID, m.ReceiverID, m.Content, m.Timestamp, m.MsgOrder, m.IsRead, m.IsDelivered, " +
                 "p1.nickname as SenderNickname, p2.nickname as ReceiverNickname, p1.role as SenderRole, p2.role as ReceiverRole, p1.isVerified as SenderVerified, p2.isVerified as ReceiverVerified "
                 + "FROM UserMessages m " +
                 "JOIN Person p1 ON m.SenderID = p1.ID " +
                 "JOIN Person p2 ON m.ReceiverID = p2.ID " +
                 "WHERE (m.SenderID = ? AND m.ReceiverID = ?) OR (m.SenderID = ? AND m.ReceiverID = ?) " +
-                "ORDER BY m.Timestamp, m.MsgOrder";
+                "ORDER BY COALESCE(m.MsgOrder, 0) ASC, m.Timestamp ASC";
 
         return jdbcTemplate.query(sql, (rs, rowNum) -> {
             Message m = new Message();
@@ -120,6 +128,10 @@ public class MessageRepository {
             m.setContent(rs.getString("Content"));
             java.sql.Timestamp ts = rs.getTimestamp("Timestamp");
             if (ts != null) m.setTimestamp(ts.toInstant());
+            try {
+                long order = rs.getLong("MsgOrder");
+                if (!rs.wasNull()) m.setMsgOrder(order);
+            } catch (Exception ignored) {}
             m.setRead(rs.getBoolean("IsRead"));
             m.setDelivered(rs.getBoolean("IsDelivered"));
             m.setSenderNickname(rs.getString("SenderNickname"));
@@ -135,14 +147,14 @@ public class MessageRepository {
     public List<Message> getConversationList(UUID userId) {
         ensureMessageTableExists();
         //noinspection SqlResolve
-        String sqlServerPart = "SELECT ID, SenderID, ReceiverID, Content, Timestamp, IsRead, IsDelivered, SenderNickname, ReceiverNickname, SenderRole, ReceiverRole, SenderVerified, ReceiverVerified FROM ("
-                + "  SELECT m.*, p1.nickname as SenderNickname, p2.nickname as ReceiverNickname, p1.role as SenderRole, p2.role as ReceiverRole, p1.isVerified as SenderVerified, p2.isVerified as ReceiverVerified, "
-                + "  ROW_NUMBER() OVER (PARTITION BY CASE WHEN SenderID < ReceiverID THEN CAST(SenderID AS VARCHAR(36)) + CAST(ReceiverID AS VARCHAR(36)) ELSE CAST(ReceiverID AS VARCHAR(36)) + CAST(SenderID AS VARCHAR(36)) END ORDER BY Timestamp DESC, MsgOrder DESC) as RowNum "
+        String sqlServerPart = "SELECT ID, SenderID, ReceiverID, Content, Timestamp, MsgOrder, IsRead, IsDelivered, SenderNickname, ReceiverNickname, SenderRole, ReceiverRole, SenderVerified, ReceiverVerified FROM ("
+                + "  SELECT m.ID, m.SenderID, m.ReceiverID, m.Content, m.Timestamp, m.MsgOrder, m.IsRead, m.IsDelivered, p1.nickname as SenderNickname, p2.nickname as ReceiverNickname, p1.role as SenderRole, p2.role as ReceiverRole, p1.isVerified as SenderVerified, p2.isVerified as ReceiverVerified, "
+                + "  ROW_NUMBER() OVER (PARTITION BY CASE WHEN m.SenderID < m.ReceiverID THEN CAST(m.SenderID AS VARCHAR(36)) + CAST(m.ReceiverID AS VARCHAR(36)) ELSE CAST(m.ReceiverID AS VARCHAR(36)) + CAST(m.SenderID AS VARCHAR(36)) END ORDER BY COALESCE(m.MsgOrder, 0) DESC, m.Timestamp DESC) as RowNum "
                 + "  FROM UserMessages m "
                 + "  JOIN Person p1 ON m.SenderID = p1.ID "
                 + "  JOIN Person p2 ON m.ReceiverID = p2.ID "
                 + "  WHERE m.SenderID = ? OR m.ReceiverID = ?"
-                + ") x WHERE RowNum = 1 ORDER BY Timestamp DESC, MsgOrder DESC";
+                + ") x WHERE RowNum = 1 ORDER BY COALESCE(MsgOrder, 0) DESC, Timestamp DESC";
 
         return jdbcTemplate.query(sqlServerPart, (rs, rowNum) -> {
             Message m = new Message();
@@ -152,6 +164,10 @@ public class MessageRepository {
             m.setContent(rs.getString("Content"));
             java.sql.Timestamp ts = rs.getTimestamp("Timestamp");
             if (ts != null) m.setTimestamp(ts.toInstant());
+            try {
+                long order = rs.getLong("MsgOrder");
+                if (!rs.wasNull()) m.setMsgOrder(order);
+            } catch (Exception ignored) {}
             m.setRead(rs.getBoolean("IsRead"));
             m.setDelivered(rs.getBoolean("IsDelivered"));
             m.setSenderNickname(rs.getString("SenderNickname"));

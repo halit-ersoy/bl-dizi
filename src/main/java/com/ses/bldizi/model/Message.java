@@ -18,6 +18,7 @@ public class Message {
     private UUID receiverId;
     private String content;
     private Instant timestamp;
+    private Long msgOrder;
     private boolean isRead;
     private boolean isDelivered;
 
