@@ -296,33 +296,17 @@ public class SeriesRepository {
             WITH OrderedEpisodes AS (
                 SELECT E.ID as EpisodeId, E.SeriesId as SeriesId, E.uploadDate, E.name, E.slug, E.SeasonNumber, E.EpisodeNumber,
                        S.name AS SeriesName, S.Language, S.Country, S.SeriesType, S.finalStatus,
-                       ROW_NUMBER() OVER(ORDER BY E.uploadDate DESC, E.name ASC, E.ID ASC) as rn1,
-                       ROW_NUMBER() OVER(PARTITION BY E.SeriesId ORDER BY E.uploadDate DESC, E.name ASC, E.ID ASC) as rn2,
-                       ROW_NUMBER() OVER(PARTITION BY E.SeriesId ORDER BY E.SeasonNumber DESC, E.EpisodeNumber DESC) as latest_in_series_rn
+                       ROW_NUMBER() OVER (PARTITION BY E.SeriesId ORDER BY E.uploadDate DESC, E.SeasonNumber DESC, E.EpisodeNumber DESC) as rn
                 FROM Episode E
                 JOIN Series S ON E.SeriesId = S.ID
                 WHERE (S.SeriesType IN ('BL', 'GL') OR S.isBl = 1 OR EXISTS (SELECT 1 FROM SeriesCategories sc WHERE sc.SeriesID = S.ID AND sc.CategoryID IN (52, 63)))
                   AND (E.IsHidden = 0 OR E.IsHidden IS NULL)
                   AND (S.IsHidden = 0 OR S.IsHidden IS NULL)
-            ),
-            GroupedEpisodes AS (
-                SELECT *, (rn1 - rn2) as island_id
-                FROM OrderedEpisodes
-            ),
-            RankedInIsland AS (
-                SELECT *,
-                       ROW_NUMBER() OVER(PARTITION BY SeriesId, island_id ORDER BY uploadDate DESC, name ASC, EpisodeId ASC) as island_rn_desc,
-                       ROW_NUMBER() OVER(PARTITION BY SeriesId, island_id ORDER BY uploadDate ASC, name DESC, EpisodeId DESC) as island_rn_asc
-                FROM GroupedEpisodes
-            ),
-            FilteredIslands AS (
-                SELECT *
-                FROM RankedInIsland
-                WHERE island_rn_desc = 1 OR island_rn_asc = 1
             )
-            SELECT EpisodeId, SeriesId, uploadDate, name, slug, SeasonNumber, EpisodeNumber, SeriesName, Language, Country, SeriesType, finalStatus, latest_in_series_rn
-            FROM FilteredIslands
-            ORDER BY uploadDate DESC, name ASC, EpisodeId ASC
+            SELECT EpisodeId, SeriesId, uploadDate, name, slug, SeasonNumber, EpisodeNumber, SeriesName, Language, Country, SeriesType, finalStatus
+            FROM OrderedEpisodes
+            WHERE rn = 1
+            ORDER BY uploadDate DESC
             OFFSET ? ROWS FETCH NEXT ? ROWS ONLY
         """;
 
@@ -339,9 +323,6 @@ public class SeriesRepository {
             String seriesType = rs.getString("SeriesType");
             java.sql.Timestamp uploadDate = rs.getTimestamp("uploadDate");
 
-            int isLatest = rs.getInt("latest_in_series_rn");
-            int effectiveFinalStatus = (isLatest == 1) ? finalStatus : 0;
-
             boolean isNew = uploadDate != null && 
                     (System.currentTimeMillis() - uploadDate.getTime()) < (24L * 60 * 60 * 1000);
 
@@ -355,38 +336,25 @@ public class SeriesRepository {
                     .image("/media/image/" + sId + "?v=2")
                     .country(country != null && !country.isEmpty() ? country.toLowerCase() : mapLangToCode(lang))
                     .language(lang)
-                    .finalStatus(effectiveFinalStatus)
+                    .finalStatus(finalStatus)
                     .seriesType(seriesType)
                     .isNew(isNew)
-                    .isFinal(effectiveFinalStatus == 1)
+                    .isFinal(finalStatus == 1)
                     .build();
         }, offset, limit);
     }
 
     public int countRecentBlEpisodes() {
         String sql = """
-            WITH OrderedEpisodes AS (
-                SELECT E.ID as EpisodeId, E.SeriesId as SeriesId, E.uploadDate, E.name,
-                       ROW_NUMBER() OVER(ORDER BY E.uploadDate DESC, E.name ASC, E.ID ASC) as rn1,
-                       ROW_NUMBER() OVER(PARTITION BY E.SeriesId ORDER BY E.uploadDate DESC, E.name ASC, E.ID ASC) as rn2
+            WITH DistinctSeriesWithEpisode AS (
+                SELECT DISTINCT E.SeriesId
                 FROM Episode E
                 JOIN Series S ON E.SeriesId = S.ID
                 WHERE (S.SeriesType IN ('BL', 'GL') OR S.isBl = 1 OR EXISTS (SELECT 1 FROM SeriesCategories sc WHERE sc.SeriesID = S.ID AND sc.CategoryID IN (52, 63)))
                   AND (E.IsHidden = 0 OR E.IsHidden IS NULL)
                   AND (S.IsHidden = 0 OR S.IsHidden IS NULL)
-            ),
-            GroupedEpisodes AS (
-                SELECT SeriesId, (rn1 - rn2) as island_id, rn1, uploadDate, name, EpisodeId
-                FROM OrderedEpisodes
-            ),
-            RankedInIsland AS (
-                SELECT *,
-                       ROW_NUMBER() OVER(PARTITION BY SeriesId, island_id ORDER BY rn1 ASC) as island_rn_desc,
-                       ROW_NUMBER() OVER(PARTITION BY SeriesId, island_id ORDER BY rn1 DESC) as island_rn_asc
-                FROM GroupedEpisodes
             )
-            SELECT COUNT(*) FROM RankedInIsland
-            WHERE island_rn_desc = 1 OR island_rn_asc = 1
+            SELECT COUNT(*) FROM DistinctSeriesWithEpisode
         """;
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
         return count != null ? count : 0;
