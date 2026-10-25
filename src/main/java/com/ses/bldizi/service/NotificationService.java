@@ -20,8 +20,17 @@ public class NotificationService {
         repository.save(notification);
     }
 
+    public void createNotification(String title, String message, UUID contentId, String type, UUID userId, String slug) {
+        Notification notification = new Notification(title, message, contentId, type, userId, slug);
+        repository.save(notification);
+    }
+
     public List<Notification> getRecentNotifications(int limit) {
-        return repository.findRecent(limit);
+        return repository.findRecent(limit, null);
+    }
+
+    public List<Notification> getRecentNotifications(int limit, UUID userId) {
+        return repository.findRecent(limit, userId);
     }
 
     public void markAsRead(UUID id) {
@@ -29,6 +38,14 @@ public class NotificationService {
     }
 
     public int getUnreadCount() {
-        return repository.getUnreadCount();
+        return repository.getUnreadCount(null);
+    }
+
+    public int getUnreadCount(UUID userId) {
+        return repository.getUnreadCount(userId);
+    }
+
+    public UUID resolveUserIdByCookie(String cookie) {
+        return repository.resolveUserIdByCookie(cookie);
     }
 }

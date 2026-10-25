@@ -4,6 +4,7 @@ import com.ses.bldizi.model.Message;
 import com.ses.bldizi.model.Person;
 import com.ses.bldizi.repository.MessageRepository;
 import com.ses.bldizi.repository.PersonRepository;
+import com.ses.bldizi.service.WebPushService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -23,10 +24,13 @@ public class WebSocketChatController {
     private final MessageRepository messageRepository;
     private final PersonRepository personRepository;
     private final SimpMessagingTemplate messagingTemplate;
+    private final WebPushService webPushService;
 
     public WebSocketChatController(MessageRepository messageRepository,
                                    PersonRepository personRepository,
-                                   SimpMessagingTemplate messagingTemplate) {
+                                   SimpMessagingTemplate messagingTemplate,
+                                   WebPushService webPushService) {
+        this.webPushService = webPushService;
         this.messageRepository = messageRepository;
         this.personRepository = personRepository;
         this.messagingTemplate = messagingTemplate;
@@ -70,7 +74,11 @@ public class WebSocketChatController {
 
             // Publish message to both receiver and sender topics directly
             messagingTemplate.convertAndSend("/topic/messages/" + receiverNickname, savedMessage);
-            messagingTemplate.convertAndSend("/topic/messages/" + senderNickname, savedMessage);
+                        messagingTemplate.convertAndSend("/topic/messages/" + senderNickname, savedMessage);
+
+            // Send background Web Push notification if receiver is offline or has site closed
+            webPushService.sendPushAsync(receiverNickname, senderNickname, content,
+                    "/messages?user=" + senderNickname, "msg_" + senderNickname);
         } catch (Exception e) {
             logger.error("Error processing WebSocket send message: {}", e.getMessage(), e);
         }

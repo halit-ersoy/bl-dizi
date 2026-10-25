@@ -1,5 +1,6 @@
 /* messages.js */
 import { showReportModal } from '../../elements/premium-modals.js';
+import { showBrowserNotification } from '../../elements/browserNotification.js';
 
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -77,6 +78,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
+
+    // Notification permission is managed explicitly via User Settings
 
     // 2. User Search Logic
     let searchTimeout = null;
@@ -696,10 +699,33 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.senderNickname === currentReceiver) {
                 playNotificationSound();
                 sendReadNotification(currentReceiver);
+
+                // If user is in another tab or minimized, show native browser notification
+                if (document.hidden) {
+                    showBrowserNotification(data.senderNickname, {
+                        body: data.content,
+                        icon: '/elements/img/bldizi-logo-notif.png',
+                        tag: `msg_${data.senderNickname}`,
+                        onClick: () => {
+                            window.focus();
+                        }
+                    });
+                }
             }
         } else if (data.senderNickname !== myNickname) {
             playNotificationSound();
             showToast(data);
+
+            // Trigger browser notification for other sender
+            showBrowserNotification(data.senderNickname, {
+                body: data.content,
+                icon: '/elements/img/bldizi-logo-notif.png',
+                tag: `msg_${data.senderNickname}`,
+                onClick: () => {
+                    window.focus();
+                    startConversation(data.senderNickname);
+                }
+            });
         }
 
         // Instantly refresh sidebar to show last message & unread state

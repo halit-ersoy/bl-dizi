@@ -1,5 +1,11 @@
 /* messagingManager.js */
 
+import {
+    showBrowserNotification,
+    registerServiceWorker,
+    subscribeToWebPush
+} from '../../elements/browserNotification.js';
+
 let audioContext = null;
 
 export function initMessagingManager() {
@@ -24,11 +30,20 @@ export function initMessagingManager() {
 
     // Connect to WebSocket for real-time notifications
     connectWebSocket();
+    registerServiceWorker();
+
+    // Auto-sync Web Push subscription if notifications are allowed
+    if ('Notification' in window && Notification.permission === 'granted') {
+        const pref = localStorage.getItem('bldiziNotificationsEnabled');
+        if (pref !== 'false') {
+            subscribeToWebPush();
+        }
+    }
 }
 
 function getNotifiedMessages() {
     try {
-        return JSON.parse(sessionStorage.getItem('wdiNotifiedMessages') || '[]');
+        return JSON.parse(sessionStorage.getItem('bldiziNotifiedMessages') || '[]');
     } catch (e) {
         return [];
     }
@@ -40,7 +55,7 @@ function addNotifiedMessage(fingerprint) {
         notified.push(fingerprint);
         // Keep only last 50 to avoid storage bloat
         if (notified.length > 50) notified.shift();
-        sessionStorage.setItem('wdiNotifiedMessages', JSON.stringify(notified));
+        sessionStorage.setItem('bldiziNotifiedMessages', JSON.stringify(notified));
     }
 }
 
@@ -54,7 +69,7 @@ export function updateMessageBadge(isInitialLoad = false) {
             return res.json();
         })
         .then(conversations => {
-            const myNickname = localStorage.getItem('wdiUserNickname');
+            const myNickname = localStorage.getItem('bldiziUserNickname');
             const unreadConversations = conversations.filter(c => !c.read && c.receiverNickname === myNickname);
             const currentUnreadCount = unreadConversations.length;
 
@@ -64,33 +79,22 @@ export function updateMessageBadge(isInitialLoad = false) {
             if (currentUnreadCount > 0) {
                 // Check each conversation for new activity
                 unreadConversations.forEach((conv, index) => {
-                    // Fingerprint includes content snippet to detect new messages within the same conversation
                     const fingerprint = `${conv.senderNickname}_${conv.timestamp}_${conv.content.substring(0, 10)}`;
                     const alreadyNotified = notifiedMessages.includes(fingerprint);
 
                     if (!alreadyNotified) {
-                        // Condition: 
-                        // 1. It's a new message during a session (polling)
-                        // 2. OR it's a page refresh and we want to show the LATEST unread message (even if seen before in a previous view? 
-                        // User said: "yeniledigimde de eger mesaj varsa gosterilsin" -> imply always show one if unread on load.
-
                         if (isInitialLoad) {
-                            // On refresh, only trigger for the very latest one (index 0 usually if sorted by time)
                             if (index === 0) {
                                 triggerNotification(conv);
                                 triggeredCount++;
                             }
-                            // Mark ALL existing unread as "seen" so they don't trigger again on next poll
                             addNotifiedMessage(fingerprint);
                         } else {
-                            // During polling, trigger for every new message fingerprint
                             triggerNotification(conv);
                             addNotifiedMessage(fingerprint);
                             triggeredCount++;
                         }
                     } else if (isInitialLoad && index === 0 && triggeredCount === 0) {
-                        // User specifically asked to show if message exists on refresh
-                        // If it was already notified but it's the latest one on a fresh page load, we can show it again
                         triggerNotification(conv);
                         triggeredCount++;
                     }
@@ -102,7 +106,6 @@ export function updateMessageBadge(isInitialLoad = false) {
                 badge.style.display = 'none';
             }
 
-            // Sync unread count to session for general tracking
             sessionStorage.setItem('lastUnreadCount', currentUnreadCount.toString());
         })
         .catch(() => {
@@ -111,18 +114,29 @@ export function updateMessageBadge(isInitialLoad = false) {
 }
 
 function triggerNotification(conv) {
-    // 1. Play Sound
     playNotificationSound();
 
-    // 2. Show Toast
     const isMessagesPage = window.location.pathname.includes('/messages');
     const activeChat = document.body.dataset.activeChat;
 
-    // Show toast if:
-    // - We are NOT on the messages page
-    // - OR we ARE on the messages page but this message is from someone ELSE (not the active chat)
     if (!isMessagesPage || (activeChat && activeChat !== conv.senderNickname)) {
-        showToast(conv);
+        showToast({
+            title: conv.senderNickname,
+            content: conv.content,
+            iconClass: 'fas fa-message',
+            url: `/messages?user=${encodeURIComponent(conv.senderNickname)}`
+        });
+    }
+
+    // Native browser notification for incoming message
+    const isCurrentActiveChat = isMessagesPage && activeChat === conv.senderNickname && !document.hidden;
+    if (!isCurrentActiveChat) {
+        showBrowserNotification(conv.senderNickname, {
+            body: conv.content,
+            icon: '/elements/img/bldizi-logo-notif.png',
+            tag: `msg_${conv.senderNickname}`,
+            url: `/messages?user=${encodeURIComponent(conv.senderNickname)}`
+        });
     }
 }
 
@@ -157,7 +171,7 @@ function playNotificationSound() {
     }
 }
 
-function showToast(conv) {
+function showToast(info) {
     let container = document.querySelector('.toast-container');
     if (!container) {
         container = document.createElement('div');
@@ -165,27 +179,32 @@ function showToast(conv) {
         document.body.appendChild(container);
     }
 
+    const title = info.title || info.senderNickname || 'Yeni Bildirim';
+    const message = info.message || info.content || '';
+    const iconClass = info.iconClass || 'fas fa-message';
+    const targetUrl = info.url || '/messages';
+
     const toast = document.createElement('div');
     toast.className = 'toast-notification';
     toast.innerHTML = `
-        <div class="toast-icon"><i class="fas fa-message"></i></div>
+        <div class="toast-icon"><i class="${iconClass}"></i></div>
         <div class="toast-content">
-            <div class="toast-title">${conv.senderNickname}</div>
-            <div class="toast-message">${conv.content}</div>
+            <div class="toast-title">${title}</div>
+            <div class="toast-message">${message}</div>
         </div>
     `;
 
     toast.onclick = () => {
-        window.location.href = '/messages';
+        window.location.href = targetUrl;
+        toast.remove();
     };
 
     container.appendChild(toast);
 
-    // Auto remove after 4 seconds
     setTimeout(() => {
         toast.classList.add('hide');
         setTimeout(() => toast.remove(), 400);
-    }, 4000);
+    }, 4500);
 }
 
 let stompClient = null;
@@ -193,7 +212,7 @@ let socket = null;
 let reconnectTimeout = null;
 
 function connectWebSocket() {
-    const nickname = localStorage.getItem('wdiUserNickname');
+    const nickname = localStorage.getItem('bldiziUserNickname');
     if (!nickname) return;
 
     if (stompClient && stompClient.connected) return;
@@ -203,6 +222,7 @@ function connectWebSocket() {
     stompClient.debug = null; // Suppress STOMP console logs
 
     stompClient.connect({}, function (frame) {
+        // 1. Subscribe to Chat Messages
         stompClient.subscribe('/topic/messages/' + nickname, function (messageOutput) {
             try {
                 const data = JSON.parse(messageOutput.body);
@@ -212,16 +232,83 @@ function connectWebSocket() {
                     return;
                 }
 
-                // Play sound notification
+                // If sent by me, ignore notification
+                if (data.senderNickname === nickname) {
+                    return;
+                }
+
                 playNotificationSound();
 
-                // Show desktop-like toast
-                showToast(data);
+                const isMessagesPage = window.location.pathname.includes('/messages');
+                const activeChat = document.body.dataset.activeChat;
+                const isCurrentActiveChat = isMessagesPage && activeChat === data.senderNickname && !document.hidden;
+
+                // Show toast if not in current active chat
+                if (!isCurrentActiveChat) {
+                    showToast({
+                        title: data.senderNickname,
+                        content: data.content,
+                        iconClass: 'fas fa-message',
+                        url: `/messages?user=${encodeURIComponent(data.senderNickname)}`
+                    });
+
+                    // Native browser notification
+                    showBrowserNotification(data.senderNickname, {
+                        body: data.content,
+                        icon: '/elements/img/bldizi-logo-notif.png',
+                        tag: `msg_${data.senderNickname}`,
+                        url: `/messages?user=${encodeURIComponent(data.senderNickname)}`
+                    });
+                }
 
                 // Instantly sync the badge with database
                 updateMessageBadge(false);
             } catch (e) {
                 console.error("Error processing incoming WebSocket message:", e);
+            }
+        });
+
+        // 2. Subscribe to User-Specific Notifications (e.g., Comment Replies)
+        stompClient.subscribe('/topic/notifications/' + nickname, function (notifOutput) {
+            try {
+                const notifData = JSON.parse(notifOutput.body);
+
+                if (notifData.type === 'COMMENT_REPLY') {
+                    playNotificationSound();
+
+                    const targetUrl = notifData.url || (notifData.contentSlug ? `/${notifData.contentSlug}#comments` : '/');
+
+                    // Show in-app toast
+                    showToast({
+                        title: notifData.title || 'Yorumunuza Yanıt Geldi',
+                        content: notifData.message || notifData.text || '',
+                        iconClass: 'fas fa-reply',
+                        url: targetUrl
+                    });
+
+                    // Update notification bell badge in real-time
+                    const notifBadge = document.getElementById('notification-badge');
+                    if (notifBadge) {
+                        const current = parseInt(notifBadge.textContent || '0', 10);
+                        notifBadge.textContent = current + 1;
+                        notifBadge.style.display = 'flex';
+                    }
+
+                    // Refresh dropdown UI if initialized
+                    if (typeof window.bldiziRefreshNotifications === 'function') {
+                        window.bldiziRefreshNotifications();
+                    }
+
+                    // Native browser notification for comment reply
+                    showBrowserNotification(notifData.title || 'Yorumunuza Yanıt Geldi', {
+                        body: notifData.message || notifData.text || '',
+                        icon: '/elements/img/bldizi-logo-notif.png',
+                        tag: `reply_${Date.now()}`,
+                        url: targetUrl
+                    });
+                }
+            } catch (e) {
+                console.error("Error processing incoming notification WebSocket event:", e);
             }
         });
     }, function (error) {
@@ -230,4 +317,3 @@ function connectWebSocket() {
         reconnectTimeout = setTimeout(connectWebSocket, 5000);
     });
 }
-

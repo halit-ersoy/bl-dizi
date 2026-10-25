@@ -4,6 +4,7 @@ import com.ses.bldizi.model.Message;
 import com.ses.bldizi.model.Person;
 import com.ses.bldizi.repository.MessageRepository;
 import com.ses.bldizi.repository.PersonRepository;
+import com.ses.bldizi.service.WebPushService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,9 +25,12 @@ public class MessageController {
 
     private final MessageRepository messageRepository;
     private final PersonRepository personRepository;
+    private final WebPushService webPushService;
 
     @Autowired
-    public MessageController(MessageRepository messageRepository, PersonRepository personRepository) {
+    public MessageController(MessageRepository messageRepository, PersonRepository personRepository,
+                             WebPushService webPushService) {
+        this.webPushService = webPushService;
         this.messageRepository = messageRepository;
         this.personRepository = personRepository;
     }
@@ -85,6 +89,7 @@ public class MessageController {
         try {
             Map<String, Object> senderInfo = personRepository.getUserInfoByCookie(token);
             UUID senderId = UUID.fromString(senderInfo.get("ID").toString());
+            String senderNickname = senderInfo.get("nickname") != null ? senderInfo.get("nickname").toString() : "Anonim";
 
             String receiverNickname = request.get("receiverNickname");
             String content = request.get("content");
@@ -114,7 +119,11 @@ public class MessageController {
                                 "Bu kullanıcı ile mesajlaşamazsınız (Engelleme mevcut)."));
             }
 
-            messageRepository.sendMessage(senderId, receiver.get().getId(), content);
+                        messageRepository.sendMessage(senderId, receiver.get().getId(), content);
+
+            // Send background Web Push
+            webPushService.sendPushAsync(receiverNickname, senderNickname, content,
+                    "/messages?user=" + senderNickname, "msg_" + senderNickname);
 
             return ResponseEntity.ok(Map.of("success", true));
         } catch (Exception e) {

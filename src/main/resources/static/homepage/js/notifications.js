@@ -1,3 +1,5 @@
+/* notifications.js */
+
 export function initNotifications() {
     const notificationsBtn = document.getElementById('notifications-btn');
     const notificationsDropdown = document.getElementById('notifications-dropdown');
@@ -107,8 +109,15 @@ export function initNotifications() {
             item.className = 'notification-item' + (isUnread ? ' unread' : '');
 
             const timeStr = formatTime(new Date(notification.createdAt));
-            const icon = notification.type === 'Movie' ? 'fas fa-film' : 'fas fa-tv';
-            const link = `/${notification.slug || notification.contentId}`;
+            let icon = 'fas fa-bell';
+            if (notification.type === 'Movie') icon = 'fas fa-film';
+            else if (notification.type === 'SoapOpera') icon = 'fas fa-tv';
+            else if (notification.type === 'CommentReply') icon = 'fas fa-reply';
+
+            let link = `/${notification.slug || notification.contentId}`;
+            if (notification.type === 'CommentReply') {
+                link += '#comments';
+            }
 
             item.innerHTML = `
                 <div class="notification-icon">
@@ -151,4 +160,7 @@ export function initNotifications() {
 
         return date.toLocaleDateString('tr-TR');
     }
+
+    // Expose refresh function to window for global triggers
+    window.wdiRefreshNotifications = fetchNotifications;
 }

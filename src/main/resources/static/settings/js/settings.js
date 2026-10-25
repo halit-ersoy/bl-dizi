@@ -1,3 +1,4 @@
+import { subscribeToWebPush, unsubscribeFromWebPush, registerServiceWorker, showBrowserNotification } from '/elements/browserNotification.js';
 import { initHeaderScroll } from '/homepage/js/headerScroll.js';
 
 // Main initialization on DOMContentLoaded
@@ -8,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     initHeaderScroll();
+    registerServiceWorker();
 
     setupProfileSection()
         .then((userData) => {
@@ -380,19 +382,31 @@ function initNotificationToggles() {
     onBtn.addEventListener('click', async () => {
         if (Notification.permission !== 'granted') {
             const perm = await Notification.requestPermission();
-            if (perm === 'granted') setNotificationPreference(true);
-            else {
+            if (perm === 'granted') {
+                setNotificationPreference(true);
+                await subscribeToWebPush();
+                showBrowserNotification('BLDizi', {
+                    body: 'Bildirimler açıldı. Site kapalıyken bile anlık bildirim alacaksınız.',
+                    tag: 'bldizi_welcome'
+                });
+            } else {
                 setNotificationPreference(false);
                 alert('Bildirim izni reddedildi. Tarayıcı izinlerinden değiştirin.');
             }
         } else {
             setNotificationPreference(true);
+            await subscribeToWebPush();
+            showBrowserNotification('BLDizi', {
+                body: 'Bildirimler açıldı. Site kapalıyken bile anlık bildirim alacaksınız.',
+                tag: 'bldizi_welcome'
+            });
         }
     });
-    offBtn.addEventListener('click', () => {
+    offBtn.addEventListener('click', async () => {
         setNotificationPreference(false);
+        await unsubscribeFromWebPush();
         if (Notification.permission === 'granted') {
-            alert('Bildirimler devre dışı; tarayıcı izinleri açık.');
+            alert('Bildirimler devre dışı bırakıldı.');
         }
     });
 }

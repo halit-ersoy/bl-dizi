@@ -1,12 +1,14 @@
-import { initVideoControls } from './videoControls.js';
+﻿import { initVideoControls } from './videoControls.js';
 import { initListModal } from './listModal.js';
 import { initCommentsSection } from './comments.js';
 import { initContentDetails } from './contentDetails.js';
 import { initEpisodeSelection } from './episodeSelection.js';
 import { initSimilarContent } from './similarContent.js';
 import { handleImageSkeleton } from '../../elements/userLogged.js';
+import { initMessagingManager } from '../../homepage/js/messagingManager.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
+    try { initMessagingManager(); } catch(e) { console.debug('Messaging manager init error:', e); }
     const pathSegments = window.location.pathname.split('/').filter(Boolean);
     let videoId = null;
 
@@ -19,7 +21,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 videoId = data.id;
             } else {
                 console.error("Slug not found:", slug);
-                document.querySelector('.watch-container').innerHTML = '<h2>İçerik bulunamadı.</h2>';
+                document.querySelector('.watch-container').innerHTML = '<h2>Ä°Ã§erik bulunamadÄ±.</h2>';
                 return;
             }
         } catch (e) {
@@ -31,7 +33,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     if (!videoId) {
-        document.querySelector('.watch-container').innerHTML = '<h2>Geçersiz bağlantı.</h2>';
+        document.querySelector('.watch-container').innerHTML = '<h2>GeÃ§ersiz baÄŸlantÄ±.</h2>';
         return;
     }
 
@@ -79,9 +81,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function incrementViewCount(id) {
     try {
         const res = await fetch(`/api/video/increment-view?id=${id}`, { method: 'POST' });
-        if (!res.ok) console.error('View count artırılamadı');
+        if (!res.ok) console.error('View count artÄ±rÄ±lamadÄ±');
     } catch (err) {
-        console.error('View count hatası:', err);
+        console.error('View count hatasÄ±:', err);
     }
 }
 
@@ -94,7 +96,7 @@ async function recordWatchHistory(id) {
             credentials: 'include'
         });
     } catch (err) {
-        console.error('Watch history hatası:', err);
+        console.error('Watch history hatasÄ±:', err);
     }
 }
 
@@ -126,10 +128,10 @@ function setupUpcomingWatch(data) {
     if (titleEl) titleEl.textContent = data.title;
     if (contentTitleEl) contentTitleEl.textContent = data.title;
     if (infoEl) {
-        infoEl.innerHTML = `<span style="background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 6px; font-weight: 700; color: #fff; margin-right: 8px;">${typeText}</span> <span style="color: rgba(255,255,255,0.7);"><i class="far fa-calendar-alt"></i> Yayın Tarihi: ${dt.date} ${dt.time ? '• ' + dt.time : ''}</span>`;
+        infoEl.innerHTML = `<span style="background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 6px; font-weight: 700; color: #fff; margin-right: 8px;">${typeText}</span> <span style="color: rgba(255,255,255,0.7);"><i class="far fa-calendar-alt"></i> YayÄ±n Tarihi: ${dt.date} ${dt.time ? 'â€¢ ' + dt.time : ''}</span>`;
     }
 
-    document.title = `${data.title} - Yakında`;
+    document.title = `${data.title} - YakÄ±nda`;
 
     // Overlay Elements
     const overlay = document.getElementById('upcomingPlayerOverlay');
@@ -172,7 +174,7 @@ function setupUpcomingWatch(data) {
 
         if (timerContainer) timerContainer.style.display = 'flex';
         if (expiredContainer) expiredContainer.style.display = 'none';
-        if (badgeText) badgeText.textContent = 'YAYINA KALAN SÜRE';
+        if (badgeText) badgeText.textContent = 'YAYINA KALAN SÃœRE';
 
         const dEl = document.getElementById('playerDays');
         const hEl = document.getElementById('playerHours');
@@ -236,3 +238,4 @@ function formatUpcomingDateTime(dateString) {
         return { date: dateString, time: '' };
     }
 }
+

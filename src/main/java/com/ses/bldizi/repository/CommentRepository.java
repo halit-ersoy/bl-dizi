@@ -109,6 +109,40 @@ public class CommentRepository {
         return roots;
     }
 
+    public Map<String, Object> getReplyNotificationData(UUID parentId, String cookie, String fallbackSlug) {
+        String sql = """
+            SELECT 
+                c.UserId as ParentAuthorId,
+                p_parent.Nickname as ParentAuthorNickname,
+                c.ContentId,
+                COALESCE(
+                    m.Name, 
+                    (CASE WHEN e.ID IS NOT NULL THEN (SELECT TOP 1 s2.Name FROM Series s2 WHERE s2.ID = e.SeriesId) + ' ' + CAST(e.SeasonNumber AS VARCHAR) + '. Sezon ' + CAST(e.EpisodeNumber AS VARCHAR) + '. Bölüm' ELSE NULL END),
+                    s.Name, 
+                    u.Name, 
+                    'İçerik'
+                ) as ContentName,
+                COALESCE(e.Slug, m.Slug, s.Slug, u.Slug, ?) as ContentSlug,
+                p_replier.ID as ReplierId,
+                p_replier.Nickname as ReplierNickname
+            FROM Comments c
+            JOIN Person p_parent ON c.UserId = p_parent.ID
+            LEFT JOIN Movie m ON c.ContentId = m.ID
+            LEFT JOIN Series s ON c.ContentId = s.ID
+            LEFT JOIN Episode e ON c.ContentId = e.ID
+            LEFT JOIN Upcoming u ON c.ContentId = u.ID
+            CROSS JOIN (
+                SELECT ID, Nickname FROM Person WHERE ID = [dbo].[ResolveUserIdByCookie](TRY_CAST(? AS UNIQUEIDENTIFIER))
+            ) p_replier
+            WHERE c.ID = ?
+        """;
+        try {
+            return jdbcTemplate.queryForMap(sql, fallbackSlug, cookie, parentId.toString());
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     public void addComment(UUID contentId, String cookie, String text, boolean spoiler, UUID parentId) {
         String sql = """
             INSERT INTO Comments (ContentId, UserId, Text, Spoiler, Nickname, ParentId, IsApproved, CreatedAt)
@@ -275,3 +309,4 @@ public class CommentRepository {
         }
     }
 }
+
