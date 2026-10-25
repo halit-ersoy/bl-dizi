@@ -4,6 +4,7 @@
 <head>
     <meta name="robots" content="noindex, nofollow">
     <script src="/elements/theme.js"></script>
+    <script src="/elements/webPushManager.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Kullanıcı Ayarları - BL Dizi</title>
@@ -206,21 +207,91 @@
                         </div>
 
                         <div class="preferences-list">
-                            <!-- Notifications Row -->
+                            <!-- Main Web Push Row -->
                             <div class="preference-item">
                                 <div class="preference-info">
                                     <div class="preference-icon">
                                         <i class="fas fa-bell"></i>
                                     </div>
                                     <div>
-                                        <span class="preference-title">Anlık Bildirimler</span>
-                                        <span class="preference-desc">Yeni bölümler, istek güncellemeleri ve önemli duyuruları alın.</span>
+                                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                            <span class="preference-title">Web Push Bildirimleri</span>
+                                            <span id="push-status-badge" class="push-status-badge">Kontrol ediliyor...</span>
+                                        </div>
+                                        <span class="preference-desc" id="push-status-desc">
+                                            Site sekmesi kapalıyken bile özel mesaj ve yorum yanıtı bildirimlerini tarayıcınıza iletin.
+                                        </span>
                                     </div>
                                 </div>
                                 <div class="preference-action">
-                                    <div class="notification-toggle">
-                                        <button id="notifications-off" class="notification-toggle-btn">Kapalı</button>
-                                        <button id="notifications-on" class="notification-toggle-btn active">Açık</button>
+                                    <button id="push-action-btn" class="settings-btn btn-primary-glow" style="padding: 10px 20px; font-size: 0.85rem; width: auto;">
+                                        <i class="fas fa-spinner fa-spin"></i> Yükleniyor
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- iOS PWA Guidance Box (conditional) -->
+                            <div id="push-ios-note" class="push-info-box" style="display: none;">
+                                <i class="fab fa-apple"></i>
+                                <span><strong>Apple iOS (iPhone / iPad) Kullanıcıları:</strong> Web bildirimlerini alabilmek için Safari'nin Paylaş menüsünden <strong>"Ana Ekrana Ekle"</strong> seçeneğini kullanmalı ve uygulamayı ana ekrandan açmalısınız. Masaüstü ve Android için bu zorunlu değildir.</span>
+                            </div>
+
+                            <!-- Granular Push Settings (shown when push is enabled) -->
+                            <div id="push-sub-preferences" style="display: none; flex-direction: column; gap: 14px; margin-top: -4px;">
+                                <!-- Direct Message Push Row -->
+                                <div class="preference-item" style="background: rgba(14, 15, 22, 0.4);">
+                                    <div class="preference-info">
+                                        <div class="preference-icon" style="font-size: 1rem; width: 38px; height: 38px;">
+                                            <i class="fas fa-envelope"></i>
+                                        </div>
+                                        <div>
+                                            <span class="preference-title" style="font-size: 0.95rem;">Özel Mesaj Bildirimleri</span>
+                                            <span class="preference-desc">Yeni bir özel mesaj geldiğinde tarayıcı bildirimi gönderilsin.</span>
+                                        </div>
+                                    </div>
+                                    <div class="preference-action">
+                                        <div class="notification-toggle">
+                                            <button id="push-dm-off" class="notification-toggle-btn">Kapalı</button>
+                                            <button id="push-dm-on" class="notification-toggle-btn active">Açık</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Comment Reply Push Row -->
+                                <div class="preference-item" style="background: rgba(14, 15, 22, 0.4);">
+                                    <div class="preference-info">
+                                        <div class="preference-icon" style="font-size: 1rem; width: 38px; height: 38px;">
+                                            <i class="fas fa-reply"></i>
+                                        </div>
+                                        <div>
+                                            <span class="preference-title" style="font-size: 0.95rem;">Yorum Yanıtı Bildirimleri</span>
+                                            <span class="preference-desc">Yaptığınız yoruma yanıt verildiğinde tarayıcı bildirimi gönderilsin.</span>
+                                        </div>
+                                    </div>
+                                    <div class="preference-action">
+                                        <div class="notification-toggle">
+                                            <button id="push-comment-off" class="notification-toggle-btn">Kapalı</button>
+                                            <button id="push-comment-on" class="notification-toggle-btn active">Açık</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Message Preview Opt-in Row -->
+                                <div class="preference-item" style="background: rgba(14, 15, 22, 0.4);">
+                                    <div class="preference-info">
+                                        <div class="preference-icon" style="font-size: 1rem; width: 38px; height: 38px;">
+                                            <i class="fas fa-eye"></i>
+                                        </div>
+                                        <div>
+                                            <span class="preference-title" style="font-size: 0.95rem;">Mesaj İçeriği Önizlemesi</span>
+                                            <span class="preference-desc">Gizlilik için varsayılan kapalıdır. Kapalıyken sadece "Yeni bir mesajın var" yazar.</span>
+                                        </div>
+                                    </div>
+                                    <div class="preference-action">
+                                        <div class="notification-toggle">
+                                            <button id="push-preview-off" class="notification-toggle-btn active">Gizli</button>
+                                            <button id="push-preview-on" class="notification-toggle-btn">Önizle</button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

@@ -1083,3 +1083,64 @@ footer {
         width: 100%;
     }
 }
+
+
+/* --- Web Push Custom Styles --- */
+.push-status-badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: 'Montserrat', sans-serif;
+    letter-spacing: 0.3px;
+    transition: var(--transition-base, all 0.25s ease);
+}
+
+.push-status-badge.subscribed {
+    background: rgba(30, 215, 96, 0.15);
+    color: #1ed760;
+    border: 1px solid rgba(30, 215, 96, 0.3);
+}
+
+.push-status-badge.default {
+    background: rgba(255, 193, 7, 0.15);
+    color: #ffc107;
+    border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.push-status-badge.denied {
+    background: rgba(255, 75, 75, 0.15);
+    color: #ff6b6b;
+    border: 1px solid rgba(255, 75, 75, 0.3);
+}
+
+.push-status-badge.unsupported {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.push-info-box {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 16px 20px;
+    background: rgba(41, 121, 255, 0.1);
+    border: 1px solid rgba(41, 121, 255, 0.25);
+    border-radius: 14px;
+    color: #90caf9;
+    font-size: 0.88rem;
+    line-height: 1.5;
+    margin-top: -6px;
+    margin-bottom: 4px;
+}
+
+.push-info-box i {
+    font-size: 1.3rem;
+    color: #2979ff;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
