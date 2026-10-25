@@ -327,6 +327,17 @@
     <!-- Cropper.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
     <script type="module" src="/settings/js/settings.js"></script>
+    <script>
+        // Failsafe: hide loading screen if window load completes or after short timeout
+        window.addEventListener('load', function() {
+            var ls = document.getElementById('loading-screen');
+            if (ls) ls.style.display = 'none';
+        });
+        setTimeout(function() {
+            var ls = document.getElementById('loading-screen');
+            if (ls) ls.style.display = 'none';
+        }, 1200);
+    </script>
 </body>
 
 </html>

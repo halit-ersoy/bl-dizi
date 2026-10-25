@@ -72,7 +72,25 @@ export async function subscribeToWebPush() {
         });
 
         const subJson = subscription.toJSON();
-        const nickname = localStorage.getItem('bldiziUserNickname') || localStorage.getItem('bldiziUserNickname') || '';
+        let p256dh = subJson.keys ? subJson.keys.p256dh : null;
+        let auth = subJson.keys ? subJson.keys.auth : null;
+
+        if (!p256dh && subscription.getKey) {
+            const rawKey = subscription.getKey('p256dh');
+            if (rawKey) {
+                p256dh = btoa(String.fromCharCode.apply(null, new Uint8Array(rawKey)))
+                    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+            }
+        }
+        if (!auth && subscription.getKey) {
+            const rawAuth = subscription.getKey('auth');
+            if (rawAuth) {
+                auth = btoa(String.fromCharCode.apply(null, new Uint8Array(rawAuth)))
+                    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+            }
+        }
+
+        const nickname = localStorage.getItem('bldiziUserNickname') || '';
 
         const saveRes = await fetch('/api/push/subscribe', {
             method: 'POST',
@@ -80,8 +98,13 @@ export async function subscribeToWebPush() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 nickname: nickname,
-                endpoint: subJson.endpoint,
-                keys: subJson.keys
+                endpoint: subJson.endpoint || subscription.endpoint,
+                keys: {
+                    p256dh: p256dh,
+                    auth: auth
+                },
+                p256dh: p256dh,
+                auth: auth
             })
         });
 

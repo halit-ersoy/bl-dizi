@@ -79,6 +79,20 @@ public class HomeController {
         return renderHtml("static/settings/html/settings.html");
     }
 
+    @GetMapping(value = "/sw.js")
+    @ResponseBody
+    public ResponseEntity<Resource> getServiceWorker() {
+        Resource swResource = new ClassPathResource("static/sw.js");
+        if (!swResource.exists()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_TYPE, "application/javascript; charset=UTF-8")
+                .header(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate")
+                .header("Service-Worker-Allowed", "/")
+                .body(swResource);
+    }
+
     @GetMapping("/history")
     public ResponseEntity<Resource> getHistoryPage() {
         return renderHtml("static/history/html/history.html");

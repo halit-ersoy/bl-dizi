@@ -1,29 +1,48 @@
 import { subscribeToWebPush, unsubscribeFromWebPush, registerServiceWorker, showBrowserNotification } from '/elements/browserNotification.js';
 import { initHeaderScroll } from '/homepage/js/headerScroll.js';
 
-// Main initialization on DOMContentLoaded
-document.addEventListener('DOMContentLoaded', () => {
+function hideLoadingScreen() {
     const loadingScreen = document.getElementById('loading-screen');
     if (loadingScreen) {
         loadingScreen.style.display = 'none';
     }
+}
 
+function initSettingsPage() {
+    hideLoadingScreen();
     initHeaderScroll();
-    registerServiceWorker();
+    try {
+        registerServiceWorker();
+    } catch (e) {
+        console.warn('registerServiceWorker error:', e);
+    }
 
     setupProfileSection()
         .then((userData) => {
-            initSettingsNavigation();
-            initPasswordForm();
-            initNotificationToggles();
-            initMessageToggles(userData.allowMessages);
-            setupProfilePhotoUpload(userData);
-            initThemeSelector();
+            if (userData) {
+                initSettingsNavigation();
+                initPasswordForm();
+                initNotificationToggles();
+                initMessageToggles(userData.allowMessages);
+                setupProfilePhotoUpload(userData);
+                initThemeSelector();
+            }
+            hideLoadingScreen();
         })
         .catch(error => {
             console.error('Initialization error:', error);
+            hideLoadingScreen();
         });
-});
+}
+
+// Ensure execution whether document is still loading or already parsed
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSettingsPage);
+} else {
+    initSettingsPage();
+}
+
+window.addEventListener('load', hideLoadingScreen);
 
 /**
  * Fetches user profile data and populates settings UI.

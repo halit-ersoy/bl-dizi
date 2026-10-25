@@ -73,16 +73,24 @@ public class PushNotificationController {
             return ResponseEntity.status(401).body(Map.of("success", false, "message", "Kullanıcı oturumu bulunamadı"));
         }
 
-        String endpoint = (String) payload.get("endpoint");
-        @SuppressWarnings("unchecked")
-        Map<String, String> keys = (Map<String, String>) payload.get("keys");
+        String endpoint = payload.get("endpoint") != null ? payload.get("endpoint").toString() : null;
+        String p256dh = null;
+        String auth = null;
 
-        if (endpoint == null || keys == null || !keys.containsKey("p256dh") || !keys.containsKey("auth")) {
-            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Geçersiz abonelik verisi"));
+        if (payload.get("keys") instanceof Map<?, ?> keysMap) {
+            if (keysMap.get("p256dh") != null) p256dh = keysMap.get("p256dh").toString();
+            if (keysMap.get("auth") != null) auth = keysMap.get("auth").toString();
+        }
+        if (p256dh == null && payload.get("p256dh") != null) {
+            p256dh = payload.get("p256dh").toString();
+        }
+        if (auth == null && payload.get("auth") != null) {
+            auth = payload.get("auth").toString();
         }
 
-        String p256dh = keys.get("p256dh");
-        String auth = keys.get("auth");
+        if (endpoint == null || endpoint.isBlank() || p256dh == null || p256dh.isBlank() || auth == null || auth.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Geçersiz abonelik verisi"));
+        }
 
         subscriptionRepository.saveOrUpdate(nickname, endpoint, p256dh, auth);
         logger.info("Successfully registered Web Push subscription for user: '{}', endpoint: {}", nickname, endpoint);
