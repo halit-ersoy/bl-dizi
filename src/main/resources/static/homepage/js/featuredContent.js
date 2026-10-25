@@ -138,12 +138,21 @@ export function initFeaturedContent() {
                 const el = document.createElement('div');
                 el.className = 'featured-item';
                 let specialBadgeHtml = '';
-                if (type === 'tv') {
-                    if (item.season === 1 && item.episode === 1) {
-                        let badgeText = (item.seriesType === 'Program') ? 'Yeni Program' : 'Yeni Dizi';
-                        specialBadgeHtml = `<span class="badge new-series-badge">${badgeText}</span>`;
-                    } else if (item.season > 1 && item.episode === 1) {
-                        specialBadgeHtml = '<span class="badge new-series-badge">Yeni Sezon</span>';
+
+                // Varsa dokunma: Final veya Sezon Finali rozeti yoksa
+                if (!item.finalStatus || item.finalStatus === 0) {
+                    // Yüklendikten sonra 24 saat boyunca dursun (item.isNew === true)
+                    if (item.isNew) {
+                        if (type === 'tv') {
+                            if (item.season === 1 && item.episode === 1) {
+                                let badgeText = (item.seriesType === 'Program') ? 'Yeni Program' : 'Yeni Dizi';
+                                specialBadgeHtml = `<span class="badge new-series-badge">${badgeText}</span>`;
+                            } else if (item.season > 1 && item.episode === 1) {
+                                specialBadgeHtml = '<span class="badge new-series-badge">Yeni Sezon</span>';
+                            }
+                        } else if (type === 'movies') {
+                            specialBadgeHtml = '<span class="badge new-series-badge">Yeni Film</span>';
+                        }
                     }
                 }
 

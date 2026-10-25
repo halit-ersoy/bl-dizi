@@ -305,7 +305,7 @@ public class MovieRepository {
             java.sql.Timestamp uploadDate = rs.getTimestamp("uploadDate");
 
             boolean isNew = uploadDate != null && 
-                    (System.currentTimeMillis() - uploadDate.getTime()) < (7L * 24 * 60 * 60 * 1000);
+                    (System.currentTimeMillis() - uploadDate.getTime()) < (24L * 60 * 60 * 1000);
 
             return FeaturedTvItemDto.builder()
                     .id(movieId)
