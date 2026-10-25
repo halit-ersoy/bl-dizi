@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="tr" data-theme="pink">
 
 <head>
@@ -27,8 +27,8 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BL ve GL Dizi Ä°zle - BL Dizi</title>
-    <meta name="description" content="BL Dizi'de en sevdiÄŸin BL ve GL dizilerini ve filmlerini izle.">
+    <title>BL ve GL Dizi İzle - BL Dizi</title>
+    <meta name="description" content="BL Dizi'de en sevdiğin BL ve GL dizilerini ve filmlerini izle.">
     <link rel="canonical" id="canonicalLink" href="https://bldizi.com/watch">
     <script id="structuredData" type="application/ld+json">null</script>
     <link
@@ -209,7 +209,7 @@
 <body>
     <header>
         <a href="/" class="logo-link" aria-label="Ana sayfa">
-            <div class="logo">BL DÄ°ZÄ°</div>
+            <div class="logo">BL DİZİ</div>
         </a>
         <a href="https://directyp.org/4/6cd95e950e9fbd18b2ecc2ede27cd788" target="_blank" rel="noopener noreferrer" class="btn-support-header">
             <i class="fas fa-heart"></i>
@@ -249,11 +249,11 @@
 
     <div class="content-wrapper">
         <div class="watch-container">
-            <div class="video-title" id="title">YÃ¼kleniyor...</div>
+            <div class="video-title" id="title">Yükleniyor...</div>
 
             <div class="source-switcher-container">
                 <div class="source-label">
-                    <i class="fas fa-server"></i> Kaynak SeÃ§imi
+                    <i class="fas fa-server"></i> Kaynak Seçimi
                 </div>
                 <div class="source-switcher" id="sourceSwitcher">
                     <!-- Dinamik olarak butonlar eklenecek -->
@@ -267,7 +267,7 @@
                     <video id="videoPlayer" controlsList="nodownload" oncontextmenu="return false" playsinline
                         webkit-playsinline>
                         <source id="videoSource" src="" type="video/mp4">
-                        TarayÄ±cÄ±nÄ±z video etiketini desteklemiyor.
+                        Tarayıcınız video etiketini desteklemiyor.
                     </video>
                     <div id="iframePlayerContainer"
                         style="display:none; width: 100%; height: 100%; position: absolute; top: 0; left: 0;">
@@ -275,9 +275,9 @@
                     </div>
                     <div id="adultOverlay" class="adult-overlay">
                         <i class="fas fa-exclamation-triangle"></i>
-                        <h3>+18 YetiÅŸkin Ä°Ã§eriÄŸi</h3>
-                        <p>Bu iÃ§erik yetiÅŸkinlere yÃ¶neliktir. Ä°zlemek iÃ§in onaylayÄ±n.</p>
-                        <button id="removeBlurBtn" class="btn-remove-blur">Ä°zlemeye BaÅŸla</button>
+                        <h3>+18 Yetişkin İçeriği</h3>
+                        <p>Bu içerik yetişkinlere yöneliktir. İzlemek için onaylayın.</p>
+                        <button id="removeBlurBtn" class="btn-remove-blur">İzlemeye Başla</button>
                     </div>
                     <!-- Upcoming Countdown Player Overlay -->
                     <div id="upcomingPlayerOverlay" class="upcoming-player-overlay" style="display: none;">
@@ -286,11 +286,11 @@
                         <div class="upcoming-player-content">
                             <div class="upcoming-player-badge">
                                 <span class="upcoming-pulse-dot"></span>
-                                <span id="upcomingBadgeText">YAYINA KALAN SÃœRE</span>
+                                <span id="upcomingBadgeText">YAYINA KALAN SÜRE</span>
                             </div>
                             <h1 class="upcoming-player-title" id="upcomingPlayerTitle"></h1>
                             <div class="upcoming-player-meta">
-                                <span id="upcomingPlayerCategory" class="upcoming-player-type-tag">DÄ°ZÄ°</span>
+                                <span id="upcomingPlayerCategory" class="upcoming-player-type-tag">DİZİ</span>
                                 <span id="upcomingPlayerDate" class="upcoming-player-date"><i class="far fa-calendar-alt"></i> </span>
                                 <span id="upcomingPlayerTime" class="upcoming-player-time"><i class="far fa-clock"></i> </span>
                             </div>
@@ -299,7 +299,7 @@
                             <div class="upcoming-player-countdown" id="upcomingPlayerTimer">
                                 <div class="upcoming-timer-box">
                                     <span class="upcoming-timer-val" id="playerDays">00</span>
-                                    <span class="upcoming-timer-lbl">GÃœN</span>
+                                    <span class="upcoming-timer-lbl">GÜN</span>
                                 </div>
                                 <span class="upcoming-timer-colon">:</span>
                                 <div class="upcoming-timer-box">
@@ -309,22 +309,22 @@
                                 <span class="upcoming-timer-colon">:</span>
                                 <div class="upcoming-timer-box">
                                     <span class="upcoming-timer-val" id="playerMinutes">00</span>
-                                    <span class="upcoming-timer-lbl">DAKÄ°KA</span>
+                                    <span class="upcoming-timer-lbl">DAKİKA</span>
                                 </div>
                                 <span class="upcoming-timer-colon">:</span>
                                 <div class="upcoming-timer-box">
                                     <span class="upcoming-timer-val" id="playerSeconds">00</span>
-                                    <span class="upcoming-timer-lbl">SANÄ°YE</span>
+                                    <span class="upcoming-timer-lbl">SANİYE</span>
                                 </div>
                             </div>
 
-                            <!-- Expired / YakÄ±nda YÃ¼klenecek -->
+                            <!-- Expired / Yakında Yüklenecek -->
                             <div class="upcoming-player-expired" id="upcomingPlayerExpired" style="display: none;">
                                 <div class="upcoming-expired-pill">
                                     <i class="fas fa-bolt"></i> YAKINDA YAYINDA
                                 </div>
-                                <h3 class="upcoming-expired-heading">Bu BÃ¶lÃ¼m Ã‡ok YakÄ±nda YÃ¼klenecektir</h3>
-                                <p class="upcoming-expired-text">Ã‡eviri ve hazÄ±rlÄ±k iÅŸlemleri son aÅŸamadadÄ±r. YÃ¼klendiÄŸi anda buradan izleyebilirsiniz.</p>
+                                <h3 class="upcoming-expired-heading">Bu Bölüm Çok Yakında Yüklenecektir</h3>
+                                <p class="upcoming-expired-text">Çeviri ve hazırlık işlemleri son aşamadadır. Yüklendiği anda buradan izleyebilirsiniz.</p>
                             </div>
                         </div>
                     </div>
@@ -361,7 +361,7 @@
 
             <div class="info-bar">
                 <span id="videoInfo"></span>
-                <button class="glow-button"><i class="fas fa-plus"></i> Ä°stek Listesine Ekle</button>
+                <button class="glow-button"><i class="fas fa-plus"></i> İstek Listesine Ekle</button>
             </div>
 
             <!-- Ad Slot: Leaderboard (728x90 Desktop / 320x50 Mobile) -->
@@ -396,7 +396,7 @@
             <!-- Episode Selection Drawer -->
             <div class="episode-selection-section" id="episodeSection">
                 <div class="episode-toggle">
-                    <span>BÃ¶lÃ¼m Listesi</span>
+                    <span>Bölüm Listesi</span>
                     <i class="fas fa-chevron-down"></i>
                 </div>
 
@@ -414,7 +414,7 @@
             <div id="addToListModal" class="modal">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h3>Ä°stek Listenize Ekleyin</h3>
+                        <h3>İstek Listenize Ekleyin</h3>
                         <span class="close-modal">&times;</span>
                     </div>
                     <div class="modal-body">
@@ -423,16 +423,16 @@
                             <div id="userLists" class="user-lists">
                                 <!-- Lists will be populated here -->
                                 <div class="loading-spinner">
-                                    <i class="fas fa-spinner fa-spin"></i> Listeler yÃ¼kleniyor...
+                                    <i class="fas fa-spinner fa-spin"></i> Listeler yükleniyor...
                                 </div>
                             </div>
                         </div>
                         <div class="new-list-form">
-                            <h4>Yeni Liste OluÅŸtur</h4>
+                            <h4>Yeni Liste Oluştur</h4>
                             <div class="input-group">
-                                <input type="text" id="newListName" placeholder="Liste adÄ± girin..." maxlength="100">
+                                <input type="text" id="newListName" placeholder="Liste adı girin..." maxlength="100">
                                 <button id="createListBtn" class="btn-create-list">
-                                    <i class="fas fa-plus"></i> OluÅŸtur
+                                    <i class="fas fa-plus"></i> Oluştur
                                 </button>
                             </div>
                         </div>
@@ -442,7 +442,7 @@
 
             <div class="content-details-section">
                 <div class="details-toggle">
-                    <span>Ä°Ã§erik DetaylarÄ±</span>
+                    <span>İçerik Detayları</span>
                     <i class="fas fa-chevron-down"></i>
                 </div>
 
@@ -458,21 +458,21 @@
                             </div>
                         </div>
                         <div class="details-info">
-                            <h2 id="contentTitle">YÃ¼kleniyor...</h2>
+                            <h2 id="contentTitle">Yükleniyor...</h2>
                             <div class="genre-tags" id="genreTags">
                                 <!-- Genre tags will be added dynamically -->
                             </div>
                             <div class="details-meta">
                                 <span id="releaseYear">2024</span>
-                                <span class="separator">â€¢</span>
+                                <span class="separator">•</span>
                                 <span id="contentDuration">45 dk</span>
-                                <span class="separator">â€¢</span>
-                                <span id="contentLanguage">TÃ¼rkÃ§e</span>
-                                <span class="separator">â€¢</span>
+                                <span class="separator">•</span>
+                                <span id="contentLanguage">Türkçe</span>
+                                <span class="separator">•</span>
                                 <span id="contentCountry"></span>
                             </div>
                             <div class="plot-summary">
-                                <p id="contentPlot">YÃ¼kleniyor...</p>
+                                <p id="contentPlot">Yükleniyor...</p>
                             </div>
                             <div class="details-section">
                                 <h3>Oyuncular</h3>
@@ -481,13 +481,13 @@
                                 </div>
                             </div>
                             <div class="details-section" id="seasonSection">
-                                <h3>Sezon & BÃ¶lÃ¼m Bilgisi</h3>
+                                <h3>Sezon & Bölüm Bilgisi</h3>
                                 <div class="season-info" id="seasonInfo">
                                     <span id="seasonNumber">Sezon 1</span>
-                                    <span class="separator">â€¢</span>
-                                    <span id="episodeNumber">BÃ¶lÃ¼m 1</span>
-                                    <span class="separator">â€¢</span>
-                                    <span id="totalEpisodes">Toplam 10 BÃ¶lÃ¼m</span>
+                                    <span class="separator">•</span>
+                                    <span id="episodeNumber">Bölüm 1</span>
+                                    <span class="separator">•</span>
+                                    <span id="totalEpisodes">Toplam 10 Bölüm</span>
                                 </div>
                             </div>
                         </div>
@@ -496,9 +496,9 @@
             </div>
 
             <div class="episode-navigation" id="episodeNav">
-                <button id="prevEpisode" class="nav-button" disabled><i class="fas fa-step-backward"></i> Ã–nceki
-                    BÃ¶lÃ¼m</button>
-                <button id="nextEpisode" class="nav-button"><i class="fas fa-step-forward"></i> Sonraki BÃ¶lÃ¼m</button>
+                <button id="prevEpisode" class="nav-button" disabled><i class="fas fa-step-backward"></i> Önceki
+                    Bölüm</button>
+                <button id="nextEpisode" class="nav-button"><i class="fas fa-step-forward"></i> Sonraki Bölüm</button>
             </div>
         </div>
 
@@ -546,9 +546,9 @@
         </div>
 
         <div class="recommendation-section">
-            <h3>Benzer Ä°Ã§erikler</h3>
+            <h3>Benzer İçerikler</h3>
             <div class="recommendation-carousel-container">
-                <button class="carousel-nav prev-btn" id="recPrevBtn" aria-label="Ã–nceki">
+                <button class="carousel-nav prev-btn" id="recPrevBtn" aria-label="Önceki">
                     <i class="fas fa-chevron-left"></i>
                 </button>
                 <div class="recommendation-cards" id="recommendationCards">
@@ -601,11 +601,11 @@
                         <i class="fas fa-user"></i>
                     </div>
                     <form id="commentForm">
-                        <textarea id="commentText" placeholder="Bu dizi hakkÄ±nda dÃ¼ÅŸÃ¼nceleriniz neler?"></textarea>
+                        <textarea id="commentText" placeholder="Bu dizi hakkında düşünceleriniz neler?"></textarea>
                         <div class="form-actions">
                             <label class="spoiler-toggle">
                                 <input type="checkbox" id="spoilerCheck">
-                                <span class="toggle-text"><i class="fas fa-mask"></i> Spoiler Ä°Ã§erir</span>
+                                <span class="toggle-text"><i class="fas fa-mask"></i> Spoiler İçerir</span>
                             </label>
                             <button type="submit" class="comment-submit-btn"><i class="fas fa-paper-plane"></i> Yorum
                                 Yap</button>
@@ -619,13 +619,13 @@
     <footer>
         <div class="footer-links">
             <a href="/">Anasayfa</a>
-            <a href="/about">HakkÄ±mÄ±zda</a>
-            <a href="/privacy_policy">Gizlilik PolitikasÄ±</a>
-            <a href="/terms_of_use">KullanÄ±m ÅžartlarÄ±</a>
+            <a href="/about">Hakkımızda</a>
+            <a href="/privacy_policy">Gizlilik Politikası</a>
+            <a href="/terms_of_use">Kullanım Şartları</a>
             <a href="/sss">SSS</a>
         </div>
         <p>&copy;
-            <script>document.write(new Date().getFullYear())</script> BL Dizi. TÃ¼m haklarÄ± saklÄ±dÄ±r.
+            <script>document.write(new Date().getFullYear())</script> BL Dizi. Tüm hakları saklıdır.
         </p>
     </footer>
     <script src="/elements/heartbeat.js"></script>

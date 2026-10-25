@@ -1,4 +1,4 @@
-﻿import { handleImageSkeleton } from '../../elements/userLogged.js';
+import { handleImageSkeleton } from '../../elements/userLogged.js';
 
 export function initLoadedEpisodesSection() {
     const carousel = document.getElementById('upcoming-episodes-carousel');
