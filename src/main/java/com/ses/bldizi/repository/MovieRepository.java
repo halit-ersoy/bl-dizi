@@ -317,6 +317,11 @@ public class MovieRepository {
                     .country(country != null && !country.isEmpty() ? country.toLowerCase() : "th")
                     .language(lang)
                     .isNew(isNew)
+                    .isSeriesNew(false)
+                    .uploadDate(uploadDate != null ? uploadDate.getTime() : null)
+                    .seriesUploadDate(null)
+                    .finalStatus(0)
+                    .seriesType("Film")
                     .build();
         }, offset, limit);
     }

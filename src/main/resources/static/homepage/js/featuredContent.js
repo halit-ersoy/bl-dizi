@@ -134,24 +134,41 @@ export function initFeaturedContent() {
         featuredGrid.innerHTML = '';
 
         if (data && data.length > 0) {
+            const now = Date.now();
+            const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
+
             data.forEach(item => {
                 const el = document.createElement('div');
                 el.className = 'featured-item';
                 let specialBadgeHtml = '';
 
-                // Varsa dokunma: Final veya Sezon Finali rozeti yoksa
+                // 24 saatlik sure kontrolu (kesin milisaniye kontrolu, fallback boolean)
+                const isEpisodeNew = item.uploadDate
+                    ? (now - item.uploadDate < TWENTY_FOUR_HOURS)
+                    : (item.isNew === true);
+
+                const isSeriesNew = item.seriesUploadDate
+                    ? (now - item.seriesUploadDate < TWENTY_FOUR_HOURS)
+                    : (item.isSeriesNew === true);
+
+                // Varsa dokunma: Final veya Sezon Finali rozeti varsa dokunulmaz
                 if (!item.finalStatus || item.finalStatus === 0) {
-                    // Yüklendikten sonra 24 saat boyunca dursun (item.isNew === true)
-                    if (item.isNew) {
-                        if (type === 'tv') {
-                            if (item.season === 1 && item.episode === 1) {
-                                let badgeText = (item.seriesType === 'Program') ? 'Yeni Program' : 'Yeni Dizi';
-                                specialBadgeHtml = `<span class="badge new-series-badge">${badgeText}</span>`;
-                            } else if (item.season > 1 && item.episode === 1) {
-                                specialBadgeHtml = '<span class="badge new-series-badge">Yeni Sezon</span>';
-                            }
-                        } else if (type === 'movies') {
+                    if (type === 'movies') {
+                        // Yeni yuklenen filmler icin 24 saat boyunca "Yeni Film"
+                        if (isEpisodeNew) {
                             specialBadgeHtml = '<span class="badge new-series-badge">Yeni Film</span>';
+                        }
+                    } else if (type === 'tv') {
+                        // Yeni yuklenen dizi veya program:
+                        // Dizi/programin kendisi 24 saat icinde yuklenmisse VEYA 1. Sezon 1. Bolum 24 saat icindeyse
+                        const isBrandNew = isSeriesNew || (item.season === 1 && item.episode === 1 && isEpisodeNew);
+
+                        if (isBrandNew) {
+                            const badgeText = (item.seriesType === 'Program') ? 'Yeni Program' : 'Yeni Dizi';
+                            specialBadgeHtml = `<span class="badge new-series-badge">${badgeText}</span>`;
+                        } else if (item.season > 1 && item.episode === 1 && isEpisodeNew) {
+                            // Var olan dizinin yeni sezonu 24 saat icinde yuklenmisse
+                            specialBadgeHtml = '<span class="badge new-series-badge">Yeni Sezon</span>';
                         }
                     }
                 }
@@ -178,7 +195,7 @@ export function initFeaturedContent() {
                                 class="country-flag ${item.country}"
                                 title="${countryNames[item.country] || ''}"
                             ></span>
-                            ${item.isNew ? '<span class="new-episode">• Yeni</span>' : ''}
+                            ${isEpisodeNew ? '<span class="new-episode">• Yeni</span>' : ''}
                         </div>
                     </div>
                 `;

@@ -296,6 +296,7 @@ public class SeriesRepository {
             WITH OrderedEpisodes AS (
                 SELECT E.ID as EpisodeId, E.SeriesId as SeriesId, E.uploadDate, E.name, E.slug, E.SeasonNumber, E.EpisodeNumber,
                        S.name AS SeriesName, S.Language, S.Country, S.SeriesType, S.finalStatus,
+                       S.uploadDate AS seriesUploadDate,
                        ROW_NUMBER() OVER (PARTITION BY E.SeriesId ORDER BY E.uploadDate DESC, E.SeasonNumber DESC, E.EpisodeNumber DESC) as rn
                 FROM Episode E
                 JOIN Series S ON E.SeriesId = S.ID
@@ -303,7 +304,7 @@ public class SeriesRepository {
                   AND (E.IsHidden = 0 OR E.IsHidden IS NULL)
                   AND (S.IsHidden = 0 OR S.IsHidden IS NULL)
             )
-            SELECT EpisodeId, SeriesId, uploadDate, name, slug, SeasonNumber, EpisodeNumber, SeriesName, Language, Country, SeriesType, finalStatus
+            SELECT EpisodeId, SeriesId, uploadDate, seriesUploadDate, name, slug, SeasonNumber, EpisodeNumber, SeriesName, Language, Country, SeriesType, finalStatus
             FROM OrderedEpisodes
             WHERE rn = 1
             ORDER BY uploadDate DESC
@@ -322,9 +323,12 @@ public class SeriesRepository {
             int finalStatus = rs.getInt("finalStatus");
             String seriesType = rs.getString("SeriesType");
             java.sql.Timestamp uploadDate = rs.getTimestamp("uploadDate");
+            java.sql.Timestamp seriesUploadDate = rs.getTimestamp("seriesUploadDate");
 
             boolean isNew = uploadDate != null && 
                     (System.currentTimeMillis() - uploadDate.getTime()) < (24L * 60 * 60 * 1000);
+            boolean isSeriesNew = seriesUploadDate != null && 
+                    (System.currentTimeMillis() - seriesUploadDate.getTime()) < (24L * 60 * 60 * 1000);
 
             return FeaturedTvItemDto.builder()
                     .id(epId)
@@ -339,6 +343,9 @@ public class SeriesRepository {
                     .finalStatus(finalStatus)
                     .seriesType(seriesType)
                     .isNew(isNew)
+                    .isSeriesNew(isSeriesNew)
+                    .uploadDate(uploadDate != null ? uploadDate.getTime() : null)
+                    .seriesUploadDate(seriesUploadDate != null ? seriesUploadDate.getTime() : null)
                     .isFinal(finalStatus == 1)
                     .build();
         }, offset, limit);

@@ -18,6 +18,9 @@ public class FeaturedTvItemDto {
     private Integer season;
     private Integer episode;
     private boolean isNew;
+    private boolean isSeriesNew;
+    private Long uploadDate;
+    private Long seriesUploadDate;
     private boolean isFinal;
     private String image;
     private String language;
