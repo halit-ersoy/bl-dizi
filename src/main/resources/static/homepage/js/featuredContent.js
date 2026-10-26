@@ -154,16 +154,13 @@ export function initFeaturedContent() {
                 // Varsa dokunma: Final veya Sezon Finali rozeti varsa dokunulmaz
                 if (!item.finalStatus || item.finalStatus === 0) {
                     if (type === 'movies') {
-                        // Yeni yuklenen filmler icin 24 saat boyunca "Yeni Film"
+                        // Yeni yuklenen filmler icin 24 saat boyunca sadece "Yeni" rozeti
                         if (isEpisodeNew) {
-                            specialBadgeHtml = '<span class="badge new-series-badge">Yeni Film</span>';
+                            specialBadgeHtml = '<span class="badge new-series-badge">Yeni</span>';
                         }
                     } else if (type === 'tv') {
-                        // Yeni yuklenen dizi veya program:
-                        // Dizi/programin kendisi 24 saat icinde yuklenmisse VEYA 1. Sezon 1. Bolum 24 saat icindeyse
-                        const isBrandNew = isSeriesNew || (item.season === 1 && item.episode === 1 && isEpisodeNew);
-
-                        if (isBrandNew) {
+                        // Dizi ve programlarin ilk bolumlerinde (Sezon 1 Bolum 1) HEP "Yeni Dizi" veya "Yeni Program" yazsin
+                        if (item.season === 1 && item.episode === 1) {
                             const badgeText = (item.seriesType === 'Program') ? 'Yeni Program' : 'Yeni Dizi';
                             specialBadgeHtml = `<span class="badge new-series-badge">${badgeText}</span>`;
                         } else if (item.season > 1 && item.episode === 1 && isEpisodeNew) {

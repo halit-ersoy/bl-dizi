@@ -293,20 +293,22 @@ public class SeriesRepository {
 
     public List<FeaturedTvItemDto> findRecentBlEpisodes(int offset, int limit) {
         String sql = """
-            WITH OrderedEpisodes AS (
+            WITH RankedEpisodes AS (
                 SELECT E.ID as EpisodeId, E.SeriesId as SeriesId, E.uploadDate, E.name, E.slug, E.SeasonNumber, E.EpisodeNumber,
                        S.name AS SeriesName, S.Language, S.Country, S.SeriesType, S.finalStatus,
                        S.uploadDate AS seriesUploadDate,
-                       ROW_NUMBER() OVER (PARTITION BY E.SeriesId ORDER BY E.uploadDate DESC, E.SeasonNumber DESC, E.EpisodeNumber DESC) as rn
+                       ROW_NUMBER() OVER (PARTITION BY E.SeriesId ORDER BY E.uploadDate DESC, E.SeasonNumber DESC, E.EpisodeNumber DESC, E.ID ASC) as latest_rn,
+                       ROW_NUMBER() OVER (PARTITION BY E.SeriesId ORDER BY E.SeasonNumber ASC, E.EpisodeNumber ASC, E.uploadDate ASC, E.ID ASC) as first_rn
                 FROM Episode E
                 JOIN Series S ON E.SeriesId = S.ID
                 WHERE (S.SeriesType IN ('BL', 'GL') OR S.isBl = 1 OR EXISTS (SELECT 1 FROM SeriesCategories sc WHERE sc.SeriesID = S.ID AND sc.CategoryID IN (52, 63)))
                   AND (E.IsHidden = 0 OR E.IsHidden IS NULL)
                   AND (S.IsHidden = 0 OR S.IsHidden IS NULL)
             )
-            SELECT EpisodeId, SeriesId, uploadDate, seriesUploadDate, name, slug, SeasonNumber, EpisodeNumber, SeriesName, Language, Country, SeriesType, finalStatus
-            FROM OrderedEpisodes
-            WHERE rn = 1
+            SELECT EpisodeId, SeriesId, uploadDate, seriesUploadDate, name, slug, SeasonNumber, EpisodeNumber, SeriesName, Language, Country, SeriesType, finalStatus,
+                   CASE WHEN latest_rn = 1 THEN 1 ELSE 0 END AS isLatest
+            FROM RankedEpisodes
+            WHERE latest_rn = 1 OR first_rn = 1
             ORDER BY uploadDate DESC
             OFFSET ? ROWS FETCH NEXT ? ROWS ONLY
         """;
@@ -320,7 +322,8 @@ public class SeriesRepository {
             String slug = rs.getString("slug");
             String country = rs.getString("Country");
             String lang = rs.getString("Language");
-            int finalStatus = rs.getInt("finalStatus");
+            int isLatest = rs.getInt("isLatest");
+            int finalStatus = (isLatest == 1) ? rs.getInt("finalStatus") : 0;
             String seriesType = rs.getString("SeriesType");
             java.sql.Timestamp uploadDate = rs.getTimestamp("uploadDate");
             java.sql.Timestamp seriesUploadDate = rs.getTimestamp("seriesUploadDate");
@@ -353,15 +356,18 @@ public class SeriesRepository {
 
     public int countRecentBlEpisodes() {
         String sql = """
-            WITH DistinctSeriesWithEpisode AS (
-                SELECT DISTINCT E.SeriesId
+            WITH RankedEpisodes AS (
+                SELECT E.ID as EpisodeId, E.SeriesId as SeriesId,
+                       ROW_NUMBER() OVER (PARTITION BY E.SeriesId ORDER BY E.uploadDate DESC, E.SeasonNumber DESC, E.EpisodeNumber DESC, E.ID ASC) as latest_rn,
+                       ROW_NUMBER() OVER (PARTITION BY E.SeriesId ORDER BY E.SeasonNumber ASC, E.EpisodeNumber ASC, E.uploadDate ASC, E.ID ASC) as first_rn
                 FROM Episode E
                 JOIN Series S ON E.SeriesId = S.ID
                 WHERE (S.SeriesType IN ('BL', 'GL') OR S.isBl = 1 OR EXISTS (SELECT 1 FROM SeriesCategories sc WHERE sc.SeriesID = S.ID AND sc.CategoryID IN (52, 63)))
                   AND (E.IsHidden = 0 OR E.IsHidden IS NULL)
                   AND (S.IsHidden = 0 OR S.IsHidden IS NULL)
             )
-            SELECT COUNT(*) FROM DistinctSeriesWithEpisode
+            SELECT COUNT(*) FROM RankedEpisodes
+            WHERE latest_rn = 1 OR first_rn = 1
         """;
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
         return count != null ? count : 0;
