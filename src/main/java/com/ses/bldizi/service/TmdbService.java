@@ -85,6 +85,38 @@ public class TmdbService {
         return Collections.emptyMap();
     }
 
+    @Cacheable(value = "tmdbEnglishTitle", key = "#id + '-' + #type", unless = "#result == null || #result.isEmpty()")
+    public String getEnglishTitle(Integer id, String type) {
+        if (apiKey == null || apiKey.trim().isEmpty() || id == null || id <= 0) return null;
+        try {
+            String endpoint = "movie".equalsIgnoreCase(type) ? "/movie/" : "/tv/";
+            URI uri = UriComponentsBuilder.fromUriString(BASE_URL + endpoint + id)
+                    .queryParam("api_key", apiKey.trim())
+                    .queryParam("language", "en-US")
+                    .build()
+                    .toUri();
+
+            @SuppressWarnings("unchecked")
+            Map<String, Object> resp = restTemplate.getForObject(uri, Map.class);
+            if (resp != null) {
+                String title = "movie".equalsIgnoreCase(type) ? (String) resp.get("title") : (String) resp.get("name");
+                if (title != null && !title.isBlank()) {
+                    String clean = extractLatinNameIfPresent(title);
+                    if (!containsNonLatin(clean)) {
+                        return clean.trim();
+                    }
+                }
+                String orig = (String) resp.get("movie".equalsIgnoreCase(type) ? "original_title" : "original_name");
+                if (orig != null && !orig.isBlank() && !containsNonLatin(orig)) {
+                    return orig.trim();
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("TMDB English Title Error (" + id + "): " + e.getMessage());
+        }
+        return null;
+    }
+
     public String getPosterUrl(String posterPath) {
         if (posterPath == null || posterPath.isEmpty())
             return null;

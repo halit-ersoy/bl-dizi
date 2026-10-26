@@ -2,7 +2,10 @@ package com.ses.bldizi.repository;
 
 import com.ses.bldizi.model.ContentRequest;
 import com.ses.bldizi.service.TmdbService;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import com.ses.bldizi.service.TvMazeService;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
