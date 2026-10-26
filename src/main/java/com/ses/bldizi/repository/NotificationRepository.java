@@ -63,7 +63,10 @@ public class NotificationRepository {
                     SELECT TOP (?) N.*,
                            CASE
                                WHEN N.Type = 'Movie' THEN (SELECT M.slug FROM Movie M WHERE M.ID = N.ContentID)
-                               WHEN N.Type = 'SoapOpera' THEN (SELECT E.slug FROM Episode E WHERE E.ID = N.ContentID)
+                               WHEN N.Type = 'SoapOpera' THEN COALESCE(
+                                   (SELECT E.slug FROM Episode E WHERE E.ID = N.ContentID),
+                                   (SELECT S.slug FROM Series S WHERE S.ID = N.ContentID)
+                               )
                                ELSE COALESCE(
                                    (SELECT M.slug FROM Movie M WHERE M.ID = N.ContentID),
                                    (SELECT E.slug FROM Episode E WHERE E.ID = N.ContentID),
@@ -72,7 +75,8 @@ public class NotificationRepository {
                                )
                            END as slug
                     FROM Notifications N
-                    WHERE (N.UserId = ? OR (N.UserId IS NULL AND (
+                    WHERE (N.UserId = ? OR N.UserId IS NULL)
+                      AND (
                         (N.Type = 'Movie' AND (EXISTS (SELECT 1 FROM MovieCategories MC WHERE MC.MovieID = N.ContentID AND MC.CategoryID IN (52, 63)) OR EXISTS (SELECT 1 FROM Movie M WHERE M.ID = N.ContentID AND (M.MovieType IN ('BL', 'GL') OR M.isBl = 1))))
                         OR
                         (N.Type = 'SoapOpera' AND (
@@ -80,7 +84,14 @@ public class NotificationRepository {
                             OR
                             EXISTS (SELECT 1 FROM Series S WHERE S.ID = N.ContentID AND (S.SeriesType IN ('BL', 'GL') OR S.isBl = 1 OR EXISTS (SELECT 1 FROM SeriesCategories SC WHERE SC.SeriesID = S.ID AND SC.CategoryID IN (52, 63))))
                         ))
-                    )))
+                        OR
+                        (N.Type = 'CommentReply' AND (
+                            EXISTS (SELECT 1 FROM MovieCategories MC WHERE MC.MovieID = N.ContentID AND MC.CategoryID IN (52, 63))
+                            OR EXISTS (SELECT 1 FROM Movie M WHERE M.ID = N.ContentID AND (M.MovieType IN ('BL', 'GL') OR M.isBl = 1))
+                            OR EXISTS (SELECT 1 FROM Episode E JOIN Series S ON S.ID = E.SeriesId WHERE E.ID = N.ContentID AND (S.SeriesType IN ('BL', 'GL') OR S.isBl = 1 OR EXISTS (SELECT 1 FROM SeriesCategories SC WHERE SC.SeriesID = S.ID AND SC.CategoryID IN (52, 63))))
+                            OR EXISTS (SELECT 1 FROM Series S WHERE S.ID = N.ContentID AND (S.SeriesType IN ('BL', 'GL') OR S.isBl = 1 OR EXISTS (SELECT 1 FROM SeriesCategories SC WHERE SC.SeriesID = S.ID AND SC.CategoryID IN (52, 63))))
+                        ))
+                      )
                     ORDER BY N.CreatedAt DESC
                 """;
             return jdbcTemplate.query(sql, new NotificationRowMapper(), limit, userId.toString());
@@ -124,7 +135,8 @@ public class NotificationRepository {
             String sql = """
                     SELECT COUNT(*) FROM Notifications N
                     WHERE N.IsRead = 0
-                      AND (N.UserId = ? OR (N.UserId IS NULL AND (
+                      AND (N.UserId = ? OR N.UserId IS NULL)
+                      AND (
                         (N.Type = 'Movie' AND (EXISTS (SELECT 1 FROM MovieCategories MC WHERE MC.MovieID = N.ContentID AND MC.CategoryID IN (52, 63)) OR EXISTS (SELECT 1 FROM Movie M WHERE M.ID = N.ContentID AND (M.MovieType IN ('BL', 'GL') OR M.isBl = 1))))
                         OR
                         (N.Type = 'SoapOpera' AND (
@@ -132,7 +144,14 @@ public class NotificationRepository {
                             OR
                             EXISTS (SELECT 1 FROM Series S WHERE S.ID = N.ContentID AND (S.SeriesType IN ('BL', 'GL') OR S.isBl = 1 OR EXISTS (SELECT 1 FROM SeriesCategories SC WHERE SC.SeriesID = S.ID AND SC.CategoryID IN (52, 63))))
                         ))
-                      )))
+                        OR
+                        (N.Type = 'CommentReply' AND (
+                            EXISTS (SELECT 1 FROM MovieCategories MC WHERE MC.MovieID = N.ContentID AND MC.CategoryID IN (52, 63))
+                            OR EXISTS (SELECT 1 FROM Movie M WHERE M.ID = N.ContentID AND (M.MovieType IN ('BL', 'GL') OR M.isBl = 1))
+                            OR EXISTS (SELECT 1 FROM Episode E JOIN Series S ON S.ID = E.SeriesId WHERE E.ID = N.ContentID AND (S.SeriesType IN ('BL', 'GL') OR S.isBl = 1 OR EXISTS (SELECT 1 FROM SeriesCategories SC WHERE SC.SeriesID = S.ID AND SC.CategoryID IN (52, 63))))
+                            OR EXISTS (SELECT 1 FROM Series S WHERE S.ID = N.ContentID AND (S.SeriesType IN ('BL', 'GL') OR S.isBl = 1 OR EXISTS (SELECT 1 FROM SeriesCategories SC WHERE SC.SeriesID = S.ID AND SC.CategoryID IN (52, 63))))
+                        ))
+                      )
                 """;
             Integer count = jdbcTemplate.queryForObject(sql, Integer.class, userId.toString());
             return count != null ? count : 0;
