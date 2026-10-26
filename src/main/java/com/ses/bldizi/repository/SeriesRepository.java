@@ -293,23 +293,49 @@ public class SeriesRepository {
 
     public List<FeaturedTvItemDto> findRecentBlEpisodes(int offset, int limit) {
         String sql = """
-            WITH RankedEpisodes AS (
+            WITH OrderedFeed AS (
                 SELECT E.ID as EpisodeId, E.SeriesId as SeriesId, E.uploadDate, E.name, E.slug, E.SeasonNumber, E.EpisodeNumber,
                        S.name AS SeriesName, S.Language, S.Country, S.SeriesType, S.finalStatus,
                        S.uploadDate AS seriesUploadDate,
-                       ROW_NUMBER() OVER (PARTITION BY E.SeriesId ORDER BY E.uploadDate DESC, E.SeasonNumber DESC, E.EpisodeNumber DESC, E.ID ASC) as latest_rn,
-                       ROW_NUMBER() OVER (PARTITION BY E.SeriesId ORDER BY E.SeasonNumber ASC, E.EpisodeNumber ASC, E.uploadDate ASC, E.ID ASC) as first_rn
+                       ROW_NUMBER() OVER (PARTITION BY E.SeriesId ORDER BY E.SeasonNumber DESC, E.EpisodeNumber DESC, E.uploadDate DESC, E.ID ASC) as latest_in_series_rn,
+                       LAG(E.SeriesId) OVER (ORDER BY E.uploadDate DESC, E.SeasonNumber DESC, E.EpisodeNumber DESC, E.ID DESC) as prev_series,
+                       LAG(E.SeasonNumber) OVER (ORDER BY E.uploadDate DESC, E.SeasonNumber DESC, E.EpisodeNumber DESC, E.ID DESC) as prev_season
                 FROM Episode E
                 JOIN Series S ON E.SeriesId = S.ID
                 WHERE (S.SeriesType IN ('BL', 'GL') OR S.isBl = 1 OR EXISTS (SELECT 1 FROM SeriesCategories sc WHERE sc.SeriesID = S.ID AND sc.CategoryID IN (52, 63)))
                   AND (E.IsHidden = 0 OR E.IsHidden IS NULL)
                   AND (S.IsHidden = 0 OR S.IsHidden IS NULL)
+            ),
+            IslandFlags AS (
+                SELECT *,
+                       CASE 
+                           WHEN prev_series IS NULL THEN 1
+                           WHEN SeriesId != prev_series THEN 1
+                           WHEN SeasonNumber != prev_season THEN 1
+                           ELSE 0
+                       END as is_new_island
+                FROM OrderedFeed
+            ),
+            Islands AS (
+                SELECT *,
+                       SUM(is_new_island) OVER (ORDER BY uploadDate DESC, SeasonNumber DESC, EpisodeNumber DESC, EpisodeId DESC ROWS UNBOUNDED PRECEDING) as island_id
+                FROM IslandFlags
+            ),
+            RankedInIsland AS (
+                SELECT *,
+                       ROW_NUMBER() OVER (PARTITION BY island_id ORDER BY SeasonNumber ASC, EpisodeNumber ASC, uploadDate ASC, EpisodeId ASC) as rn_first,
+                       ROW_NUMBER() OVER (PARTITION BY island_id ORDER BY SeasonNumber DESC, EpisodeNumber DESC, uploadDate DESC, EpisodeId DESC) as rn_last
+                FROM Islands
+            ),
+            DistinctSelected AS (
+                SELECT EpisodeId, SeriesId, uploadDate, seriesUploadDate, name, slug, SeasonNumber, EpisodeNumber,
+                       SeriesName, Language, Country, SeriesType, finalStatus,
+                       CASE WHEN latest_in_series_rn = 1 THEN 1 ELSE 0 END AS isLatest
+                FROM RankedInIsland
+                WHERE rn_first = 1 OR rn_last = 1
             )
-            SELECT EpisodeId, SeriesId, uploadDate, seriesUploadDate, name, slug, SeasonNumber, EpisodeNumber, SeriesName, Language, Country, SeriesType, finalStatus,
-                   CASE WHEN latest_rn = 1 THEN 1 ELSE 0 END AS isLatest
-            FROM RankedEpisodes
-            WHERE latest_rn = 1 OR first_rn = 1
-            ORDER BY uploadDate DESC
+            SELECT * FROM DistinctSelected
+            ORDER BY uploadDate DESC, SeasonNumber DESC, EpisodeNumber DESC, SeriesName ASC, EpisodeId ASC
             OFFSET ? ROWS FETCH NEXT ? ROWS ONLY
         """;
 
@@ -356,18 +382,39 @@ public class SeriesRepository {
 
     public int countRecentBlEpisodes() {
         String sql = """
-            WITH RankedEpisodes AS (
-                SELECT E.ID as EpisodeId, E.SeriesId as SeriesId,
-                       ROW_NUMBER() OVER (PARTITION BY E.SeriesId ORDER BY E.uploadDate DESC, E.SeasonNumber DESC, E.EpisodeNumber DESC, E.ID ASC) as latest_rn,
-                       ROW_NUMBER() OVER (PARTITION BY E.SeriesId ORDER BY E.SeasonNumber ASC, E.EpisodeNumber ASC, E.uploadDate ASC, E.ID ASC) as first_rn
+            WITH OrderedFeed AS (
+                SELECT E.ID as EpisodeId, E.SeriesId as SeriesId, E.uploadDate, E.SeasonNumber, E.EpisodeNumber,
+                       LAG(E.SeriesId) OVER (ORDER BY E.uploadDate DESC, E.SeasonNumber DESC, E.EpisodeNumber DESC, E.ID DESC) as prev_series,
+                       LAG(E.SeasonNumber) OVER (ORDER BY E.uploadDate DESC, E.SeasonNumber DESC, E.EpisodeNumber DESC, E.ID DESC) as prev_season
                 FROM Episode E
                 JOIN Series S ON E.SeriesId = S.ID
                 WHERE (S.SeriesType IN ('BL', 'GL') OR S.isBl = 1 OR EXISTS (SELECT 1 FROM SeriesCategories sc WHERE sc.SeriesID = S.ID AND sc.CategoryID IN (52, 63)))
                   AND (E.IsHidden = 0 OR E.IsHidden IS NULL)
                   AND (S.IsHidden = 0 OR S.IsHidden IS NULL)
+            ),
+            IslandFlags AS (
+                SELECT *,
+                       CASE 
+                           WHEN prev_series IS NULL THEN 1
+                           WHEN SeriesId != prev_series THEN 1
+                           WHEN SeasonNumber != prev_season THEN 1
+                           ELSE 0
+                       END as is_new_island
+                FROM OrderedFeed
+            ),
+            Islands AS (
+                SELECT *,
+                       SUM(is_new_island) OVER (ORDER BY uploadDate DESC, SeasonNumber DESC, EpisodeNumber DESC, EpisodeId DESC ROWS UNBOUNDED PRECEDING) as island_id
+                FROM IslandFlags
+            ),
+            RankedInIsland AS (
+                SELECT *,
+                       ROW_NUMBER() OVER (PARTITION BY island_id ORDER BY SeasonNumber ASC, EpisodeNumber ASC, uploadDate ASC, EpisodeId ASC) as rn_first,
+                       ROW_NUMBER() OVER (PARTITION BY island_id ORDER BY SeasonNumber DESC, EpisodeNumber DESC, uploadDate DESC, EpisodeId DESC) as rn_last
+                FROM Islands
             )
-            SELECT COUNT(*) FROM RankedEpisodes
-            WHERE latest_rn = 1 OR first_rn = 1
+            SELECT COUNT(*) FROM RankedInIsland
+            WHERE rn_first = 1 OR rn_last = 1
         """;
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
         return count != null ? count : 0;
