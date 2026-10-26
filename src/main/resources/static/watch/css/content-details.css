@@ -325,11 +325,13 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: flex-start;
     cursor: pointer;
     user-select: none;
     transition: all 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
     box-sizing: border-box;
     width: 100%;
+    min-height: 160px;
 }
 
 .cast-member:hover {
@@ -372,6 +374,7 @@
     font-size: 13px;
     line-height: 1.3;
     width: 100%;
+    min-height: 33.8px;
     overflow: hidden;
     text-overflow: ellipsis;
     display: -webkit-box;
@@ -392,6 +395,7 @@
     line-height: 1.3;
     margin-top: 3px;
     width: 100%;
+    min-height: 15px;
     overflow: hidden;
     text-overflow: ellipsis;
     display: -webkit-box;
@@ -884,12 +888,18 @@
         height: 50px;
     }
 
+    .cast-member {
+        min-height: 135px;
+    }
+
     .cast-name {
         font-size: 11.5px;
+        min-height: 29.9px;
     }
 
     .cast-role {
         font-size: 10px;
+        min-height: 13px;
     }
 
     .actor-productions-grid {

@@ -295,6 +295,8 @@ async function loadContentDetails(id) {
                         });
                     }
 
+                    const cleanRole = cleanRoleName(actor.characterName, actor.name);
+
                     const avatar = document.createElement('div');
                     avatar.className = 'cast-avatar';
                     const img = document.createElement('img');
@@ -314,14 +316,17 @@ async function loadContentDetails(id) {
 
                     const role = document.createElement('div');
                     role.className = 'cast-role';
-                    role.textContent = actor.characterName || '';
-                    role.title = actor.characterName || '';
+                    if (cleanRole) {
+                        role.textContent = cleanRole;
+                        role.title = cleanRole;
+                    } else {
+                        // Empty role placeholder to preserve uniform card dimensions
+                        role.innerHTML = '&nbsp;';
+                    }
 
                     member.appendChild(avatar);
                     member.appendChild(name);
-                    if (actor.characterName) {
-                        member.appendChild(role);
-                    }
+                    member.appendChild(role);
                     castList.appendChild(member);
                 });
             } else {
@@ -341,6 +346,30 @@ async function loadContentDetails(id) {
         const titleEl = document.getElementById('contentTitle');
         if (titleEl) titleEl.innerText = "Detaylar yüklenemedi";
     }
+}
+
+// ---------------------------------------------------------------------------
+// Helper functions for character roles
+// ---------------------------------------------------------------------------
+function isUnknownOrSelfRole(role, actorName) {
+    if (!role) return true;
+    const r = String(role).trim().toLowerCase();
+    if (!r || r === 'self' || r === 'himself' || r === 'herself' || r === 'themself' || r === 'themselves' || r === 'kendisi' || r === 'unknown' || r === 'n/a' || r === '-' || r === 'none') {
+        return true;
+    }
+    if (actorName && r === String(actorName).trim().toLowerCase()) {
+        return true;
+    }
+    return false;
+}
+
+function cleanRoleName(role, actorName) {
+    if (!role) return '';
+    if (isUnknownOrSelfRole(role, actorName)) return '';
+    let cleaned = String(role).trim();
+    cleaned = cleaned.replace(/^self\s*[-–—/:]\s*/i, '').trim();
+    if (isUnknownOrSelfRole(cleaned, actorName)) return '';
+    return cleaned;
 }
 
 // ---------------------------------------------------------------------------
@@ -488,7 +517,7 @@ function renderActorModalContent(modalBody, actor, fallbackName, fallbackPhoto, 
                     const linkUrl = `/${p.slug || p.id}`;
                     const title = p.name || 'İsimsiz Yapım';
                     const year = p.releaseYear || '';
-                    const role = p.characterName ? `${p.characterName}` : '';
+                    const role = cleanRoleName(p.characterName, title);
                     const category = p.category || '';
                     const poster = p.posterUrl || `/media/image/${p.id}?v=2`;
 

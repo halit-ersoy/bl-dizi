@@ -1,6 +1,7 @@
 package com.ses.bldizi.repository;
 
 import com.ses.bldizi.model.ContentRequest;
+import com.ses.bldizi.service.TmdbService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -130,7 +131,7 @@ public class ContentRequestRepository {
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING', 1, ?, 1, 'bldizi')
                 """;
 
-        jdbcTemplate.update(insertRequestSql, requestId, userId, userNickname, title, contentType,
+        jdbcTemplate.update(insertRequestSql, requestId, userId, userNickname, TmdbService.extractLatinNameIfPresent(title), contentType,
                 posterUrl, releaseYear, tmdbId, tvmazeId, description, nowTs);
 
         String insertVoteSql = "INSERT INTO ContentRequestVote (RequestId, UserId, CreatedAt) VALUES (?, ?, ?)";
@@ -255,7 +256,7 @@ public class ContentRequestRepository {
             r.setId(UUID.fromString(rs.getString("Id")));
             r.setUserId(UUID.fromString(rs.getString("UserId")));
             r.setUserNickname(rs.getString("UserNickname"));
-            r.setTitle(rs.getString("Title"));
+            r.setTitle(TmdbService.extractLatinNameIfPresent(rs.getString("Title")));
             r.setContentType(rs.getString("ContentType"));
             r.setPosterUrl(rs.getString("PosterUrl"));
 
@@ -314,7 +315,7 @@ public class ContentRequestRepository {
                 r.setId(UUID.fromString(rs.getString("Id")));
                 r.setUserId(UUID.fromString(rs.getString("UserId")));
                 r.setUserNickname(rs.getString("UserNickname"));
-                r.setTitle(rs.getString("Title"));
+                r.setTitle(TmdbService.extractLatinNameIfPresent(rs.getString("Title")));
                 r.setContentType(rs.getString("ContentType"));
                 r.setPosterUrl(rs.getString("PosterUrl"));
 

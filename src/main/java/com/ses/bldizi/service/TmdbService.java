@@ -137,4 +137,27 @@ public class TmdbService {
         return s.trim();
     }
 
+    public static String cleanCharacterName(String character, String actorName) {
+        if (character == null || character.trim().isEmpty()) return null;
+        String trimmed = character.trim();
+        String lower = trimmed.toLowerCase();
+        if (lower.equals("self") || lower.equals("himself") || lower.equals("herself") ||
+            lower.equals("themself") || lower.equals("themselves") || lower.equals("kendisi") ||
+            lower.equals("unknown") || lower.equals("n/a") || lower.equals("-") ||
+            (actorName != null && lower.equals(actorName.trim().toLowerCase()))) {
+            return null;
+        }
+        if (lower.startsWith("self - ") || lower.startsWith("self-") || lower.startsWith("self / ") || lower.startsWith("self: ")) {
+            int dashIdx = trimmed.indexOf('-');
+            if (dashIdx < 0) dashIdx = trimmed.indexOf('/');
+            if (dashIdx < 0) dashIdx = trimmed.indexOf(':');
+            if (dashIdx >= 0 && dashIdx + 1 < trimmed.length()) {
+                String sub = trimmed.substring(dashIdx + 1).trim();
+                return cleanCharacterName(sub, actorName);
+            }
+            return null;
+        }
+        return trimmed;
+    }
+
 }
