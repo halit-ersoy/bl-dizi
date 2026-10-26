@@ -34,7 +34,7 @@ public class TmdbService {
                     .pathSegment(path.split("/"))
                     .queryParam("api_key", apiKey.trim())
                     .queryParam("query", query.trim())
-                    .queryParam("language", "tr-TR")
+                    .queryParam("language", "en-US")
                     .toUriString();
 
             Map<String, Object> response = restTemplate.getForObject(new URI(url), Map.class);
@@ -45,12 +45,12 @@ public class TmdbService {
                 }
             }
 
-            // Fallback to en-US if tr-TR returns empty
+            // Fallback to tr-TR if en-US returns empty
             String fallbackUrl = UriComponentsBuilder.fromHttpUrl(BASE_URL)
                     .pathSegment(path.split("/"))
                     .queryParam("api_key", apiKey.trim())
                     .queryParam("query", query.trim())
-                    .queryParam("language", "en-US")
+                    .queryParam("language", "tr-TR")
                     .toUriString();
 
             Map<String, Object> fallbackResp = restTemplate.getForObject(new URI(fallbackUrl), Map.class);
@@ -96,4 +96,45 @@ public class TmdbService {
             return null;
         return PROFILE_BASE_URL + profilePath;
     }
+
+    public static boolean containsNonLatin(String s) {
+        if (s == null || s.isEmpty()) return false;
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            Character.UnicodeBlock block = Character.UnicodeBlock.of(c);
+            if (block == Character.UnicodeBlock.HANGUL_SYLLABLES ||
+                block == Character.UnicodeBlock.HANGUL_JAMO ||
+                block == Character.UnicodeBlock.HANGUL_COMPATIBILITY_JAMO ||
+                block == Character.UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS ||
+                block == Character.UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS_EXTENSION_A ||
+                block == Character.UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS_EXTENSION_B ||
+                block == Character.UnicodeBlock.CJK_SYMBOLS_AND_PUNCTUATION ||
+                block == Character.UnicodeBlock.HIRAGANA ||
+                block == Character.UnicodeBlock.KATAKANA ||
+                block == Character.UnicodeBlock.THAI ||
+                block == Character.UnicodeBlock.ARABIC ||
+                block == Character.UnicodeBlock.CYRILLIC) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static String extractLatinNameIfPresent(String s) {
+        if (s == null || s.isBlank()) return s;
+        if (!containsNonLatin(s)) return s.trim();
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("\\(([A-Za-z0-9\\s.'’\\-]+)\\)").matcher(s);
+        if (m.find()) {
+            String extracted = m.group(1).trim();
+            if (!extracted.isEmpty() && !containsNonLatin(extracted)) {
+                return extracted;
+            }
+        }
+        String cleaned = s.replaceAll("\\([^)]*\\)", "").trim();
+        if (!cleaned.isEmpty() && !containsNonLatin(cleaned)) {
+            return cleaned;
+        }
+        return s.trim();
+    }
+
 }

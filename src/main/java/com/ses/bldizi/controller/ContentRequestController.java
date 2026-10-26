@@ -298,6 +298,13 @@ public class ContentRequestController {
                     if (title == null) continue;
 
                     String origTitle = (String) item.get("original_title");
+                    title = com.ses.bldizi.service.TmdbService.extractLatinNameIfPresent(title);
+                    if (com.ses.bldizi.service.TmdbService.containsNonLatin(title) && origTitle != null && !origTitle.isBlank() && !com.ses.bldizi.service.TmdbService.containsNonLatin(origTitle)) {
+                        title = com.ses.bldizi.service.TmdbService.extractLatinNameIfPresent(origTitle);
+                    }
+                    if (origTitle != null && com.ses.bldizi.service.TmdbService.containsNonLatin(origTitle)) {
+                        origTitle = title;
+                    }
                     Integer tmdbId = item.get("id") instanceof Number ? ((Number) item.get("id")).intValue() : null;
                     String posterPath = (String) item.get("poster_path");
                     String posterUrl = tmdbService.getPosterUrl(posterPath);
@@ -335,6 +342,13 @@ public class ContentRequestController {
                     if (title == null) continue;
 
                     String origTitle = (String) item.get("original_name");
+                    title = com.ses.bldizi.service.TmdbService.extractLatinNameIfPresent(title);
+                    if (com.ses.bldizi.service.TmdbService.containsNonLatin(title) && origTitle != null && !origTitle.isBlank() && !com.ses.bldizi.service.TmdbService.containsNonLatin(origTitle)) {
+                        title = com.ses.bldizi.service.TmdbService.extractLatinNameIfPresent(origTitle);
+                    }
+                    if (origTitle != null && com.ses.bldizi.service.TmdbService.containsNonLatin(origTitle)) {
+                        origTitle = title;
+                    }
                     Integer tmdbId = item.get("id") instanceof Number ? ((Number) item.get("id")).intValue() : null;
                     String posterPath = (String) item.get("poster_path");
                     String posterUrl = tmdbService.getPosterUrl(posterPath);
@@ -372,6 +386,7 @@ public class ContentRequestController {
                         Map<String, Object> show = (Map<String, Object>) wrapper.get("show");
                         String title = (String) show.get("name");
                         if (title == null) continue;
+                        title = com.ses.bldizi.service.TmdbService.extractLatinNameIfPresent(title);
 
                         Integer tvmazeId = show.get("id") instanceof Number ? ((Number) show.get("id")).intValue() : null;
                         String posterUrl = null;
