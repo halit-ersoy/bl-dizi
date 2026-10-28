@@ -1,0 +1,2051 @@
+﻿/* ==========================================================================
+   StreamLive Styles - Who Dat Idols
+   BL Dizi Cinema & Signature Pink (#ff4081) Theme
+   Ambient Backlighting, Watch-screen Aligned Glassmorphism & Mobile Optimized
+   Zero Horizontal Overflow & Fully Adaptive Responsive Scaling
+   ========================================================================== */
+
+:root {
+    --sl-bg-dark: #0b0c10;
+    --sl-bg-card: rgba(22, 22, 28, 0.85);
+    --sl-bg-elevated: rgba(28, 28, 36, 0.9);
+    --sl-border: rgba(255, 255, 255, 0.08);
+    --sl-border-focus: rgba(255, 64, 129, 0.5);
+    --sl-primary: var(--primary-color, #ff4081);
+    --sl-primary-hover: var(--primary-hover, #ff80ab);
+    --sl-primary-rgb: var(--primary-rgb, 255, 64, 129);
+    --sl-live: #ff2d55;
+    --sl-live-green: #ff4081;
+    --sl-text: #ffffff;
+    --sl-text-muted: #a0a0a0;
+    --sl-header-height: 64px;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden !important;
+    box-sizing: border-box;
+    overscroll-behavior-x: none;
+}
+
+body {
+    background-color: var(--sl-bg-dark);
+    background-image: radial-gradient(circle at 50% 0%, #171822 0%, #0b0c10 75%);
+    color: var(--sl-text);
+    font-family: 'Montserrat', sans-serif;
+    min-height: 100vh;
+    width: 100%;
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden !important;
+    position: relative;
+    box-sizing: border-box;
+    overscroll-behavior-x: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* ==========================================================================
+   Ambient Background Glow Accents (Strictly Contained within Viewport)
+   ========================================================================== */
+.ambient-glow-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+}
+
+.ambient-glow {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(100px);
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.15;
+}
+
+.glow-1 {
+    width: min(520px, 80vw);
+    height: min(520px, 80vw);
+    background: radial-gradient(circle, var(--sl-primary) 0%, transparent 70%);
+    top: -80px;
+    left: -60px;
+}
+
+.glow-2 {
+    width: min(580px, 80vw);
+    height: min(580px, 80vw);
+    background: radial-gradient(circle, #2979ff 0%, transparent 70%);
+    bottom: -60px;
+    right: -60px;
+}
+
+/* ==========================================================================
+   Header (WhoDatIdols Match)
+   ========================================================================== */
+.streamlive-header {
+    height: var(--sl-header-height);
+    background: rgba(14, 14, 18, 0.88);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--sl-border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-shrink: 0;
+}
+
+.logo-link {
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    transition: transform 0.2s ease;
+}
+
+.logo-link:hover {
+    transform: scale(1.05);
+}
+
+.logo {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--sl-primary);
+    font-family: 'Montserrat', sans-serif;
+    letter-spacing: 0.5px;
+}
+
+.streamlive-brand-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(30, 215, 96, 0.1);
+    border: 1px solid rgba(30, 215, 96, 0.35);
+    padding: 5px 12px;
+    border-radius: 20px;
+}
+
+.brand-text {
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: #ffffff;
+    text-transform: uppercase;
+}
+
+.live-pulse-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--sl-live);
+    box-shadow: 0 0 10px var(--sl-live);
+    animation: livePulse 1.6s infinite ease-in-out;
+}
+
+@keyframes livePulse {
+    0% { transform: scale(0.9); opacity: 0.8; box-shadow: 0 0 0 0 rgba(255, 45, 85, 0.7); }
+    70% { transform: scale(1.1); opacity: 1; box-shadow: 0 0 0 8px rgba(255, 45, 85, 0); }
+    100% { transform: scale(0.9); opacity: 0.8; box-shadow: 0 0 0 0 rgba(255, 45, 85, 0); }
+}
+
+.header-center {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    overflow: hidden;
+    padding: 0 16px;
+    min-width: 0;
+}
+
+.stream-title-header {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--sl-text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 450px;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-shrink: 0;
+}
+
+.btn-support-header {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: linear-gradient(135deg, rgba(255, 75, 110, 0.2), rgba(255, 45, 85, 0.35));
+    border: 1px solid rgba(255, 75, 110, 0.5);
+    border-radius: 20px;
+    color: #ffffff !important;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    transition: all 0.25s ease;
+    box-shadow: 0 2px 10px rgba(255, 45, 85, 0.2);
+    white-space: nowrap !important;
+    flex-shrink: 0;
+}
+
+.btn-support-header i {
+    color: #ff3366;
+    font-size: 0.95rem;
+    transition: transform 0.25s ease;
+}
+
+.btn-support-header:hover {
+    background: linear-gradient(135deg, rgba(255, 75, 110, 0.35), rgba(255, 45, 85, 0.55));
+    border-color: rgba(255, 75, 110, 0.8);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(255, 45, 85, 0.4);
+    color: #ffffff !important;
+}
+
+.btn-support-header:hover i {
+    transform: scale(1.2);
+}
+
+/* ==========================================================================
+   Main Layout Grid (Responsive Cinema Layout)
+   ========================================================================== */
+.streamlive-main {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) clamp(280px, 26vw, 380px);
+    grid-template-rows: minmax(0, 1fr);
+    height: calc(100vh - var(--sl-header-height));
+    max-height: calc(100vh - var(--sl-header-height));
+    min-height: 0;
+    gap: clamp(14px, 1.8vw, 22px);
+    padding: clamp(14px, 1.8vw, 20px) clamp(14px, 2vw, 28px);
+    max-width: 1750px;
+    margin: 0 auto;
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.stream-view-column {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    box-sizing: border-box;
+}
+
+.stream-view-column,
+.stream-view-column * {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+}
+
+.stream-view-column::-webkit-scrollbar,
+.stream-view-column *::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+}
+
+/* ==========================================================================
+   Player Area & Ambient Backlighting
+   ========================================================================== */
+.player-wrapper-outer {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    border-radius: 16px;
+    box-sizing: border-box;
+}
+
+/* Atmospheric Ambient Glow behind player (Safely Contained) */
+.player-ambient-glow {
+    position: absolute;
+    inset: -6px;
+    max-width: 100%;
+    background: radial-gradient(ellipse at center, rgba(30, 215, 96, 0.22) 0%, rgba(30, 215, 96, 0.08) 50%, transparent 70%);
+    filter: blur(22px);
+    border-radius: 20px;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.8;
+}
+
+.player-wrapper {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 100%;
+    background: linear-gradient(135deg, rgba(22, 22, 28, 0.92) 0%, rgba(14, 14, 18, 0.98) 100%);
+    border-radius: 16px;
+    overflow: hidden;
+    aspect-ratio: 16 / 9;
+    min-height: 220px;
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.7), 0 0 35px rgba(30, 215, 96, 0.16);
+    border: 1px solid var(--sl-border);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    transition: box-shadow 0.4s ease, border-color 0.4s ease;
+}
+
+.player-wrapper:hover {
+    border-color: rgba(30, 215, 96, 0.35);
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.8), 0 0 45px rgba(30, 215, 96, 0.26);
+}
+
+.state-screen {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(10px, 2.5vw, 24px) clamp(10px, 2vw, 20px);
+    text-align: center;
+    z-index: 10;
+    overflow-y: auto;
+    overflow-x: hidden;
+    box-sizing: border-box;
+}
+
+.loader-spinner {
+    width: 44px;
+    height: 44px;
+    border: 4px solid rgba(30, 215, 96, 0.2);
+    border-top-color: var(--sl-primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-bottom: 14px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.state-text {
+    font-size: 0.92rem;
+    color: var(--sl-text-muted);
+}
+
+/* No stream screen */
+.no-stream-card {
+    max-width: 500px;
+    width: 100%;
+    background: rgba(22, 22, 28, 0.95);
+    border: 1px solid var(--sl-border);
+    padding: clamp(16px, 3vw, 28px) clamp(14px, 2.5vw, 24px);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-sizing: border-box;
+}
+
+.state-icon {
+    color: var(--sl-primary);
+    margin-bottom: 14px;
+}
+
+.no-stream-card h2 {
+    font-size: clamp(1.1rem, 2.2vw, 1.3rem);
+    margin-bottom: 10px;
+}
+
+.no-stream-card p {
+    color: var(--sl-text-muted);
+    font-size: 0.88rem;
+    line-height: 1.5;
+    margin-bottom: 20px;
+    word-break: break-word;
+}
+
+.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 22px;
+    background: var(--sl-primary);
+    color: #000000;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.88rem;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-primary:hover {
+    background: var(--sl-primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(30, 215, 96, 0.35);
+}
+
+/* Upcoming Countdown Screen */
+.upcoming-backdrop {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    filter: blur(28px) brightness(0.25);
+    z-index: 1;
+}
+
+.upcoming-content {
+    position: relative;
+    z-index: 2;
+    max-width: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 6px;
+    box-sizing: border-box;
+}
+
+.upcoming-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    background: rgba(30, 215, 96, 0.15);
+    border: 1px solid rgba(30, 215, 96, 0.4);
+    border-radius: 20px;
+    font-size: clamp(0.68rem, 1.3vw, 0.75rem);
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    margin-bottom: 8px;
+    color: var(--sl-primary);
+}
+
+.upcoming-title {
+    font-size: clamp(1.1rem, 2.5vw, 1.6rem);
+    font-weight: 800;
+    margin-bottom: 4px;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+    text-align: center;
+    max-width: 100%;
+    word-break: break-word;
+    line-height: 1.25;
+}
+
+.upcoming-time-label {
+    font-size: clamp(0.74rem, 1.5vw, 0.9rem);
+    color: var(--sl-text-muted);
+    margin-bottom: clamp(10px, 1.8vw, 16px);
+}
+
+/* Countdown Grid - Fluid Scaling */
+.countdown-timer-grid {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(4px, 1.2vw, 10px);
+    margin-bottom: clamp(10px, 1.8vw, 16px);
+    max-width: 100%;
+    flex-wrap: nowrap;
+}
+
+.countdown-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: clamp(44px, 9.5vw, 68px);
+    padding: clamp(6px, 1.2vw, 10px) clamp(4px, 0.8vw, 8px);
+    background: rgba(22, 22, 28, 0.85);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    box-sizing: border-box;
+}
+
+.countdown-val {
+    font-size: clamp(1.1rem, 2.6vw, 1.8rem);
+    font-weight: 800;
+    color: #ffffff;
+    font-family: 'Montserrat', sans-serif;
+    line-height: 1.1;
+}
+
+.countdown-lbl {
+    font-size: clamp(0.48rem, 0.95vw, 0.62rem);
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    color: var(--sl-text-muted);
+    margin-top: 3px;
+}
+
+.countdown-sep {
+    font-size: clamp(0.85rem, 2vw, 1.5rem);
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.upcoming-subtext {
+    font-size: clamp(0.7rem, 1.4vw, 0.82rem);
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.4;
+    max-width: 480px;
+    width: 100%;
+    text-align: center;
+    word-break: break-word;
+}
+
+/* Ended Screen */
+.ended-card {
+    max-width: 480px;
+    width: 100%;
+    background: rgba(22, 22, 28, 0.95);
+    border: 1px solid var(--sl-border);
+    padding: clamp(16px, 3vw, 24px) clamp(14px, 2.5vw, 20px);
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    box-sizing: border-box;
+}
+
+.ended-icon-wrapper {
+    width: clamp(40px, 6vw, 52px);
+    height: clamp(40px, 6vw, 52px);
+    border-radius: 50%;
+    background: rgba(30, 215, 96, 0.15);
+    border: 1px solid rgba(30, 215, 96, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--sl-primary);
+    font-size: clamp(1.1rem, 2vw, 1.4rem);
+    margin-bottom: 12px;
+}
+
+.ended-card h2 {
+    font-size: clamp(1.1rem, 2vw, 1.35rem);
+    margin-bottom: 8px;
+    font-weight: 700;
+}
+
+.ended-card p {
+    color: var(--sl-text-muted);
+    font-size: clamp(0.76rem, 1.4vw, 0.86rem);
+    line-height: 1.45;
+    margin-bottom: 16px;
+    text-align: center;
+    word-break: break-word;
+}
+
+.ended-chat-notice {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(30, 215, 96, 0.1);
+    border: 1px solid rgba(30, 215, 96, 0.3);
+    color: var(--sl-primary);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: clamp(0.7rem, 1.2vw, 0.78rem);
+    font-weight: 600;
+    margin-bottom: 18px;
+    text-align: center;
+}
+
+.ended-actions {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+/* ==========================================================================
+   Video Player & Controls (HLS DVR)
+   ========================================================================== */
+.video-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    background-color: #000;
+    cursor: pointer;
+    overflow: hidden;
+    aspect-ratio: 16 / 9;
+}
+
+.video-container video {
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+/* Big Play Overlay */
+.player-big-play {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    background: var(--sl-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    color: #000000;
+    box-shadow: 0 0 24px rgba(30, 215, 96, 0.5);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 5;
+}
+
+.video-container.paused .player-big-play {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.player-big-play:hover {
+    transform: translate(-50%, -50%) scale(1.1);
+    background: var(--sl-primary-hover);
+}
+
+/* Controls Bar (Watch Screen Glassmorphic Style) */
+.player-controls {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-width: 100%;
+    background: linear-gradient(to top, rgba(10, 10, 14, 0.95) 0%, rgba(14, 14, 18, 0.75) 65%, transparent 100%);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: clamp(10px, 1.8vw, 18px) clamp(8px, 1.6vw, 16px) clamp(6px, 1vw, 12px) clamp(8px, 1.6vw, 16px);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 6;
+    pointer-events: auto;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.video-container:hover .player-controls,
+.video-container.paused .player-controls {
+    opacity: 1;
+}
+
+/* Scrubber / Progress Row with Left Current Time & Right Total Duration */
+.progress-time-row {
+    display: flex;
+    align-items: center;
+    gap: clamp(6px, 1.4vw, 12px);
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.time-display-left,
+.time-display-right {
+    font-family: 'Roboto', monospace;
+    font-size: clamp(0.68rem, 1.5vw, 0.8rem);
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.85);
+    min-width: 36px;
+    letter-spacing: 0.5px;
+    user-select: none;
+    flex-shrink: 0;
+}
+
+.time-display-left {
+    text-align: left;
+    color: var(--sl-primary);
+}
+
+.time-display-right {
+    text-align: right;
+    color: rgba(255, 255, 255, 0.65);
+}
+
+.progress-time-row .progress-container {
+    flex: 1;
+    position: relative;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    touch-action: none;
+    min-width: 0;
+}
+
+.progress-track {
+    position: relative;
+    width: 100%;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    transition: height 0.15s ease;
+}
+
+.progress-container:hover .progress-track {
+    height: 8px;
+}
+
+.progress-buffered {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 0%;
+    background: rgba(255, 255, 255, 0.35);
+    border-radius: 4px;
+}
+
+.progress-played {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 0%;
+    background: linear-gradient(90deg, var(--sl-primary), var(--sl-primary-hover));
+    border-radius: 4px;
+    box-shadow: 0 0 10px rgba(30, 215, 96, 0.4);
+}
+
+.progress-thumb {
+    position: absolute;
+    top: 50%;
+    left: 0%;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #ffffff;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.8);
+    transform: translate(-50%, -50%) scale(0);
+    transition: transform 0.15s ease;
+}
+
+.progress-container:hover .progress-thumb {
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.scrub-tooltip {
+    position: absolute;
+    bottom: 24px;
+    left: 0%;
+    transform: translateX(-50%);
+    background: rgba(14, 14, 18, 0.95);
+    border: 1px solid var(--sl-border);
+    color: #ffffff;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-family: 'Roboto', monospace;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.progress-container:hover .scrub-tooltip {
+    opacity: 1;
+}
+
+/* Controls Row */
+.controls-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    gap: 6px;
+}
+
+.controls-left {
+    display: flex;
+    align-items: center;
+    gap: clamp(4px, 1vw, 10px);
+    min-width: 0;
+    flex-shrink: 1;
+}
+
+.controls-right {
+    display: flex;
+    align-items: center;
+    gap: clamp(4px, 1vw, 10px);
+    flex-shrink: 0;
+}
+
+.ctrl-btn {
+    background: none;
+    border: none;
+    color: #ffffff;
+    font-size: clamp(0.8rem, 1.6vw, 1rem);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: clamp(28px, 4.8vw, 36px);
+    height: clamp(28px, 4.8vw, 36px);
+    border-radius: 8px;
+    flex-shrink: 0;
+    transition: background-color 0.2s, transform 0.15s, color 0.2s;
+}
+
+.ctrl-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: var(--sl-primary);
+    transform: scale(1.05);
+}
+
+/* Go To Live Button - Elegant Pill Badge */
+.btn-go-live {
+    width: auto !important;
+    min-width: fit-content;
+    height: 28px;
+    padding: 0 10px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.btn-go-live .live-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background-color: var(--sl-text-muted);
+    flex-shrink: 0;
+}
+
+.btn-go-live .live-text {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.btn-go-live.is-live {
+    background: rgba(255, 45, 85, 0.18);
+    border-color: rgba(255, 45, 85, 0.5);
+    color: #ffffff;
+}
+
+.btn-go-live.is-live .live-dot {
+    background-color: var(--sl-live);
+    box-shadow: 0 0 8px var(--sl-live);
+    animation: livePulseDot 1.6s infinite ease-in-out;
+}
+
+@keyframes livePulseDot {
+    0% { transform: scale(0.9); opacity: 0.8; box-shadow: 0 0 0 0 rgba(255, 45, 85, 0.7); }
+    70% { transform: scale(1.15); opacity: 1; box-shadow: 0 0 0 6px rgba(255, 45, 85, 0); }
+    100% { transform: scale(0.9); opacity: 0.8; box-shadow: 0 0 0 0 rgba(255, 45, 85, 0); }
+}
+
+.btn-go-live.needs-sync {
+    background: rgba(255, 193, 7, 0.18);
+    border-color: rgba(255, 193, 7, 0.55);
+    color: #ffc107;
+}
+
+.btn-go-live.needs-sync .live-dot {
+    background-color: #ffc107;
+    box-shadow: 0 0 6px #ffc107;
+}
+
+/* Volume Slider */
+.volume-control {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.volume-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 65px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    outline: none;
+    cursor: pointer;
+    transition: height 0.2s;
+}
+
+.volume-slider:hover {
+    height: 6px;
+}
+
+.volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--sl-primary);
+    box-shadow: 0 0 8px rgba(30, 215, 96, 0.6);
+    cursor: pointer;
+}
+
+/* ==========================================================================
+   Content Details Card
+   ========================================================================== */
+.stream-info-card {
+    background: linear-gradient(135deg, rgba(22, 22, 28, 0.85) 0%, rgba(14, 14, 18, 0.95) 100%);
+    border: 1px solid var(--sl-border);
+    border-radius: 16px;
+    padding: clamp(12px, 2.5vw, 20px) clamp(14px, 3vw, 24px);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+    transition: border-color 0.3s ease;
+}
+
+.stream-info-card:hover {
+    border-color: rgba(30, 215, 96, 0.2);
+}
+
+.stream-info-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    max-width: 100%;
+}
+
+.stream-info-left {
+    flex: 1;
+    min-width: 0;
+}
+
+.stream-info-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.stream-tags {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 0;
+}
+
+.stream-tag {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 12px;
+    letter-spacing: 0.5px;
+}
+
+.tag-type {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.tag-status {
+    background: rgba(30, 215, 96, 0.15);
+    color: var(--sl-primary);
+    border: 1px solid rgba(30, 215, 96, 0.35);
+}
+
+.stream-title {
+    font-size: clamp(1.05rem, 2.4vw, 1.35rem);
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: -0.3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.btn-toggle-description {
+    display: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--sl-text-muted);
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    flex-shrink: 0;
+}
+
+.btn-toggle-description:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+}
+
+.stream-description {
+    font-size: 0.88rem;
+    color: var(--sl-text-muted);
+    line-height: 1.6;
+    margin-top: 12px;
+    word-break: break-word;
+    transition: all 0.3s ease;
+}
+
+/* ==========================================================================
+   Live Chat Column (Watch Screen Match)
+   ========================================================================== */
+.stream-chat-column {
+    background: linear-gradient(135deg, rgba(22, 22, 28, 0.88) 0%, rgba(14, 14, 18, 0.96) 100%);
+    border: 1px solid var(--sl-border);
+    border-radius: 16px;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    max-height: 100%;
+    min-height: 0;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    transition: border-color 0.3s ease;
+}
+
+.stream-chat-column:hover {
+    border-color: rgba(30, 215, 96, 0.2);
+}
+
+.chat-header {
+    height: 50px;
+    padding: 0 18px;
+    border-bottom: 1px solid var(--sl-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(255, 255, 255, 0.02);
+    flex-shrink: 0;
+}
+
+.chat-header-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.chat-header-title i {
+    color: var(--sl-primary);
+}
+
+.chat-header-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    color: var(--sl-text-muted);
+}
+
+.chat-header-status .live-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: var(--sl-live-green);
+    box-shadow: 0 0 6px var(--sl-live-green);
+}
+
+.chat-header-status .live-dot.dot-waiting {
+    background-color: #ffc107;
+    box-shadow: 0 0 6px #ffc107;
+}
+
+/* Message List */
+.chat-messages {
+    flex: 1 1 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    scroll-behavior: smooth;
+    min-height: 0;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(30, 215, 96, 0.4) rgba(255, 255, 255, 0.04);
+}
+
+.chat-messages::-webkit-scrollbar {
+    width: 5px;
+}
+
+.chat-messages::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+    background: rgba(30, 215, 96, 0.35);
+    border-radius: 6px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb:hover {
+    background: var(--sl-primary);
+}
+
+.chat-system-message {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--sl-border);
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    color: var(--sl-text-muted);
+    line-height: 1.4;
+    text-align: center;
+}
+
+.chat-system-message i {
+    color: var(--sl-primary);
+    margin-right: 4px;
+}
+
+.chat-msg-item {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 6px 10px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.02);
+    transition: background 0.15s;
+    animation: fadeInMsg 0.25s ease-out;
+    word-break: break-word;
+}
+
+.chat-msg-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.chat-msg-item.my-message {
+    background: rgba(30, 215, 96, 0.08);
+    border-left: 3px solid var(--sl-primary);
+}
+
+@keyframes fadeInMsg {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.chat-msg-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.chat-msg-user {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #e0e0e0;
+    display: inline-flex;
+    align-items: center;
+}
+
+.chat-msg-user .verified-badge {
+    color: #1DA1F2;
+    margin-left: 4px;
+    font-size: 0.78rem;
+    display: inline-block;
+}
+
+.chat-msg-time {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.35);
+    font-family: 'Roboto', monospace;
+}
+
+.chat-msg-text {
+    font-size: 0.84rem;
+    color: var(--sl-text);
+    line-height: 1.45;
+}
+
+/* Chat Input Area */
+.chat-input-wrapper {
+    padding: 12px 16px;
+    border-top: 1px solid var(--sl-border);
+    background: rgba(14, 14, 18, 0.9);
+    flex-shrink: 0;
+}
+
+.chat-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.chat-input-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.chat-textarea {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid var(--sl-border);
+    border-radius: 10px;
+    padding: 9px 12px;
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 0.84rem;
+    resize: none;
+    outline: none;
+    transition: border-color 0.2s;
+    line-height: 1.3;
+}
+
+.chat-textarea:focus {
+    border-color: var(--sl-border-focus);
+}
+
+.btn-send-chat {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: var(--sl-primary);
+    border: none;
+    color: #000000;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.btn-send-chat:hover:not(:disabled) {
+    background: var(--sl-primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(30, 215, 96, 0.3);
+}
+
+.btn-send-chat:disabled {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: var(--sl-primary, #ff4081);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.btn-send-chat .cooldown-counter {
+    font-family: inherit;
+    font-weight: 800;
+    font-size: 0.95rem;
+    line-height: 1;
+    color: var(--sl-primary, #ff4081);
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+.chat-input-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    font-size: 0.72rem;
+    color: var(--sl-text-muted);
+}
+
+.chat-char-counter {
+    margin-left: auto;
+    font-family: 'Roboto', monospace;
+}
+
+/* Chat Locked Notice */
+.chat-locked-notice {
+    text-align: center;
+    padding: 12px 10px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px dashed rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    font-size: 0.8rem;
+    color: var(--sl-text-muted);
+    line-height: 1.4;
+}
+
+.chat-locked-notice i {
+    color: #ffc107;
+    font-size: 1.1rem;
+    margin-bottom: 6px;
+    display: block;
+}
+
+/* Guest Notice */
+.chat-guest-notice {
+    text-align: center;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px dashed var(--sl-border);
+    border-radius: 10px;
+    font-size: 0.8rem;
+    color: var(--sl-text-muted);
+}
+
+.chat-guest-notice i {
+    color: var(--sl-primary);
+    font-size: 1.05rem;
+    margin-bottom: 4px;
+    display: block;
+}
+
+.link-auth {
+    color: var(--sl-primary);
+    text-decoration: underline;
+    font-weight: 600;
+}
+
+/* ==========================================================================
+   MOBILE & RESPONSIVE ARCHITECTURE (Site-Theme Aligned Dark Cinema)
+   - Chat Extends to the Bottom of Screen (Flex: 1)
+   - Compact Elegant Series Description (2-line clamped preview)
+   - Clean Single-line Chat Input ("Mesajınızı yazın" only)
+   - Strict Zero Horizontal Overflow
+   ========================================================================== */
+@media (max-width: 992px) {
+    body {
+        height: 100vh;
+        height: 100dvh;
+        max-height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden !important;
+    }
+
+    .streamlive-main {
+        flex: 1 1 0;
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - var(--sl-header-height, 56px));
+        height: calc(100dvh - var(--sl-header-height, 56px));
+        max-height: calc(100dvh - var(--sl-header-height, 56px));
+        min-height: 0 !important;
+        padding: 10px 14px 0 14px;
+        gap: 10px;
+        width: 100%;
+        max-width: 100%;
+        overflow: hidden !important;
+        box-sizing: border-box;
+    }
+
+    .stream-view-column {
+        flex-shrink: 0;
+        width: 100%;
+        max-width: 100%;
+        gap: 8px;
+        height: auto;
+        overflow: hidden !important;
+        overflow-y: hidden !important;
+        overflow-x: hidden !important;
+        touch-action: none;
+        overscroll-behavior: none;
+    }
+
+    /* Live Chat Stretches to Bottom */
+    .stream-chat-column {
+        flex: 1 1 0 !important;
+        width: 100%;
+        max-width: 100%;
+        height: 100% !important;
+        max-height: 100% !important;
+        min-height: 0 !important;
+        margin-bottom: 0;
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+        border-bottom: none;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden !important;
+        background: linear-gradient(180deg, rgba(22, 22, 28, 0.94) 0%, rgba(14, 14, 18, 0.98) 100%);
+    }
+
+    .chat-messages {
+        flex: 1 1 0 !important;
+        min-height: 0 !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-y: contain;
+    }
+
+    .chat-input-wrapper {
+        flex-shrink: 0;
+        padding-bottom: max(10px, env(safe-area-inset-bottom, 10px));
+        background: rgba(14, 14, 18, 0.98);
+    }
+
+    .volume-control {
+        display: inline-flex !important;
+        align-items: center;
+        gap: 6px;
+    }
+}
+
+@media (max-width: 768px) {
+    /* Header: Compact with brand green accent */
+    .streamlive-header {
+        height: 52px;
+        padding: 0 12px;
+        background: rgba(12, 12, 16, 0.96);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+    }
+
+    .logo {
+        font-size: 1.35rem;
+    }
+
+    .streamlive-brand-badge {
+        padding: 3px 8px;
+        gap: 6px;
+    }
+
+    .brand-text {
+        font-size: 0.72rem;
+    }
+
+    .stream-title-header {
+        display: none;
+    }
+
+    .btn-support-header {
+        padding: 6px 12px;
+        font-size: 0.74rem;
+        gap: 6px;
+        white-space: nowrap !important;
+        flex-shrink: 0;
+    }
+
+    .btn-support-header i {
+        font-size: 0.85rem;
+    }
+
+    /* Main Container: No bottom padding, chat fills to edge */
+    .streamlive-main {
+        padding: 8px 10px 0 10px;
+        gap: 8px;
+        height: calc(100vh - 52px);
+        height: calc(100dvh - 52px);
+        max-height: calc(100dvh - 52px);
+        min-height: 0 !important;
+    }
+
+    .stream-view-column {
+        gap: 8px;
+        overflow: hidden !important;
+        overflow-y: hidden !important;
+        overflow-x: hidden !important;
+        touch-action: none;
+        overscroll-behavior: none;
+    }
+
+    .player-wrapper-outer {
+        border-radius: 14px;
+        overflow: hidden !important;
+    }
+
+    .player-wrapper {
+        border-radius: 14px;
+        aspect-ratio: 16 / 9;
+        width: 100%;
+        height: auto;
+        min-height: 0;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65);
+        overflow: hidden !important;
+        touch-action: manipulation;
+        overscroll-behavior: none;
+    }
+
+    /* State Screens Mobile Fit: Perfectly contained inside 16:9 box without vertical/horizontal overflow */
+    .state-screen {
+        padding: 6px 10px;
+        box-sizing: border-box;
+        overflow: hidden !important;
+        overflow-y: hidden !important;
+        overflow-x: hidden !important;
+        touch-action: none;
+        overscroll-behavior: none;
+    }
+
+    /* Ended Screen */
+    .ended-card {
+        padding: 6px 10px;
+        max-width: 95%;
+        width: 100%;
+        border-radius: 12px;
+        background: rgba(22, 22, 28, 0.95);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+    }
+
+    .ended-icon-wrapper {
+        width: 26px;
+        height: 26px;
+        font-size: 0.8rem;
+        margin-bottom: 3px;
+    }
+
+    .ended-card h2 {
+        font-size: 0.88rem;
+        margin-bottom: 2px;
+        font-weight: 700;
+        line-height: 1.2;
+    }
+
+    .ended-card p {
+        font-size: 0.65rem;
+        line-height: 1.25;
+        margin-bottom: 4px;
+        max-width: 280px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .ended-chat-notice {
+        padding: 2px 7px;
+        font-size: 0.58rem;
+        margin-bottom: 5px;
+        gap: 4px;
+    }
+
+    .ended-actions .btn-primary {
+        padding: 4px 10px;
+        font-size: 0.68rem;
+        border-radius: 7px;
+        gap: 4px;
+    }
+
+    /* Upcoming Countdown Screen */
+    .upcoming-content {
+        padding: 4px 8px;
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .upcoming-badge {
+        padding: 2px 8px;
+        font-size: 0.62rem;
+        margin-bottom: 4px;
+        gap: 4px;
+    }
+
+    .upcoming-title {
+        font-size: 0.95rem;
+        margin-bottom: 2px;
+        line-height: 1.2;
+    }
+
+    .upcoming-time-label {
+        font-size: 0.68rem;
+        margin-bottom: 6px;
+    }
+
+    .countdown-timer-grid {
+        gap: 4px;
+        margin-bottom: 6px;
+    }
+
+    .countdown-box {
+        min-width: 38px;
+        padding: 4px 2px;
+        border-radius: 7px;
+    }
+
+    .countdown-val {
+        font-size: 1.05rem;
+    }
+
+    .countdown-lbl {
+        font-size: 0.48rem;
+        margin-top: 1px;
+    }
+
+    .countdown-sep {
+        font-size: 0.85rem;
+    }
+
+    .upcoming-subtext {
+        font-size: 0.62rem;
+        line-height: 1.25;
+        max-width: 320px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    /* No Stream Screen */
+    .no-stream-card {
+        padding: 6px 12px;
+        max-width: 90%;
+        max-height: 94%;
+        overflow: hidden;
+    }
+
+    .no-stream-card .state-icon {
+        font-size: 1.4rem;
+        margin-bottom: 3px;
+    }
+
+    .no-stream-card h2 {
+        font-size: 0.86rem;
+        margin-bottom: 2px;
+        line-height: 1.2;
+    }
+
+    .no-stream-card p {
+        font-size: 0.64rem;
+        line-height: 1.25;
+        margin-bottom: 6px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .no-stream-card .btn-primary {
+        padding: 3px 10px;
+        font-size: 0.68rem;
+        border-radius: 6px;
+    }
+
+    /* Series / Content Info Card: Title on Left, Tag & Toggle on Right */
+    .stream-info-card {
+        padding: 8px 12px;
+        border-radius: 12px;
+        background: rgba(22, 22, 28, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+    }
+
+    .stream-info-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .stream-info-left {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .stream-title {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #ffffff;
+        letter-spacing: -0.2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin: 0;
+    }
+
+    .stream-info-right {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-shrink: 0;
+    }
+
+    .stream-tags {
+        margin: 0;
+        gap: 4px;
+        display: flex;
+        align-items: center;
+    }
+
+    .stream-tag {
+        font-size: 0.64rem;
+        padding: 2px 7px;
+        border-radius: 6px;
+        font-weight: 700;
+        letter-spacing: 0.3px;
+        white-space: nowrap;
+    }
+
+    .tag-status {
+        background: rgba(30, 215, 96, 0.15);
+        border-color: rgba(30, 215, 96, 0.4);
+    }
+
+    .btn-toggle-description {
+        display: flex;
+        width: 24px;
+        height: 24px;
+        font-size: 0.68rem;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+    }
+
+    /* Series Description: Hidden by default, opens fully when tapped */
+    .stream-info-card:not(.expanded) .stream-description {
+        display: none !important;
+    }
+
+    .stream-info-card.expanded .stream-description {
+        display: block !important;
+        font-size: 0.78rem;
+        color: rgba(255, 255, 255, 0.72);
+        line-height: 1.45;
+        padding-top: 8px;
+        margin-top: 8px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        max-height: 180px;
+        overflow-y: auto;
+        word-break: break-word;
+        animation: fadeInDesc 0.2s ease-out;
+    }
+
+    @keyframes fadeInDesc {
+        from { opacity: 0; transform: translateY(-4px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .stream-info-card.expanded .btn-toggle-description i {
+        transform: rotate(180deg);
+    }
+
+    /* Chat Column: Stretches right to the bottom edge */
+    .stream-chat-column {
+        flex: 1 1 0 !important;
+        height: 100% !important;
+        max-height: 100% !important;
+        min-height: 0 !important;
+        border-radius: 14px 14px 0 0;
+        border-bottom: none;
+        margin-bottom: 0;
+        overflow: hidden !important;
+        background: linear-gradient(180deg, rgba(20, 20, 26, 0.96) 0%, rgba(13, 13, 17, 0.98) 100%);
+    }
+
+    .chat-header {
+        height: 40px;
+        padding: 0 14px;
+        background: rgba(255, 255, 255, 0.02);
+    }
+
+    .chat-header-title {
+        font-size: 0.85rem;
+    }
+
+    .chat-header-status {
+        font-size: 0.72rem;
+    }
+
+    .chat-messages {
+        padding: 8px 12px;
+        gap: 8px;
+    }
+
+    .chat-msg-item {
+        padding: 6px 10px;
+        border-radius: 9px;
+    }
+
+    .chat-msg-user {
+        font-size: 0.78rem;
+    }
+
+    .chat-msg-time {
+        font-size: 0.64rem;
+    }
+
+    .chat-msg-text {
+        font-size: 0.82rem;
+    }
+
+    /* Chat Input Area: Clean, sleek, only "Mesajınızı yazın" */
+    .chat-input-wrapper {
+        padding: 8px 10px;
+        padding-bottom: max(8px, env(safe-area-inset-bottom, 8px));
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(14, 14, 18, 0.98);
+    }
+
+    .chat-form {
+        gap: 0;
+    }
+
+    .chat-input-row {
+        gap: 8px;
+    }
+
+    .chat-textarea {
+        font-size: 16px !important;
+        padding: 8px 12px;
+        border-radius: 9px;
+        min-height: 40px;
+        height: 40px;
+        line-height: 1.35;
+        background: rgba(0, 0, 0, 0.45);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .chat-textarea::placeholder {
+        color: rgba(255, 255, 255, 0.45);
+        font-size: 0.84rem;
+    }
+
+    .btn-send-chat {
+        width: 40px;
+        height: 40px;
+        border-radius: 9px;
+    }
+
+    .chat-input-footer {
+        display: none !important;
+    }
+
+    /* Player controls responsive adjustments */
+    .volume-control {
+        display: inline-flex !important;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .volume-slider {
+        width: clamp(38px, 11vw, 52px);
+        height: 3px;
+    }
+
+    .volume-slider::-webkit-slider-thumb {
+        width: 10px;
+        height: 10px;
+    }
+
+    .btn-go-live {
+        height: 24px;
+        padding: 0 8px;
+        gap: 5px;
+    }
+
+    .btn-go-live .live-text {
+        font-size: 0.68rem;
+    }
+
+    .btn-go-live .live-dot {
+        width: 6px;
+        height: 6px;
+    }
+}
+
+@media (max-width: 480px) {
+    .streamlive-header {
+        padding: 0 10px;
+    }
+
+    .logo {
+        font-size: 1.25rem;
+    }
+
+    .streamlive-brand-badge {
+        padding: 2px 6px;
+        gap: 4px;
+    }
+
+    .brand-text {
+        font-size: 0.68rem;
+    }
+
+    .btn-support-header {
+        padding: 5px 10px;
+        font-size: 0.7rem;
+    }
+
+    .streamlive-main {
+        padding: 6px 8px 0 8px;
+        gap: 6px;
+    }
+
+    .stream-view-column {
+        overflow: hidden !important;
+        overflow-y: hidden !important;
+        overflow-x: hidden !important;
+        touch-action: none;
+        overscroll-behavior: none;
+    }
+
+    .player-wrapper {
+        border-radius: 12px;
+        overflow: hidden !important;
+    }
+
+    .state-screen {
+        overflow: hidden !important;
+        overflow-y: hidden !important;
+        overflow-x: hidden !important;
+    }
+
+    .player-wrapper {
+        border-radius: 12px;
+    }
+
+    /* Upcoming Card inside player */
+    .countdown-timer-grid {
+        gap: 5px;
+    }
+
+    .countdown-box {
+        min-width: 42px;
+        padding: 6px 4px;
+        border-radius: 8px;
+    }
+
+    .countdown-val {
+        font-size: 1.15rem;
+    }
+
+    .countdown-lbl {
+        font-size: 0.52rem;
+    }
+
+    .countdown-sep {
+        font-size: 0.95rem;
+    }
+
+    .btn-go-live {
+        height: 24px;
+        padding: 0 7px;
+        gap: 4px;
+    }
+
+    .btn-go-live .live-text {
+        font-size: 0.65rem;
+    }
+
+    .btn-go-live .live-dot {
+        width: 5px;
+        height: 5px;
+    }
+
+    .ctrl-btn:not(.btn-go-live) {
+        width: 28px;
+        height: 28px;
+        font-size: 0.8rem;
+    }
+
+    .volume-control {
+        display: inline-flex !important;
+        align-items: center;
+        gap: 3px;
+    }
+
+    .volume-slider {
+        width: clamp(34px, 10vw, 44px);
+        height: 3px;
+    }
+
+    .volume-slider::-webkit-slider-thumb {
+        width: 10px;
+        height: 10px;
+    }
+
+    .time-display-left,
+    .time-display-right {
+        font-size: 0.65rem;
+        min-width: 32px;
+    }
+
+    .stream-chat-column {
+        min-height: 0 !important;
+        max-height: 100% !important;
+        height: 100% !important;
+        border-radius: 12px 12px 0 0;
+    }
+}

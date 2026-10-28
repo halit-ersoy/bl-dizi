@@ -1,0 +1,278 @@
+﻿<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>StreamLive - Canlı Sinema | BL Dizi</title>
+    <meta name="description" content="BL Dizi StreamLive - Eş zamanlı canlı sinema ve dizi izleme deneyimi.">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Base & Variables CSS -->
+    <link rel="stylesheet" href="/elements/variables.css">
+    <link rel="stylesheet" href="/elements/base.css">
+    <link rel="stylesheet" href="/elements/scrool.css">
+
+    <!-- StreamLive CSS (WhoDatIdols Dark Green & Red-Live Cinema Theme) -->
+    <link rel="stylesheet" href="/streamlive/css/streamlive.css">
+
+    <!-- Third-party Scripts -->
+    <script src="/elements/theme.js"></script>
+    <script src="/homepage/js/devtools-protection.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+</head>
+<body>
+    <!-- Ambient Background Glow Accents (Who Dat Idols Atmospheric Mesh) -->
+    <div class="ambient-glow-wrapper">
+        <div class="ambient-glow glow-1"></div>
+        <div class="ambient-glow glow-2"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="streamlive-header">
+        <div class="header-left">
+            <a href="/" class="logo-link" aria-label="Ana sayfa">
+                <div class="logo">BL DİZİ</div>
+            </a>
+            <div class="streamlive-brand-badge" id="headerBrandBadge">
+                <span class="live-pulse-dot" id="headerLiveDot" style="display: none;"></span>
+                <span class="brand-text" id="headerViewerCount">StreamLive</span>
+            </div>
+        </div>
+
+        <div class="header-center">
+            <div class="stream-title-header" id="headerStreamTitle">Canlı Sinema</div>
+        </div>
+
+        <div class="header-right">
+            <a href="https://directyp.org/4/688d8511de9a8d901b89e7335133c222" target="_blank" rel="noopener noreferrer" class="btn-support-header">
+                <i class="fas fa-heart"></i>
+                <span>Bize Destek Olun</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <main class="streamlive-main">
+        <!-- Video & Info Column -->
+        <section class="stream-view-column">
+            <!-- Player Wrapper with Ambient Glow -->
+            <div class="player-wrapper-outer">
+                <div class="player-ambient-glow" id="playerAmbientGlow"></div>
+                <div class="player-wrapper" id="playerWrapper">
+                    <!-- State: Loading / Checking -->
+                    <div class="state-screen active" id="loadingScreen">
+                        <div class="loader-spinner"></div>
+                        <p class="state-text">Yayın bilgileri yükleniyor...</p>
+                    </div>
+
+                    <!-- State: No Active Stream -->
+                    <div class="state-screen" id="noStreamScreen" style="display: none;">
+                        <div class="no-stream-card">
+                            <i class="fas fa-satellite-dish fa-3x state-icon"></i>
+                            <h2>Aktif Canlı Yayın Bulunmuyor</h2>
+                            <p>Şu anda planlanmış bir StreamLive yayını yok. Yeni yayın duyuruları için ana sayfayı ve bildirimleri takip edin.</p>
+                            <a href="/" class="btn-primary"><i class="fas fa-arrow-left"></i> Ana Sayfaya Dön</a>
+                        </div>
+                    </div>
+
+                    <!-- State: Upcoming Countdown Screen -->
+                    <div class="state-screen" id="upcomingScreen" style="display: none;">
+                        <div class="upcoming-backdrop" id="upcomingBackdrop"></div>
+                        <div class="upcoming-content">
+                            <div class="upcoming-badge">
+                                <i class="fas fa-clock"></i> YAKINDA BAŞLAYACAK
+                            </div>
+                            <h1 class="upcoming-title" id="upcomingTitle">İçerik Başlığı</h1>
+                            <p class="upcoming-time-label" id="upcomingTimeLabel">Başlangıç: --:--</p>
+
+                            <!-- Countdown Timer Grid -->
+                            <div class="countdown-timer-grid">
+                                <div class="countdown-box">
+                                    <span class="countdown-val" id="cdDays">00</span>
+                                    <span class="countdown-lbl">GÜN</span>
+                                </div>
+                                <span class="countdown-sep">:</span>
+                                <div class="countdown-box">
+                                    <span class="countdown-val" id="cdHours">00</span>
+                                    <span class="countdown-lbl">SAAT</span>
+                                </div>
+                                <span class="countdown-sep">:</span>
+                                <div class="countdown-box">
+                                    <span class="countdown-val" id="cdMinutes">00</span>
+                                    <span class="countdown-lbl">DAKİKA</span>
+                                </div>
+                                <span class="countdown-sep">:</span>
+                                <div class="countdown-box">
+                                    <span class="countdown-val" id="cdSeconds">00</span>
+                                    <span class="countdown-lbl">SANİYE</span>
+                                </div>
+                            </div>
+
+                            <p class="upcoming-subtext">Yayın saati geldiğinde canlı oynatıcı otomatik olarak açılacaktır. Canlı sohbet ise yayından 10 dakika önce açılır.</p>
+                        </div>
+                    </div>
+
+                    <!-- State: Ended Screen -->
+                    <div class="state-screen" id="endedScreen" style="display: none;">
+                        <div class="ended-card">
+                            <div class="ended-icon-wrapper">
+                                <i class="fas fa-flag-checkered"></i>
+                            </div>
+                            <h2>Yayın Sona Erdi</h2>
+                            <p id="endedDesc">Bugünkü canlı sinema yayınımız sona ermiştir. Katılan tüm izleyicilerimize teşekkür ederiz!</p>
+                            
+                            <div class="ended-actions">
+                                <a href="/" class="btn-primary"><i class="fas fa-home"></i> Ana Sayfaya Dön</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actual Video Player (HLS with DVR Live Controls) -->
+                    <div class="video-container" id="videoContainer" style="display: none;">
+                        <video id="streamVideo" playsinline preload="auto"></video>
+
+                        <!-- Big Play Button Overlay -->
+                        <div class="player-big-play" id="bigPlayBtn">
+                            <i class="fas fa-play"></i>
+                        </div>
+
+                        <!-- Custom Player Controls Bar (Watch Screen Style) -->
+                        <div class="player-controls" id="playerControls">
+                            <!-- Progress Scrubber Row (Current Time / Elapsed Seconds on Left - Bar - Total Duration on Right) -->
+                            <div class="progress-time-row">
+                                <span class="time-display-left" id="currentTime">00:00</span>
+                                <div class="progress-container" id="progressContainer">
+                                    <div class="progress-track" id="progressTrack">
+                                        <div class="progress-buffered" id="progressBuffered"></div>
+                                        <div class="progress-played" id="progressPlayed"></div>
+                                        <div class="progress-thumb" id="progressThumb"></div>
+                                    </div>
+                                    <div class="scrub-tooltip" id="scrubTooltip">00:00</div>
+                                </div>
+                                <span class="time-display-right" id="totalDurationTime">00:00</span>
+                            </div>
+
+                            <div class="controls-row">
+                                <div class="controls-left">
+                                    <!-- Play/Pause -->
+                                    <button class="ctrl-btn" id="btnPlayPause" title="Oynat / Duraklat" aria-label="Oynat">
+                                        <i class="fas fa-play"></i>
+                                    </button>
+
+                                    <!-- 10s Backward -->
+                                    <button class="ctrl-btn" id="btnBackward" title="10s Geri" aria-label="10 saniye geri">
+                                        <i class="fas fa-backward"></i>
+                                    </button>
+
+                                    <!-- 10s Forward -->
+                                    <button class="ctrl-btn" id="btnForward" title="10s İleri" aria-label="10 saniye ileri">
+                                        <i class="fas fa-forward"></i>
+                                    </button>
+
+                                    <!-- Go To Live Button (Timeshift Jump) -->
+                                    <button class="btn-go-live is-live" id="btnGoLive" title="Canlı Yayına Geç" aria-label="Canlı yayına geç">
+                                        <span class="live-dot"></span>
+                                        <span class="live-text">CANLI</span>
+                                    </button>
+                                </div>
+
+                                <div class="controls-right">
+                                    <!-- Volume Control (Mute/Unmute & Slider) -->
+                                    <div class="volume-control">
+                                        <button class="ctrl-btn" id="btnVolume" title="Ses" aria-label="Ses">
+                                            <i class="fas fa-volume-up"></i>
+                                        </button>
+                                        <input type="range" class="volume-slider" id="volumeSlider" min="0" max="1" step="0.05" value="1" aria-label="Ses seviyesi">
+                                    </div>
+
+                                    <!-- Fullscreen -->
+                                    <button class="ctrl-btn" id="btnFullscreen" title="Tam Ekran" aria-label="Tam ekran">
+                                        <i class="fas fa-expand"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Details Card (Collapsible on Mobile, Full on Desktop) -->
+            <div class="stream-info-card" id="streamInfoCard" style="display: none;">
+                <div class="stream-info-header">
+                    <div class="stream-info-left">
+                        <h2 class="stream-title" id="infoTitle">Yayın Başlığı</h2>
+                    </div>
+                    <div class="stream-info-right">
+                        <div class="stream-tags">
+                            <span class="stream-tag tag-type" id="infoContentType">FİLM</span>
+                            <span class="stream-tag tag-status" id="infoStatusTag" style="display: none;">CANLI YAYIN</span>
+                        </div>
+                        <button class="btn-toggle-description" id="btnToggleDesc" aria-label="Detayları göster veya gizle" title="Detayları Göster / Gizle">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="stream-description" id="infoDescription">
+                    Yayın açıklaması burada yer alacaktır.
+                </div>
+            </div>
+        </section>
+
+        <!-- Live Chat Column -->
+        <aside class="stream-chat-column" id="chatColumn">
+            <div class="chat-header">
+                <div class="chat-header-title">
+                    <i class="fas fa-comments"></i>
+                    <span>Canlı Sohbet</span>
+                </div>
+                <div class="chat-header-status">
+                    <span class="live-dot" id="chatLiveDot"></span>
+                    <span id="chatStatusText">Bağlanıyor...</span>
+                </div>
+            </div>
+
+            <!-- Chat Messages Container -->
+            <div class="chat-messages" id="chatMessages"></div>
+
+            <!-- Chat Input Area -->
+            <div class="chat-input-wrapper">
+                <!-- Logged-in Form (Active when chat is open) -->
+                <form id="chatForm" class="chat-form" style="display: none;">
+                    <div class="chat-input-row">
+                        <textarea id="chatInput" class="chat-textarea" placeholder="Mesajınızı yazın" maxlength="200" rows="1"></textarea>
+                        <button type="submit" id="btnSendChat" class="btn-send-chat" title="Gönder">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                    <div class="chat-input-footer" style="display: none;">
+                        <span class="chat-char-counter"><span id="charCount">0</span>/200</span>
+                    </div>
+                </form>
+
+                <!-- Chat Locked Notice (When stream has not reached 10-minute pre-broadcast window or has closed) -->
+                <div id="chatLockedNotice" class="chat-locked-notice" style="display: none;">
+                    <i class="fas fa-clock"></i>
+                    <p id="chatLockedText">Canlı sohbet yayının başlamasına 10 dakika kala açılacaktır.</p>
+                </div>
+
+                <!-- Guest Notice (Unauthenticated when chat is open) -->
+                <div id="chatGuestNotice" class="chat-guest-notice" style="display: none;">
+                    <i class="fas fa-lock"></i>
+                    <p>Sohbette mesaj yazabilmek için lütfen <a href="/login" class="link-auth">Giriş Yapın</a> veya <a href="/register" class="link-auth">Kayıt Olun</a>.</p>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <!-- StreamLive Application Script -->
+    <script src="/streamlive/js/streamlive.js"></script>
+</body>
+</html>

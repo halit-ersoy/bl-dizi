@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="tr" data-theme="pink">
 
 <head>
@@ -97,7 +97,25 @@
                 <div class="search-results" id="search-results"></div>
             </div>
 
-            <!-- AI Vibe Search Button -->
+                        <!-- StreamLive Header Button & Schedule Announcement Balloon -->
+            <div class="streamlive-header-wrapper" id="streamlive-header-wrapper">
+                <a href="/streamlive" class="streamlive-header-btn" id="streamlive-header-btn" title="StreamLive - Canlı Sinema" aria-label="StreamLive">
+                    <span class="streamlive-pulse-dot"></span>
+                    <i class="fas fa-satellite-dish streamlive-icon"></i>
+                    <span class="streamlive-btn-text">StreamLive</span>
+                </a>
+
+                <!-- StreamLive Schedule Balloon -->
+                <div class="streamlive-schedule-balloon" id="streamlive-schedule-balloon" style="display: none;">
+                    <a href="/streamlive" class="balloon-link" id="balloonLink" aria-label="Yayın Detayları">
+                        <span class="balloon-live-dot" id="balloonLiveDot" style="display: none;"></span>
+                        <i class="fas fa-bullhorn balloon-icon" id="balloonIcon"></i>
+                        <span class="balloon-text" id="balloonText">...</span>
+                    </a>
+                    <button type="button" class="balloon-close" id="balloonClose" title="Kapat" aria-label="Kapat">&times;</button>
+                </div>
+            </div>
+<!-- AI Vibe Search Button -->
             <button class="ai-vibe-btn" id="ai-vibe-btn" title="✨ Yapay Zeka ile Moduna Göre Film Bul" aria-label="AI Vibe Arama">
                 <i class="fas fa-wand-magic-sparkles"></i>
                 <span class="ai-btn-text">AI Vibe</span>

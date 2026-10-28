@@ -1,4 +1,4 @@
-/* ------------------------- *
+﻿/* ------------------------- *
  *   RESPONSIVE  CSS (Media Queries)
  * ------------------------- */
 
@@ -101,6 +101,7 @@
     }
 
     .search-button,
+    .streamlive-header-btn,
     .ai-vibe-btn,
     .update-notes-btn,
     .messages-btn,
@@ -120,7 +121,9 @@
         transition: all 0.2s ease !important;
     }
 
-    .ai-btn-text {
+    .ai-btn-text,
+    .streamlive-btn-text,
+    .streamlive-pulse-dot {
         display: none !important;
     }
 

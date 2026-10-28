@@ -1,3 +1,4 @@
+﻿import { initStreamLiveScheduleBadge } from "./streamLiveScheduleBadge.js?v=1";
 import { initHeaderScroll } from './headerScroll.js?v=2';
 import { initHeroCarousel } from './heroCarousel.js?v=4';
 import { initContentCarousels } from './contentCarousel.js?v=2';
@@ -46,6 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initMessagingManager();
     initAnnouncement();
     initAiSearch();
+    initStreamLiveScheduleBadge();
 });
 
 function initAnnouncement() {

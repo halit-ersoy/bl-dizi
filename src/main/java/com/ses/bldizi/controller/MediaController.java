@@ -22,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/media")
+@SuppressWarnings({"SqlResolve", "SqlNoDataSourceInspection", "SqlRedundantOrderingDirection"})
 public class MediaController {
 
     private static final Logger logger = LoggerFactory.getLogger(MediaController.class);
@@ -70,13 +71,18 @@ public class MediaController {
             }
 
             // 2. Try finding in soap-operas
-            if (imagePath == null) {
+            if (imagePath == null && soapOperasPath != null) {
                 imagePath = findExistingImage(Paths.get(soapOperasPath), id);
             }
 
             // 3. Try finding in movies
-            if (imagePath == null) {
+            if (imagePath == null && moviesPath != null) {
                 imagePath = findExistingImage(Paths.get(moviesPath), id);
+            }
+
+            // 3.1 Try finding in streamlive
+            if (imagePath == null && moviesPath != null) {
+                imagePath = findExistingImage(Paths.get(moviesPath).resolve("streamlive"), id);
             }
 
             // 4. Fallback: if it's a Hero ID, lookup ReferenceId
@@ -89,11 +95,33 @@ public class MediaController {
                         if (trailersPath != null) {
                             imagePath = findExistingImage(Paths.get(trailersPath), refId);
                         }
-                        if (imagePath == null) {
+                        if (imagePath == null && soapOperasPath != null) {
                             imagePath = findExistingImage(Paths.get(soapOperasPath), refId);
                         }
-                        if (imagePath == null) {
+                        if (imagePath == null && moviesPath != null) {
                             imagePath = findExistingImage(Paths.get(moviesPath), refId);
+                        }
+                    }
+                } catch (Exception ignored) {
+                }
+            }
+
+            // 4.1 Fallback: if it's a StreamLive ID, lookup ContentId
+            if (imagePath == null) {
+                try {
+                    //noinspection SqlResolve,SqlNoDataSourceInspection
+                    String contentIdStr = jdbcTemplate.queryForObject(
+                            "SELECT ContentId FROM StreamLive WHERE ID = ?", String.class, id.toString());
+                    if (contentIdStr != null) {
+                        UUID cId = UUID.fromString(contentIdStr);
+                        if (moviesPath != null) {
+                            imagePath = findExistingImage(Paths.get(moviesPath).resolve("streamlive"), cId);
+                            if (imagePath == null) {
+                                imagePath = findExistingImage(Paths.get(moviesPath), cId);
+                            }
+                        }
+                        if (imagePath == null && soapOperasPath != null) {
+                            imagePath = findExistingImage(Paths.get(soapOperasPath), cId);
                         }
                     }
                 } catch (Exception ignored) {
@@ -131,7 +159,7 @@ public class MediaController {
             }
 
             // 7. Try static images
-            if (imagePath == null) {
+            if (imagePath == null && staticImagesPath != null) {
                 imagePath = findExistingImage(Paths.get(staticImagesPath), id);
             }
 
@@ -211,22 +239,30 @@ public class MediaController {
             String category = getContentTypeFromDatabase(id);
             Path basePath = getBasePathForCategory(category);
 
-            if (basePath == null) {
-                logger.warn("Unknown category '{}' for video id: {}", category, id);
-                return ResponseEntity.notFound().build();
+            Path videoPath = null;
+            if (basePath != null) {
+                videoPath = basePath.resolve(id + ".mp4").normalize().toAbsolutePath();
             }
 
-            Path videoPath = basePath.resolve(id + ".mp4").normalize().toAbsolutePath();
-
-            if (!Files.exists(videoPath) && "soap_opera".equalsIgnoreCase(category)) {
+            if ((videoPath == null || !Files.exists(videoPath)) && "soap_opera".equalsIgnoreCase(category)) {
                 UUID episodeId = findFirstEpisodeIdForSeries(id);
-                if (episodeId != null) {
+                if (episodeId != null && basePath != null) {
                     id = episodeId;
                     videoPath = basePath.resolve(id + ".mp4").normalize().toAbsolutePath();
                 }
             }
 
-            if (!Files.exists(videoPath)) {
+            if (videoPath == null || !Files.exists(videoPath)) {
+                // Fallback: check streamlive
+                if (moviesPath != null) {
+                    Path slVideo = Paths.get(moviesPath).resolve("streamlive").resolve(id + ".mp4").normalize().toAbsolutePath();
+                    if (Files.exists(slVideo)) {
+                        videoPath = slVideo;
+                    }
+                }
+            }
+
+            if (videoPath == null || !Files.exists(videoPath)) {
                 return ResponseEntity.notFound().build();
             }
 
@@ -266,13 +302,41 @@ public class MediaController {
         try {
             String category = getContentTypeFromDatabase(id);
             Path basePath = getBasePathForCategory(category);
-            if (basePath == null) return ResponseEntity.notFound().build();
-
-            Path hlsPath = basePath.resolve("hls").resolve(id.toString()).resolve("playlist.m3u8");
-            if (!Files.exists(hlsPath)) {
-                hlsPath = basePath.resolve("hls").resolve(id.toString()).resolve("master.m3u8");
+            Path hlsPath = null;
+            if (basePath != null) {
+                hlsPath = basePath.resolve("hls").resolve(id.toString()).resolve("playlist.m3u8");
+                if (!Files.exists(hlsPath)) {
+                    hlsPath = basePath.resolve("hls").resolve(id.toString()).resolve("master.m3u8");
+                }
             }
-            if (!Files.exists(hlsPath)) {
+
+            // Fallback checks across known folders (streamlive, movies, soap-operas)
+            if (hlsPath == null || !Files.exists(hlsPath)) {
+                if (moviesPath != null) {
+                    Path slHls = Paths.get(moviesPath).resolve("streamlive").resolve("hls").resolve(id.toString()).resolve("playlist.m3u8");
+                    if (Files.exists(slHls)) {
+                        hlsPath = slHls;
+                    }
+                }
+            }
+            if (hlsPath == null || !Files.exists(hlsPath)) {
+                if (moviesPath != null) {
+                    Path mHls = Paths.get(moviesPath).resolve("hls").resolve(id.toString()).resolve("playlist.m3u8");
+                    if (Files.exists(mHls)) {
+                        hlsPath = mHls;
+                    }
+                }
+            }
+            if (hlsPath == null || !Files.exists(hlsPath)) {
+                if (soapOperasPath != null) {
+                    Path sHls = Paths.get(soapOperasPath).resolve("hls").resolve(id.toString()).resolve("playlist.m3u8");
+                    if (Files.exists(sHls)) {
+                        hlsPath = sHls;
+                    }
+                }
+            }
+
+            if (hlsPath == null || !Files.exists(hlsPath)) {
                 return ResponseEntity.notFound().build();
             }
 
@@ -292,10 +356,38 @@ public class MediaController {
         try {
             String category = getContentTypeFromDatabase(id);
             Path basePath = getBasePathForCategory(category);
-            if (basePath == null) return ResponseEntity.notFound().build();
+            Path segmentPath = null;
+            if (basePath != null) {
+                segmentPath = basePath.resolve("hls").resolve(id.toString()).resolve(segment + ".ts");
+            }
 
-            Path segmentPath = basePath.resolve("hls").resolve(id.toString()).resolve(segment + ".ts");
-            if (!Files.exists(segmentPath)) {
+            // Fallback checks across known folders (streamlive, movies, soap-operas)
+            if (segmentPath == null || !Files.exists(segmentPath)) {
+                if (moviesPath != null) {
+                    Path slSeg = Paths.get(moviesPath).resolve("streamlive").resolve("hls").resolve(id.toString()).resolve(segment + ".ts");
+                    if (Files.exists(slSeg)) {
+                        segmentPath = slSeg;
+                    }
+                }
+            }
+            if (segmentPath == null || !Files.exists(segmentPath)) {
+                if (moviesPath != null) {
+                    Path mSeg = Paths.get(moviesPath).resolve("hls").resolve(id.toString()).resolve(segment + ".ts");
+                    if (Files.exists(mSeg)) {
+                        segmentPath = mSeg;
+                    }
+                }
+            }
+            if (segmentPath == null || !Files.exists(segmentPath)) {
+                if (soapOperasPath != null) {
+                    Path sSeg = Paths.get(soapOperasPath).resolve("hls").resolve(id.toString()).resolve(segment + ".ts");
+                    if (Files.exists(sSeg)) {
+                        segmentPath = sSeg;
+                    }
+                }
+            }
+
+            if (segmentPath == null || !Files.exists(segmentPath)) {
                 return ResponseEntity.notFound().build();
             }
 
@@ -315,6 +407,13 @@ public class MediaController {
             case "soap_opera", "soap-opera", "soapopera", "series", "episode" -> Paths.get(soapOperasPath).toAbsolutePath().normalize();
             case "trailer", "trailers", "hero" -> Paths.get(trailersPath).toAbsolutePath().normalize();
             case "ad" -> Paths.get(adsPath).toAbsolutePath().normalize();
+            case "streamlive" -> {
+                Path p = Paths.get(moviesPath).resolve("streamlive").toAbsolutePath().normalize();
+                if (!Files.exists(p)) {
+                    try { Files.createDirectories(p); } catch (Exception ignored) {}
+                }
+                yield p;
+            }
             default -> null;
         };
     }
@@ -342,13 +441,19 @@ public class MediaController {
             Integer countAd = jdbcTemplate.queryForObject(
                     "SELECT COUNT(*) FROM Ad WHERE ID = ?", Integer.class, id.toString());
             if (countAd != null && countAd > 0) return "ad";
+
+            //noinspection SqlResolve,SqlNoDataSourceInspection
+            Integer countStreamLive = jdbcTemplate.queryForObject(
+                    "SELECT COUNT(*) FROM StreamLive WHERE ID = ? OR ContentId = ?", Integer.class,
+                    id.toString(), id.toString());
+            if (countStreamLive != null && countStreamLive > 0) return "streamlive";
         } catch (Exception ignored) {}
         return "unknown";
     }
 
     private UUID findFirstEpisodeIdForSeries(UUID seriesId) {
         try {
-            String sql = "SELECT TOP 1 ID FROM Episode WHERE SeriesId = ? ORDER BY SeasonNumber ASC, EpisodeNumber ASC";
+            String sql = "SELECT TOP 1 ID FROM Episode WHERE SeriesId = ? ORDER BY SeasonNumber, EpisodeNumber";
             String idStr = jdbcTemplate.queryForObject(sql, String.class, seriesId.toString());
             return idStr != null ? UUID.fromString(idStr) : null;
         } catch (Exception e) {
@@ -380,7 +485,7 @@ public class MediaController {
     }
 
     private Path findExistingImage(Path basePath, UUID id) {
-        if (!Files.exists(basePath)) return null;
+        if (basePath == null || !Files.exists(basePath)) return null;
 
         String idStrLower = id.toString().toLowerCase();
         String idStrUpper = id.toString().toUpperCase();

@@ -1,4 +1,4 @@
-(function () {
+﻿(function () {
     'use strict';
 
     // Anti-Inspect Header
@@ -109,9 +109,49 @@
 
         disableContextMenu() {
             window.addEventListener('contextmenu', (e) => {
+                // Her zaman yerel tarayıcı sağ tık menüsünü (İncele / Kaynağı Görüntüle vb.) engelle
                 e.preventDefault();
+
+                try {
+                    const el = e.target;
+                    if (!el || !el.closest) return false;
+
+                    // 1. Standart <a> bağlantısı
+                    const anchor = el.closest('a[href]');
+                    if (anchor) {
+                        const rawHref = anchor.getAttribute('href');
+                        if (rawHref && rawHref.trim() !== '#' && !rawHref.trim().toLowerCase().startsWith('javascript:')) {
+                            window.open(anchor.href, '_blank');
+                            return false;
+                        }
+                    }
+
+                    // 2. data-href veya data-url içeren öğeler
+                    const dataEl = el.closest('[data-href], [data-url]');
+                    if (dataEl) {
+                        const url = dataEl.getAttribute('data-href') || dataEl.getAttribute('data-url');
+                        if (url && url.trim() !== '#' && !url.trim().toLowerCase().startsWith('javascript:')) {
+                            window.open(url, '_blank');
+                            return false;
+                        }
+                    }
+
+                    // 3. onclick ile sayfa yönlendirmesi yapan buton veya kartlar
+                    const onclickEl = el.closest('[onclick*="location"], [onclick*="href"]');
+                    if (onclickEl) {
+                        const onclickStr = onclickEl.getAttribute('onclick') || '';
+                        const match = onclickStr.match(/(?:window\.)?location(?:\.href)?\s*=\s*['"]([^'"]+)['"]/i);
+                        if (match && match[1]) {
+                            window.open(match[1], '_blank');
+                            return false;
+                        }
+                    }
+                } catch (err) {
+                    console.error("Contextmenu link open error:", err);
+                }
+
                 return false;
-            });
+            }, true);
         },
 
     };
