@@ -124,6 +124,45 @@ export function initVideoControls(videoId) {
         document.addEventListener('mozfullscreenchange', updateFullscreenIcon);
         document.addEventListener('MSFullscreenChange', updateFullscreenIcon);
 
+        function isMobileDevice() {
+            const uaMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            const touchCoarse = window.matchMedia && (window.matchMedia('(pointer: coarse)').matches || window.matchMedia('(max-width: 991px)').matches);
+            const hasTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+            return uaMobile || (touchCoarse && hasTouch);
+        }
+
+        async function lockLandscape() {
+            try {
+                if (screen.orientation && typeof screen.orientation.lock === 'function') {
+                    await screen.orientation.lock('landscape');
+                } else if (screen.lockOrientation) {
+                    screen.lockOrientation('landscape');
+                } else if (screen.mozLockOrientation) {
+                    screen.mozLockOrientation('landscape');
+                } else if (screen.msLockOrientation) {
+                    screen.msLockOrientation('landscape');
+                }
+            } catch (err) {
+                console.log('Orientation lock to landscape:', err.message || err);
+            }
+        }
+
+        function unlockOrientation() {
+            try {
+                if (screen.orientation && typeof screen.orientation.unlock === 'function') {
+                    screen.orientation.unlock();
+                } else if (screen.unlockOrientation) {
+                    screen.unlockOrientation();
+                } else if (screen.mozUnlockOrientation) {
+                    screen.mozUnlockOrientation();
+                } else if (screen.msUnlockOrientation) {
+                    screen.msUnlockOrientation();
+                }
+            } catch (err) {
+                console.log('Orientation unlock:', err.message || err);
+            }
+        }
+
         function toggleFullscreen() {
             if (!document.fullscreenElement &&    // standard
                 !document.webkitFullscreenElement && // chrome, safari and opera
@@ -143,6 +182,9 @@ export function initVideoControls(videoId) {
                     // Fallback for iOS/iPhone where requestFullscreen on elements is not supported
                     videoPlayer.webkitEnterFullscreen();
                 }
+                if (isMobileDevice()) {
+                    lockLandscape();
+                }
             } else {
                 // Exit fullscreen
                 if (document.exitFullscreen) {
@@ -154,6 +196,7 @@ export function initVideoControls(videoId) {
                 } else if (document.msExitFullscreen) {
                     document.msExitFullscreen();
                 }
+                unlockOrientation();
             }
         }
 
@@ -167,10 +210,14 @@ export function initVideoControls(videoId) {
                 fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
                 fullscreenBtn.title = "Tam Ekran Çık";
                 playerContainer.classList.add('fullscreen-mode');
+                if (isMobileDevice()) {
+                    lockLandscape();
+                }
             } else {
                 fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
                 fullscreenBtn.title = "Tam Ekran";
                 playerContainer.classList.remove('fullscreen-mode');
+                unlockOrientation();
             }
         }
     }

@@ -1,6 +1,6 @@
 /**
  * StreamLive - Real-time Synchronized Cinema & Live Chat
- * Who Dat Idols
+ * BL Dizi
  */
 
 (function () {
@@ -25,6 +25,9 @@
     let isUserScrubbing = false;
     let currentViewerCount = 0;
     let isChatOpen = false;
+    let isFsChatEnabled = true;
+    let recentLiveMessages = [];
+    let controlsInactivityTimer = null;
 
     // DOM Elements
     const elements = {
@@ -64,6 +67,8 @@
         btnVolume: document.getElementById('btnVolume'),
         volumeSlider: document.getElementById('volumeSlider'),
         btnFullscreen: document.getElementById('btnFullscreen'),
+        btnToggleFsChat: document.getElementById('btnToggleFsChat'),
+        fullscreenChatOverlay: document.getElementById('fullscreenChatOverlay'),
         streamInfoCard: document.getElementById('streamInfoCard'),
         infoContentType: document.getElementById('infoContentType'),
         infoStatusTag: document.getElementById('infoStatusTag'),
@@ -230,7 +235,7 @@
                 currentViewerCount = data.viewerCount;
             }
             updateViewerCountDisplay();
-            document.title = `${data.title || 'Canlı Sinema'} - StreamLive | Who Dat Idols`;
+            document.title = `${data.title || 'Canlı Sinema'} - StreamLive | BL Dizi`;
 
             updateStreamUI();
             updateChatAccessUI();
@@ -258,14 +263,16 @@
         // Hide all screens initially
         hideAllScreens();
 
+        const oneHourAfterEnd = endTime + (60 * 60 * 1000);
+
         if (now < startTime) {
             // UPCOMING SCREEN
             showUpcomingScreen();
-        } else if (now >= startTime && now <= endTime) {
-            // LIVE STREAM SCREEN
+        } else if (now >= startTime && now <= oneHourAfterEnd) {
+            // LIVE STREAM OR REPLAY SCREEN
             showLiveScreen();
         } else {
-            // ENDED SCREEN
+            // ENDED SCREEN (After 1-hour replay window expires)
             showEndedScreen();
         }
 
@@ -436,10 +443,19 @@
         if (countdownInterval) clearInterval(countdownInterval);
 
         if (elements.videoContainer) elements.videoContainer.style.display = 'block';
+
+        const now = getServerNow();
+        const isReplay = currentStream && (now > currentStream.endTime);
+
         if (elements.infoStatusTag) {
             elements.infoStatusTag.style.display = 'inline-block';
-            elements.infoStatusTag.textContent = 'CANLI YAYIN';
-            elements.infoStatusTag.className = 'stream-tag tag-status';
+            if (isReplay) {
+                elements.infoStatusTag.textContent = 'YAYIN TEKRARI';
+                elements.infoStatusTag.className = 'stream-tag tag-status tag-replay';
+            } else {
+                elements.infoStatusTag.textContent = 'CANLI YAYIN';
+                elements.infoStatusTag.className = 'stream-tag tag-status';
+            }
         }
 
         initHlsPlayer();
@@ -506,8 +522,14 @@
             hlsPlayer.attachMedia(video);
 
             hlsPlayer.on(Hls.Events.MANIFEST_PARSED, function () {
-                // Seek to the live edge position immediately
-                video.currentTime = liveEdge;
+                const now = getServerNow();
+                const isReplay = currentStream && (now > currentStream.endTime);
+                if (isReplay) {
+                    video.currentTime = 0;
+                } else {
+                    // Seek to the live edge position immediately
+                    video.currentTime = liveEdge;
+                }
                 video.play().catch(function (e) {
                     console.log('Autoplay muted attempt due to policy:', e);
                     video.muted = true;
@@ -542,7 +564,13 @@
         } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
             video.src = videoSrc;
             video.addEventListener('loadedmetadata', function () {
-                video.currentTime = liveEdge;
+                const now = getServerNow();
+                const isReplay = currentStream && (now > currentStream.endTime);
+                if (isReplay) {
+                    video.currentTime = 0;
+                } else {
+                    video.currentTime = liveEdge;
+                }
                 video.play().catch(err => console.log('Autoplay error:', err));
             });
         }
@@ -561,11 +589,13 @@
             if (!currentStream || !elements.video) return;
 
             const now = getServerNow();
-            if (now > currentStream.endTime) {
+            const oneHourAfterEnd = currentStream.endTime + (60 * 60 * 1000);
+            if (now > oneHourAfterEnd) {
                 showEndedScreen();
                 return;
             }
 
+            const isReplay = now > currentStream.endTime;
             const liveEdge = getCurrentLiveEdge();
             const curTime = elements.video.currentTime || 0;
 
@@ -581,14 +611,16 @@
                 totalDurationSec = liveEdge;
             }
 
-            // End Check: trigger immediately if video has finished or reached end of duration
-            if (elements.video.ended || (totalDurationSec > 0 && curTime >= totalDurationSec - 0.5 && liveEdge >= totalDurationSec)) {
-                showEndedScreen();
-                return;
+            // If video finished in live mode, transition status tag to replay
+            if (elements.video.ended && !isReplay) {
+                if (elements.infoStatusTag) {
+                    elements.infoStatusTag.textContent = 'YAYIN TEKRARI';
+                    elements.infoStatusTag.className = 'stream-tag tag-status tag-replay';
+                }
             }
 
-            // DVR ENFORCEMENT: If user currentTime > liveEdge, clamp it
-            if (curTime > liveEdge + 0.5) {
+            // DVR ENFORCEMENT: Only in live mode clamp user currentTime to liveEdge
+            if (!isReplay && curTime > liveEdge + 0.5) {
                 elements.video.currentTime = liveEdge;
             }
 
@@ -600,24 +632,33 @@
                 elements.totalDurationTime.textContent = formatTime(totalDurationSec);
             }
 
-            // Update progress bar position (relative to liveEdge for timeshift playback)
+            // Update progress bar position (relative to liveEdge for timeshift playback, or totalDuration for replay)
             if (!isUserScrubbing && elements.progressPlayed && elements.progressThumb) {
-                const percent = liveEdge > 0 ? (curTime / liveEdge) * 100 : 0;
+                const maxSeek = isReplay ? (totalDurationSec || liveEdge) : liveEdge;
+                const percent = maxSeek > 0 ? (curTime / maxSeek) * 100 : 0;
                 const clamped = Math.min(100, Math.max(0, percent));
                 elements.progressPlayed.style.width = clamped + '%';
                 elements.progressThumb.style.left = clamped + '%';
             }
 
-            // Check synchronization lag
+            // Update btnGoLive appearance
             if (elements.btnGoLive) {
-                const lag = liveEdge - curTime;
-                const liveTextEl = elements.btnGoLive.querySelector('.live-text');
-                if (lag <= 6) {
-                    elements.btnGoLive.className = 'btn-go-live is-live';
-                    if (liveTextEl) liveTextEl.textContent = 'CANLI';
+                if (isReplay) {
+                    elements.btnGoLive.className = 'btn-go-live is-replay';
+                    elements.btnGoLive.innerHTML = '<span class="live-dot replay-dot"></span><span class="live-text">BAŞA DÖN</span>';
+                    elements.btnGoLive.title = 'Yayın Başına Sar';
                 } else {
-                    elements.btnGoLive.className = 'btn-go-live needs-sync';
-                    if (liveTextEl) liveTextEl.textContent = 'CANLIYA GEÇ';
+                    const lag = liveEdge - curTime;
+                    const liveTextEl = elements.btnGoLive.querySelector('.live-text');
+                    if (lag <= 6) {
+                        elements.btnGoLive.className = 'btn-go-live is-live';
+                        elements.btnGoLive.title = 'Canlı Yayındasınız';
+                        if (liveTextEl) liveTextEl.textContent = 'CANLI';
+                    } else {
+                        elements.btnGoLive.className = 'btn-go-live needs-sync';
+                        elements.btnGoLive.title = 'Canlı Yayına Geç';
+                        if (liveTextEl) liveTextEl.textContent = 'CANLIYA GEÇ';
+                    }
                 }
             }
 
@@ -634,6 +675,266 @@
             const bufPercent = (Math.min(bufferedEnd, liveEdge) / liveEdge) * 100;
             elements.progressBuffered.style.width = Math.min(100, bufPercent) + '%';
         }
+    }
+
+    /**
+     * Mobile Device Detection
+     */
+    function isMobileDevice() {
+        const uaMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const touchCoarse = window.matchMedia && (window.matchMedia('(pointer: coarse)').matches || window.matchMedia('(max-width: 991px)').matches);
+        const hasTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+        return uaMobile || (touchCoarse && hasTouch);
+    }
+
+    /**
+     * Fullscreen State Detection
+     */
+    function isFullscreenActive() {
+        return !!(
+            document.fullscreenElement ||
+            document.webkitFullscreenElement ||
+            document.mozFullScreenElement ||
+            document.msFullscreenElement ||
+            (elements.playerWrapper && elements.playerWrapper.classList.contains('fullscreen-active'))
+        );
+    }
+
+    /**
+     * Screen Orientation Lock / Unlock for Mobile Landscape
+     */
+    async function lockLandscape() {
+        try {
+            if (screen.orientation && typeof screen.orientation.lock === 'function') {
+                await screen.orientation.lock('landscape');
+            } else if (screen.lockOrientation) {
+                screen.lockOrientation('landscape');
+            } else if (screen.mozLockOrientation) {
+                screen.mozLockOrientation('landscape');
+            } else if (screen.msLockOrientation) {
+                screen.msLockOrientation('landscape');
+            }
+        } catch (err) {
+            console.log('Orientation lock to landscape:', err.message || err);
+        }
+    }
+
+    function unlockOrientation() {
+        try {
+            if (screen.orientation && typeof screen.orientation.unlock === 'function') {
+                screen.orientation.unlock();
+            } else if (screen.unlockOrientation) {
+                screen.unlockOrientation();
+            } else if (screen.mozUnlockOrientation) {
+                screen.mozUnlockOrientation();
+            } else if (screen.msUnlockOrientation) {
+                screen.msUnlockOrientation();
+            }
+        } catch (err) {
+            console.log('Orientation unlock:', err.message || err);
+        }
+    }
+
+    /**
+     * Enter / Exit / Toggle Fullscreen with Mobile Landscape & Fallback Support
+     */
+    async function enterFullscreen() {
+        const el = elements.playerWrapper;
+        if (!el) return;
+
+        try {
+            if (el.requestFullscreen) {
+                await el.requestFullscreen();
+            } else if (el.webkitRequestFullscreen) {
+                await el.webkitRequestFullscreen();
+            } else if (el.mozRequestFullScreen) {
+                await el.mozRequestFullScreen();
+            } else if (el.msRequestFullscreen) {
+                await el.msRequestFullscreen();
+            } else if (elements.video && elements.video.webkitEnterFullscreen) {
+                elements.video.webkitEnterFullscreen();
+                return;
+            } else {
+                el.classList.add('fullscreen-active');
+                onFullscreenChanged(true);
+            }
+        } catch (err) {
+            console.warn('Native requestFullscreen failed, using CSS fallback:', err);
+            el.classList.add('fullscreen-active');
+            onFullscreenChanged(true);
+        }
+
+        if (isMobileDevice()) {
+            lockLandscape();
+        }
+    }
+
+    async function exitFullscreen() {
+        try {
+            if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement) {
+                if (document.exitFullscreen) {
+                    await document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    await document.webkitExitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    await document.mozCancelFullScreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+            }
+        } catch (err) {
+            console.warn('Exit fullscreen error:', err);
+        } finally {
+            if (elements.playerWrapper) {
+                elements.playerWrapper.classList.remove('fullscreen-active');
+            }
+            onFullscreenChanged(false);
+        }
+    }
+
+    function toggleFullscreen() {
+        if (!isFullscreenActive()) {
+            enterFullscreen();
+        } else {
+            exitFullscreen();
+        }
+    }
+
+    function onFullscreenChanged(isFs) {
+        if (isFs) {
+            if (elements.playerWrapper) {
+                elements.playerWrapper.classList.add('fullscreen-active');
+            }
+            if (elements.btnFullscreen) {
+                elements.btnFullscreen.innerHTML = '<i class="fas fa-compress"></i>';
+                elements.btnFullscreen.title = 'Tam Ekrandan Çık';
+                elements.btnFullscreen.setAttribute('aria-label', 'Tam ekrandan çık');
+            }
+            if (isMobileDevice()) {
+                lockLandscape();
+            }
+            showRecentMessagesInFullscreen();
+        } else {
+            if (elements.playerWrapper) {
+                elements.playerWrapper.classList.remove('fullscreen-active');
+            }
+            if (elements.btnFullscreen) {
+                elements.btnFullscreen.innerHTML = '<i class="fas fa-expand"></i>';
+                elements.btnFullscreen.title = 'Tam Ekran';
+                elements.btnFullscreen.setAttribute('aria-label', 'Tam ekran');
+            }
+            if (elements.fullscreenChatOverlay) {
+                elements.fullscreenChatOverlay.innerHTML = '';
+            }
+            unlockOrientation();
+        }
+    }
+
+    /**
+     * Controls Inactivity Auto-Hide Timer
+     */
+    function setupControlsInactivityTimer() {
+        const INACTIVITY_DELAY = 3200;
+        const container = elements.videoContainer || elements.playerWrapper;
+        if (!container) return;
+
+        function showControls() {
+            container.classList.remove('hide-controls');
+            if (elements.playerWrapper) elements.playerWrapper.classList.remove('hide-controls');
+            if (controlsInactivityTimer) clearTimeout(controlsInactivityTimer);
+
+            if (elements.video && !elements.video.paused) {
+                controlsInactivityTimer = setTimeout(() => {
+                    container.classList.add('hide-controls');
+                    if (elements.playerWrapper) elements.playerWrapper.classList.add('hide-controls');
+                }, INACTIVITY_DELAY);
+            }
+        }
+
+        container.addEventListener('mousemove', showControls);
+        container.addEventListener('touchstart', showControls, { passive: true });
+        container.addEventListener('click', showControls);
+
+        if (elements.video) {
+            elements.video.addEventListener('play', showControls);
+            elements.video.addEventListener('playing', showControls);
+            elements.video.addEventListener('pause', () => {
+                container.classList.remove('hide-controls');
+                if (elements.playerWrapper) elements.playerWrapper.classList.remove('hide-controls');
+                if (controlsInactivityTimer) clearTimeout(controlsInactivityTimer);
+            });
+        }
+    }
+
+    /**
+     * Fullscreen Live Chat Floating Toast Overlay
+     */
+    function showFullscreenChatToast(msg) {
+        if (!elements.fullscreenChatOverlay || !isFsChatEnabled) return;
+        if (!isFullscreenActive()) return;
+
+        const toast = document.createElement('div');
+        const isMe = currentUser && currentUser.userId === msg.userId;
+        toast.className = 'fs-chat-toast' + (isMe ? ' my-message' : '');
+
+        const sentTime = msg.sentAt || msg.sentAtMillis;
+        const timeStr = sentTime ? new Date(sentTime).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : '';
+
+        const header = document.createElement('div');
+        header.className = 'fs-chat-toast-header';
+
+        const userSpan = document.createElement('span');
+        userSpan.className = 'fs-chat-toast-user';
+        userSpan.textContent = msg.nickname || 'Kullanıcı';
+
+        const isVerified = msg.verified === true || msg.isVerified === true || msg.verified === 'true';
+        if (isVerified) {
+            const badge = document.createElement('i');
+            badge.className = 'fas fa-check-circle verified-badge';
+            badge.title = 'Doğrulanmış Hesap';
+            userSpan.appendChild(badge);
+        }
+
+        const timeSpan = document.createElement('span');
+        timeSpan.className = 'fs-chat-toast-time';
+        timeSpan.textContent = timeStr;
+
+        header.appendChild(userSpan);
+        header.appendChild(timeSpan);
+
+        const textDiv = document.createElement('div');
+        textDiv.className = 'fs-chat-toast-text';
+        textDiv.textContent = msg.message;
+
+        toast.appendChild(header);
+        toast.appendChild(textDiv);
+
+        // Keep maximum 4 concurrent toasts
+        while (elements.fullscreenChatOverlay.children.length >= 4) {
+            elements.fullscreenChatOverlay.removeChild(elements.fullscreenChatOverlay.firstChild);
+        }
+
+        elements.fullscreenChatOverlay.appendChild(toast);
+
+        // Fadeout and remove after 6 seconds
+        setTimeout(() => {
+            toast.classList.add('toast-fadeout');
+            setTimeout(() => {
+                if (toast.parentNode === elements.fullscreenChatOverlay) {
+                    elements.fullscreenChatOverlay.removeChild(toast);
+                }
+            }, 500);
+        }, 6000);
+    }
+
+    function showRecentMessagesInFullscreen() {
+        if (!elements.fullscreenChatOverlay || !isFsChatEnabled) return;
+        const now = Date.now();
+        // Show up to 2 messages from last 20 seconds
+        const recent = recentLiveMessages.filter(item => (now - item.time) <= 20000).slice(-2);
+        recent.forEach(item => {
+            showFullscreenChatToast(item.msg);
+        });
     }
 
     /**
@@ -664,7 +965,15 @@
             if (elements.btnPlayPause) elements.btnPlayPause.innerHTML = '<i class="fas fa-play"></i>';
         });
 
-        video.addEventListener('click', togglePlay);
+        video.addEventListener('click', function (e) {
+            // On mobile devices, if controls were hidden, tapping reveals controls without pausing stream
+            if (isMobileDevice() && elements.videoContainer && elements.videoContainer.classList.contains('hide-controls')) {
+                e.stopPropagation();
+                if (typeof showControls === 'function') showControls();
+                return;
+            }
+            togglePlay();
+        });
 
         // 10s Backward / Forward
         if (elements.btnBackward) {
@@ -677,19 +986,30 @@
         if (elements.btnForward) {
             elements.btnForward.addEventListener('click', function (e) {
                 e.stopPropagation();
+                const now = getServerNow();
+                const isReplay = currentStream && (now > currentStream.endTime);
                 const liveEdge = getCurrentLiveEdge();
-                video.currentTime = Math.min(liveEdge, video.currentTime + 10);
+                const totalDurationSec = (elements.video && elements.video.duration) || (currentStream && currentStream.durationSeconds) || liveEdge;
+                const maxSeek = isReplay ? totalDurationSec : liveEdge;
+                video.currentTime = Math.min(maxSeek, video.currentTime + 10);
             });
         }
 
-        // "CANLIYA GEÇ" Button
+        // "CANLIYA GEÇ" / "BAŞA DÖN" Button
         if (elements.btnGoLive) {
             elements.btnGoLive.addEventListener('click', function (e) {
                 e.stopPropagation();
-                const liveEdge = getCurrentLiveEdge();
-                video.currentTime = liveEdge;
-                if (video.paused) {
-                    video.play();
+                const now = getServerNow();
+                const isReplay = currentStream && (now > currentStream.endTime);
+                if (isReplay) {
+                    video.currentTime = 0;
+                    if (video.paused) video.play();
+                } else {
+                    const liveEdge = getCurrentLiveEdge();
+                    video.currentTime = liveEdge;
+                    if (video.paused) {
+                        video.play();
+                    }
                 }
             });
         }
@@ -702,14 +1022,18 @@
         }
 
         function handleScrub(e) {
+            const now = getServerNow();
+            const isReplay = currentStream && (now > currentStream.endTime);
             const liveEdge = getCurrentLiveEdge();
-            if (liveEdge <= 0 || !elements.progressTrack) return;
+            const totalDurationSec = (elements.video && elements.video.duration) || (currentStream && currentStream.durationSeconds) || liveEdge;
+            const maxSeek = isReplay ? totalDurationSec : liveEdge;
+            if (maxSeek <= 0 || !elements.progressTrack) return;
 
             const rect = elements.progressTrack.getBoundingClientRect();
             const clientX = getEventClientX(e);
             const clickX = Math.max(0, Math.min(clientX - rect.left, rect.width));
             const ratio = clickX / rect.width;
-            const targetTime = Math.min(ratio * liveEdge, liveEdge);
+            const targetTime = Math.min(ratio * maxSeek, maxSeek);
 
             video.currentTime = targetTime;
             if (elements.currentTime) elements.currentTime.textContent = formatTime(targetTime);
@@ -764,12 +1088,16 @@
             }, { passive: true });
 
             elements.progressContainer.addEventListener('mousemove', function (e) {
+                const now = getServerNow();
+                const isReplay = currentStream && (now > currentStream.endTime);
                 const liveEdge = getCurrentLiveEdge();
-                if (liveEdge <= 0 || !elements.scrubTooltip) return;
+                const totalDurationSec = (elements.video && elements.video.duration) || (currentStream && currentStream.durationSeconds) || liveEdge;
+                const maxSeek = isReplay ? totalDurationSec : liveEdge;
+                if (maxSeek <= 0 || !elements.scrubTooltip) return;
 
                 const rect = elements.progressTrack.getBoundingClientRect();
                 const hoverX = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
-                const hoverTime = (hoverX / rect.width) * liveEdge;
+                const hoverTime = (hoverX / rect.width) * maxSeek;
 
                 elements.scrubTooltip.style.left = hoverX + 'px';
                 elements.scrubTooltip.textContent = formatTime(hoverTime);
@@ -818,17 +1146,59 @@
             }
         }
 
-        // Fullscreen
-        if (elements.btnFullscreen && elements.playerWrapper) {
+        // Fullscreen Toggle
+        if (elements.btnFullscreen) {
             elements.btnFullscreen.addEventListener('click', function (e) {
                 e.stopPropagation();
-                if (!document.fullscreenElement) {
-                    elements.playerWrapper.requestFullscreen().catch(err => console.log('Fullscreen error:', err));
+                toggleFullscreen();
+            });
+        }
+
+        // Fullscreen Chat Toggle
+        if (elements.btnToggleFsChat) {
+            elements.btnToggleFsChat.addEventListener('click', function (e) {
+                e.stopPropagation();
+                isFsChatEnabled = !isFsChatEnabled;
+                if (isFsChatEnabled) {
+                    elements.btnToggleFsChat.classList.add('active');
+                    elements.btnToggleFsChat.innerHTML = '<i class="fas fa-comment-dots"></i>';
+                    elements.btnToggleFsChat.title = 'Tam Ekran Sohbetini Gizle';
+                    if (elements.playerWrapper) elements.playerWrapper.classList.remove('fs-chat-hidden');
+                    showRecentMessagesInFullscreen();
                 } else {
-                    document.exitFullscreen().catch(err => console.log('Exit fullscreen error:', err));
+                    elements.btnToggleFsChat.classList.remove('active');
+                    elements.btnToggleFsChat.innerHTML = '<i class="fas fa-comment-slash"></i>';
+                    elements.btnToggleFsChat.title = 'Tam Ekran Sohbetini Göster';
+                    if (elements.playerWrapper) elements.playerWrapper.classList.add('fs-chat-hidden');
+                    if (elements.fullscreenChatOverlay) elements.fullscreenChatOverlay.innerHTML = '';
                 }
             });
         }
+
+        // Listen for standard and vendor-prefixed fullscreen events
+        const handleFullscreenEvent = function () {
+            const isFs = isFullscreenActive();
+            onFullscreenChanged(isFs);
+        };
+
+        document.addEventListener('fullscreenchange', handleFullscreenEvent);
+        document.addEventListener('webkitfullscreenchange', handleFullscreenEvent);
+        document.addEventListener('mozfullscreenchange', handleFullscreenEvent);
+        document.addEventListener('MSFullscreenChange', handleFullscreenEvent);
+
+        if (video) {
+            video.addEventListener('webkitbeginfullscreen', () => onFullscreenChanged(true));
+            video.addEventListener('webkitendfullscreen', () => onFullscreenChanged(false));
+        }
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && isFullscreenActive()) {
+                exitFullscreen();
+            }
+        });
+
+        // Initialize inactivity timer for controls
+        setupControlsInactivityTimer();
     }
 
     /**
@@ -898,7 +1268,7 @@
                 if (res.ok) {
                     const list = await res.json();
                     if (Array.isArray(list) && list.length > 0) {
-                        list.forEach(msg => appendChatMessage(msg, true));
+                        list.forEach(msg => appendChatMessage(msg, true, true));
                     }
                 }
             } catch (e) {
@@ -929,7 +1299,7 @@
                 stompClient.subscribe('/topic/streamlive/' + streamId + '/chat', function (response) {
                     try {
                         const msg = JSON.parse(response.body);
-                        appendChatMessage(msg);
+                        appendChatMessage(msg, true, true);
                     } catch (e) {
                         console.error('Chat parse error:', e);
                     }
@@ -972,7 +1342,7 @@
                         elements.chatMessages.innerHTML = '';
                     }
                     renderedMessageIds.clear();
-                    list.forEach(msg => appendChatMessage(msg, false));
+                    list.forEach(msg => appendChatMessage(msg, false, false));
                     scrollChatToBottom(true);
                 }
             }
@@ -984,7 +1354,7 @@
     /**
      * Append a message item into the chat container
      */
-    function appendChatMessage(msg, shouldScroll = true) {
+    function appendChatMessage(msg, shouldScroll = true, isLive = true) {
         if (!elements.chatMessages) return;
 
         // Deduplication: prevent duplicate messages from ever being rendered twice
@@ -993,6 +1363,15 @@
                 return;
             }
             renderedMessageIds.add(msg.id);
+        }
+
+        if (isLive) {
+            recentLiveMessages.push({ msg: msg, time: Date.now() });
+            const now = Date.now();
+            recentLiveMessages = recentLiveMessages.filter(item => (now - item.time) < 60000).slice(-15);
+            if (isFullscreenActive()) {
+                showFullscreenChatToast(msg);
+            }
         }
 
         const item = document.createElement('div');

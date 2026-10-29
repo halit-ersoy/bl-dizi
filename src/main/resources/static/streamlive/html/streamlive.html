@@ -193,6 +193,11 @@
                                         <input type="range" class="volume-slider" id="volumeSlider" min="0" max="1" step="0.05" value="1" aria-label="Ses seviyesi">
                                     </div>
 
+                                    <!-- Fullscreen Chat Overlay Toggle -->
+                                    <button class="ctrl-btn btn-fs-chat-toggle active" id="btnToggleFsChat" title="Tam Ekran Sohbetini Aç / Kapat" aria-label="Tam ekran sohbetini aç veya kapat">
+                                        <i class="fas fa-comment-dots"></i>
+                                    </button>
+
                                     <!-- Fullscreen -->
                                     <button class="ctrl-btn" id="btnFullscreen" title="Tam Ekran" aria-label="Tam ekran">
                                         <i class="fas fa-expand"></i>
@@ -201,6 +206,9 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Fullscreen Live Chat Floating Overlay (Bottom-Right Toasts) -->
+                    <div class="fullscreen-chat-overlay" id="fullscreenChatOverlay" aria-live="polite"></div>
                 </div>
             </div>
 
