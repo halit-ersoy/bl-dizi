@@ -2055,11 +2055,8 @@ body {
    StreamLive Video Player - Fullscreen & Mobile Landscape Orientation
    ========================================================================== */
 
-/* Native & Fallback Fullscreen Container */
+/* Native & Fallback Fullscreen Container (Separate vendor rules to prevent parser drop) */
 .player-wrapper:fullscreen,
-.player-wrapper:-webkit-full-screen,
-.player-wrapper:-moz-full-screen,
-.player-wrapper:-ms-fullscreen,
 .player-wrapper.fullscreen-active {
     width: 100vw !important;
     height: 100vh !important;
@@ -2073,6 +2070,23 @@ body {
     aspect-ratio: auto !important;
     background: #000000 !important;
     z-index: 2147483647 !important;
+    position: relative !important;
+}
+
+.player-wrapper:-webkit-full-screen {
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: 100vw !important;
+    max-height: 100vh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    aspect-ratio: auto !important;
+    background: #000000 !important;
+    z-index: 2147483647 !important;
+    position: relative !important;
 }
 
 /* Fallback CSS Fullscreen for browsers without Element.requestFullscreen (e.g. iPhone Safari) */
@@ -2087,9 +2101,6 @@ body {
 }
 
 .player-wrapper:fullscreen .video-container,
-.player-wrapper:-webkit-full-screen .video-container,
-.player-wrapper:-moz-full-screen .video-container,
-.player-wrapper:-ms-fullscreen .video-container,
 .player-wrapper.fullscreen-active .video-container {
     width: 100% !important;
     height: 100% !important;
@@ -2100,11 +2111,27 @@ body {
     background: #000000 !important;
 }
 
+.player-wrapper:-webkit-full-screen .video-container {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    aspect-ratio: auto !important;
+    border-radius: 0 !important;
+    background: #000000 !important;
+}
+
 .player-wrapper:fullscreen video,
-.player-wrapper:-webkit-full-screen video,
-.player-wrapper:-moz-full-screen video,
-.player-wrapper:-ms-fullscreen video,
 .player-wrapper.fullscreen-active video {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    object-fit: contain !important;
+    border-radius: 0 !important;
+}
+
+.player-wrapper:-webkit-full-screen video {
     width: 100% !important;
     height: 100% !important;
     max-width: 100% !important;
@@ -2115,10 +2142,19 @@ body {
 
 /* Controls behavior in fullscreen */
 .player-wrapper:fullscreen .player-controls,
-.player-wrapper:-webkit-full-screen .player-controls,
-.player-wrapper:-moz-full-screen .player-controls,
-.player-wrapper:-ms-fullscreen .player-controls,
 .player-wrapper.fullscreen-active .player-controls {
+    position: absolute !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    padding: clamp(10px, 2vh, 20px) clamp(16px, 3.5vw, 36px) clamp(10px, 1.8vh, 18px) clamp(16px, 3.5vw, 36px);
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.92) 0%, rgba(10, 10, 14, 0.65) 60%, transparent 100%) !important;
+    z-index: 20 !important;
+    pointer-events: auto;
+}
+
+.player-wrapper:-webkit-full-screen .player-controls {
     position: absolute !important;
     bottom: 0 !important;
     left: 0 !important;
@@ -2152,10 +2188,11 @@ body {
 }
 
 .player-wrapper:fullscreen .btn-fs-chat-toggle,
-.player-wrapper:-webkit-full-screen .btn-fs-chat-toggle,
-.player-wrapper:-moz-full-screen .btn-fs-chat-toggle,
-.player-wrapper:-ms-fullscreen .btn-fs-chat-toggle,
 .player-wrapper.fullscreen-active .btn-fs-chat-toggle {
+    display: inline-flex !important;
+}
+
+.player-wrapper:-webkit-full-screen .btn-fs-chat-toggle {
     display: inline-flex !important;
 }
 
@@ -2177,7 +2214,7 @@ body {
     right: clamp(14px, 2.5vw, 28px);
     z-index: 50;
     width: clamp(240px, 30vw, 340px);
-    max-height: clamp(200px, 50vh, 320px);
+    max-height: clamp(280px, 65vh, 460px);
     flex-direction: column;
     justify-content: flex-end;
     align-items: flex-end;
@@ -2188,11 +2225,12 @@ body {
 }
 
 .player-wrapper:fullscreen .fullscreen-chat-overlay,
-.player-wrapper:-webkit-full-screen .fullscreen-chat-overlay,
-.player-wrapper:-moz-full-screen .fullscreen-chat-overlay,
-.player-wrapper:-ms-fullscreen .fullscreen-chat-overlay,
 .player-wrapper.fullscreen-active .fullscreen-chat-overlay {
-    display: flex;
+    display: flex !important;
+}
+
+.player-wrapper:-webkit-full-screen .fullscreen-chat-overlay {
+    display: flex !important;
 }
 
 /* If user disables fullscreen chat */
@@ -2200,42 +2238,42 @@ body {
     display: none !important;
 }
 
-/* Individual Toast Message */
+/* Individual Minimalist Toast Message (Translucent Glass Pill - Focus on Video) */
 .fs-chat-toast {
-    width: 100%;
+    width: auto;
+    max-width: 100%;
     pointer-events: none;
-    background: rgba(14, 14, 20, 0.82);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-left: 3px solid var(--sl-primary);
-    border-radius: 8px;
-    padding: 7px 11px;
-    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.65), 0 0 12px rgba(30, 215, 96, 0.1);
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    padding: 4px 10px;
+    display: inline-block;
+    align-self: flex-end;
     box-sizing: border-box;
-    animation: fsToastSlideIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    transition: opacity 0.4s ease, transform 0.4s ease;
+    animation: fsToastSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    transition: opacity 0.35s ease, transform 0.35s ease;
     will-change: transform, opacity;
+    font-size: 0.8rem;
+    line-height: 1.35;
+    word-break: break-word;
 }
 
 .fs-chat-toast.my-message {
-    border-left-color: #38bdf8;
-    background: rgba(14, 22, 34, 0.86);
-    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.65), 0 0 12px rgba(56, 189, 248, 0.15);
+    background: rgba(12, 28, 44, 0.55);
+    border-color: rgba(56, 189, 248, 0.25);
 }
 
 .fs-chat-toast.toast-fadeout {
     opacity: 0 !important;
-    transform: translateY(8px) scale(0.96) !important;
+    transform: translateY(6px) scale(0.97) !important;
 }
 
 @keyframes fsToastSlideIn {
     0% {
         opacity: 0;
-        transform: translateX(35px) scale(0.95);
+        transform: translateX(25px) scale(0.96);
     }
     100% {
         opacity: 1;
@@ -2243,63 +2281,54 @@ body {
     }
 }
 
-.fs-chat-toast-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    font-size: 0.72rem;
-    line-height: 1.2;
-}
-
 .fs-chat-toast-user {
     font-weight: 700;
     color: var(--sl-primary);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    max-width: 170px;
+    gap: 3px;
+    margin-right: 4px;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95);
+    font-size: 0.78rem;
+}
+
+.fs-chat-toast-user .verified-badge {
+    font-size: 0.7rem;
+    color: var(--sl-primary);
 }
 
 .fs-chat-toast.my-message .fs-chat-toast-user {
     color: #38bdf8;
 }
 
-.fs-chat-toast-time {
-    font-size: 0.64rem;
-    color: rgba(255, 255, 255, 0.45);
-    flex-shrink: 0;
-}
-
 .fs-chat-toast-text {
     font-size: 0.8rem;
     color: rgba(255, 255, 255, 0.95);
-    line-height: 1.35;
-    word-break: break-word;
-    white-space: normal;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95);
 }
 
 /* Mobile Landscape Compact Tweaks */
 @media (max-height: 520px) {
     .fullscreen-chat-overlay {
-        bottom: 56px;
+        bottom: 54px;
         right: 12px;
-        width: min(260px, 45vw);
-        max-height: 48vh;
-        gap: 5px;
+        width: min(280px, 48vw);
+        max-height: 68vh;
+        gap: 4px;
     }
 
     .fs-chat-toast {
-        padding: 5px 8px;
-        gap: 2px;
+        padding: 3px 8px;
+        font-size: 0.74rem;
+        line-height: 1.25;
+    }
+
+    .fs-chat-toast-user {
+        font-size: 0.72rem;
     }
 
     .fs-chat-toast-text {
-        font-size: 0.75rem;
+        font-size: 0.74rem;
     }
 }
 

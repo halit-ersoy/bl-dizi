@@ -751,9 +751,6 @@
                 await el.mozRequestFullScreen();
             } else if (el.msRequestFullscreen) {
                 await el.msRequestFullscreen();
-            } else if (elements.video && elements.video.webkitEnterFullscreen) {
-                elements.video.webkitEnterFullscreen();
-                return;
             } else {
                 el.classList.add('fullscreen-active');
                 onFullscreenChanged(true);
@@ -877,64 +874,55 @@
         const isMe = currentUser && currentUser.userId === msg.userId;
         toast.className = 'fs-chat-toast' + (isMe ? ' my-message' : '');
 
-        const sentTime = msg.sentAt || msg.sentAtMillis;
-        const timeStr = sentTime ? new Date(sentTime).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : '';
-
-        const header = document.createElement('div');
-        header.className = 'fs-chat-toast-header';
-
         const userSpan = document.createElement('span');
         userSpan.className = 'fs-chat-toast-user';
-        userSpan.textContent = msg.nickname || 'Kullanıcı';
+        userSpan.textContent = (msg.nickname || 'Kullanıcı') + ': ';
 
         const isVerified = msg.verified === true || msg.isVerified === true || msg.verified === 'true';
         if (isVerified) {
             const badge = document.createElement('i');
             badge.className = 'fas fa-check-circle verified-badge';
-            badge.title = 'Doğrulanmış Hesap';
-            userSpan.appendChild(badge);
+            badge.title = 'Doğrulanmış';
+            userSpan.insertBefore(badge, userSpan.firstChild);
         }
 
-        const timeSpan = document.createElement('span');
-        timeSpan.className = 'fs-chat-toast-time';
-        timeSpan.textContent = timeStr;
+        const textSpan = document.createElement('span');
+        textSpan.className = 'fs-chat-toast-text';
+        textSpan.textContent = msg.message;
 
-        header.appendChild(userSpan);
-        header.appendChild(timeSpan);
+        toast.appendChild(userSpan);
+        toast.appendChild(textSpan);
 
-        const textDiv = document.createElement('div');
-        textDiv.className = 'fs-chat-toast-text';
-        textDiv.textContent = msg.message;
-
-        toast.appendChild(header);
-        toast.appendChild(textDiv);
-
-        // Keep maximum 4 concurrent toasts
-        while (elements.fullscreenChatOverlay.children.length >= 4) {
+        // Keep maximum 8 concurrent toasts stacked
+        while (elements.fullscreenChatOverlay.children.length >= 8) {
             elements.fullscreenChatOverlay.removeChild(elements.fullscreenChatOverlay.firstChild);
         }
 
         elements.fullscreenChatOverlay.appendChild(toast);
 
-        // Fadeout and remove after 6 seconds
+        // Fadeout and remove after 5 seconds
         setTimeout(() => {
             toast.classList.add('toast-fadeout');
             setTimeout(() => {
                 if (toast.parentNode === elements.fullscreenChatOverlay) {
                     elements.fullscreenChatOverlay.removeChild(toast);
                 }
-            }, 500);
-        }, 6000);
+            }, 350);
+        }, 5000);
     }
 
     function showRecentMessagesInFullscreen() {
         if (!elements.fullscreenChatOverlay || !isFsChatEnabled) return;
-        const now = Date.now();
-        // Show up to 2 messages from last 20 seconds
-        const recent = recentLiveMessages.filter(item => (now - item.time) <= 20000).slice(-2);
-        recent.forEach(item => {
-            showFullscreenChatToast(item.msg);
-        });
+        if (!isFullscreenActive()) return;
+
+        elements.fullscreenChatOverlay.innerHTML = '';
+        if (recentLiveMessages.length > 0) {
+            // Show up to the last 8 messages stacked
+            const recent = recentLiveMessages.slice(-8);
+            recent.forEach(item => {
+                showFullscreenChatToast(item.msg);
+            });
+        }
     }
 
     /**
@@ -1342,8 +1330,16 @@
                         elements.chatMessages.innerHTML = '';
                     }
                     renderedMessageIds.clear();
-                    list.forEach(msg => appendChatMessage(msg, false, false));
+                    recentLiveMessages = [];
+                    list.forEach(msg => {
+                        appendChatMessage(msg, false, false);
+                        recentLiveMessages.push({ msg: msg, time: Date.now() });
+                    });
+                    recentLiveMessages = recentLiveMessages.slice(-20);
                     scrollChatToBottom(true);
+                    if (isFullscreenActive()) {
+                        showRecentMessagesInFullscreen();
+                    }
                 }
             }
         } catch (e) {
@@ -1367,8 +1363,7 @@
 
         if (isLive) {
             recentLiveMessages.push({ msg: msg, time: Date.now() });
-            const now = Date.now();
-            recentLiveMessages = recentLiveMessages.filter(item => (now - item.time) < 60000).slice(-15);
+            recentLiveMessages = recentLiveMessages.slice(-20);
             if (isFullscreenActive()) {
                 showFullscreenChatToast(msg);
             }
