@@ -375,7 +375,9 @@ public class MovieRepository {
 
     public void incrementViewCount(UUID id) {
         try {
-            jdbcTemplate.update("UPDATE Movie SET viewCount = COALESCE(viewCount, 0) + 1 WHERE ID = ?", id.toString());
+            if (id != null) {
+                jdbcTemplate.update("EXEC IncrementViewCount @ID = ?", id.toString());
+            }
         } catch (Exception ignored) {}
     }
 }

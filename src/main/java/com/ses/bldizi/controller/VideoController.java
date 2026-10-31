@@ -316,10 +316,21 @@ public class VideoController {
     }
 
     @PostMapping("/increment-view")
-    public ResponseEntity<?> incrementViewCount(@RequestParam("id") UUID id) {
+    public ResponseEntity<?> incrementViewCount(@RequestParam("id") String idOrSlug) {
         try {
-            seriesRepository.incrementViewCount(id);
-            movieRepository.incrementViewCount(id);
+            UUID id = null;
+            try {
+                id = UUID.fromString(idOrSlug.trim());
+            } catch (IllegalArgumentException ignored) {
+                ResponseEntity<Map<String, String>> resolved = resolveSlug(idOrSlug.trim());
+                if (resolved.getStatusCode().is2xxSuccessful() && resolved.getBody() != null) {
+                    id = UUID.fromString(resolved.getBody().get("id"));
+                }
+            }
+
+            if (id != null) {
+                jdbcTemplate.update("EXEC IncrementViewCount @ID = ?", id.toString());
+            }
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Failed to increment view count");

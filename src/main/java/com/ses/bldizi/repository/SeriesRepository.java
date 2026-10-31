@@ -608,16 +608,8 @@ public class SeriesRepository {
 
     public void incrementViewCount(UUID id) {
         try {
-            // Check if episode
-            String seriesIdStr = null;
-            try {
-                seriesIdStr = jdbcTemplate.queryForObject("SELECT SeriesId FROM Episode WHERE ID = ?", String.class, id.toString());
-            } catch (Exception ignored) {}
-
-            if (seriesIdStr != null) {
-                jdbcTemplate.update("UPDATE Series SET viewCount = COALESCE(viewCount, 0) + 1 WHERE ID = ?", seriesIdStr);
-            } else {
-                jdbcTemplate.update("UPDATE Series SET viewCount = COALESCE(viewCount, 0) + 1 WHERE ID = ?", id.toString());
+            if (id != null) {
+                jdbcTemplate.update("EXEC IncrementViewCount @ID = ?", id.toString());
             }
         } catch (Exception ignored) {}
     }
