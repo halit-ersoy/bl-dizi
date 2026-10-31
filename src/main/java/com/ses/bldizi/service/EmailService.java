@@ -1,6 +1,5 @@
 package com.ses.bldizi.service;
 
-import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,14 +22,14 @@ public class EmailService {
     public void sendVerificationCode(String email, String code) {
         if (mailSender == null) {
             logger.warn("JavaMailSender is not configured. Verification code for {}: {}", email, code);
-            return;
+            throw new RuntimeException("E-posta servisi yapılandırılmamış (JavaMailSender bulunamadı).");
         }
 
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-            helper.setFrom("info@bldizi.com");
+            helper.setFrom("info@bldizi.com", "BL Dizi");
             helper.setTo(email);
             helper.setSubject("BL Dizi - Hesap Doğrulama Kodu");
 
@@ -38,8 +37,9 @@ public class EmailService {
             helper.setText(htmlContent, true);
 
             mailSender.send(message);
-        } catch (MessagingException e) {
-            logger.error("Failed to send verification email to {}: {}", email, e.getMessage());
+            logger.info("Doğrulama e-postası başarıyla gönderildi: {}", email);
+        } catch (Exception e) {
+            logger.error("Failed to send verification email to {}: {}", email, e.getMessage(), e);
             throw new RuntimeException("Doğrulama kodu gönderilirken hata oluştu: " + e.getMessage());
         }
     }
