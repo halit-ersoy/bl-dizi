@@ -1,10 +1,11 @@
+window.handleActorAvatarError = function(img) { img.onerror = null; img.src = 'data:image/svg+xml;charset=utf-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22 width=%22100%22 height=%22100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%231b1c24%22/%3E%3Ccircle cx=%2250%22 cy=%2238%22 r=%2214%22 fill=%22%23505465%22/%3E%3Cpath d=%22M25 80c0-13.8 11.2-25 25-25s25 11.2 25 25v6H25v-6z%22 fill=%22%23505465%22/%3E%3C/svg%3E'; };
 // series.js - Dedicated Series & Programs Content Page
 
 document.addEventListener('DOMContentLoaded', () => {
     initSeriesPage();
 });
 
-const defaultAvatarSvg = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23666'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E";
+const defaultAvatarSvg = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22 width=%22100%22 height=%22100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%231b1c24%22/%3E%3Ccircle cx=%2250%22 cy=%2238%22 r=%2214%22 fill=%22%23505465%22/%3E%3Cpath d=%22M25 80c0-13.8 11.2-25 25-25s25 11.2 25 25v6H25v-6z%22 fill=%22%23505465%22/%3E%3C/svg%3E";
 const defaultPosterSvg = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 450' fill='%23141418'%3E%3Crect width='100%25' height='100%25' fill='%23141418'/%3E%3Cg fill='%23252530' opacity='0.8'%3E%3Ccircle cx='150' cy='180' r='48'/%3E%3Cpath d='M80 300c0-38 31-70 70-70s70 32 70 70v15H80v-15z'/%3E%3C/g%3E%3Ctext x='50%25' y='360' text-anchor='middle' fill='%23555566' font-family='Montserrat,sans-serif' font-weight='700' font-size='16' letter-spacing='2'%3EWDI%3C/text%3E%3C/svg%3E";
 const defaultEpisodeThumbSvg = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 360' fill='%23141418'%3E%3Crect width='100%25' height='100%25' fill='%23141418'/%3E%3Ccircle cx='320' cy='180' r='38' fill='%2322222a'/%3E%3Cpath d='M312 165l24 15-24 15z' fill='%2300ffa3'/%3E%3Ctext x='50%25' y='255' text-anchor='middle' fill='%23555566' font-family='Montserrat,sans-serif' font-weight='600' font-size='15'%3EBÖLÜM%3C/text%3E%3C/svg%3E";
 
@@ -101,7 +102,7 @@ function renderHeroSection(series) {
     const statusDotEl = document.querySelector('.series-poster-badge .status-dot');
     const isCompleted = series.finalStatus === 1;
     if (statusTextEl) {
-        statusTextEl.textContent = isCompleted ? 'Tamamlandı' : 'Devam Ediyor';
+        statusTextEl.textContent = isCompleted ? 'Final Yaptı' : 'Devam Ediyor';
     }
     if (statusDotEl && !isCompleted) {
         statusDotEl.classList.add('ongoing');
@@ -225,14 +226,14 @@ function renderTabs(series) {
 function renderEpisodes(episodes, series) {
     const grid = document.getElementById('episodes-grid');
     const emptyEl = document.getElementById('episodes-empty');
-    const seasonTabs = document.getElementById('season-tabs');
-    const infoCountEl = document.getElementById('episodes-info-count');
+    const switchContainer = document.getElementById('seasonSwitch');
 
     if (!grid) return;
     grid.innerHTML = '';
 
     if (!episodes || episodes.length === 0) {
         if (emptyEl) emptyEl.style.display = 'block';
+        if (switchContainer) switchContainer.style.display = 'none';
         return;
     }
     if (emptyEl) emptyEl.style.display = 'none';
@@ -248,30 +249,67 @@ function renderEpisodes(episodes, series) {
     });
 
     const seasonNumbers = Array.from(seasonsMap.keys()).sort((a, b) => a - b);
-    currentSelectedSeason = seasonNumbers[0] || 1;
+    if (seasonNumbers.length === 0) seasonNumbers.push(1);
+    currentSelectedSeason = seasonNumbers[0];
 
-    // Build Season Buttons if multiple seasons exist
-    if (seasonTabs) {
-        seasonTabs.innerHTML = '';
-        if (seasonNumbers.length > 1) {
-            seasonNumbers.forEach(sNum => {
-                const btn = document.createElement('button');
-                btn.className = `season-btn ${sNum === currentSelectedSeason ? 'active' : ''}`;
-                btn.textContent = `${sNum}. Sezon`;
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('.season-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
+    // Build the dynamic-switch matching admin panel slider exactly
+    if (switchContainer) {
+        switchContainer.style.display = 'flex';
+        switchContainer.innerHTML = '';
+
+        seasonNumbers.forEach((sNum, idx) => {
+            const inputId = `seasonRadio_${sNum}`;
+            const radio = document.createElement('input');
+            radio.type = 'radio';
+            radio.id = inputId;
+            radio.name = 'seasonRadioGroup';
+            radio.value = sNum;
+            if (sNum === currentSelectedSeason) radio.checked = true;
+
+            const label = document.createElement('label');
+            label.htmlFor = inputId;
+            label.textContent = `${sNum}. Sezon`;
+
+            radio.addEventListener('change', () => {
+                if (radio.checked) {
                     currentSelectedSeason = sNum;
+                    updateSwitchSlider(switchContainer);
                     displaySeasonEpisodes(seasonsMap.get(sNum) || [], series);
-                });
-                seasonTabs.appendChild(btn);
+                }
             });
-        }
+
+            switchContainer.appendChild(radio);
+            switchContainer.appendChild(label);
+        });
+
+        const slider = document.createElement('div');
+        slider.className = 'dynamic-slider';
+        switchContainer.appendChild(slider);
+
+        // Update slider position after elements are attached
+        requestAnimationFrame(() => updateSwitchSlider(switchContainer));
+        setTimeout(() => updateSwitchSlider(switchContainer), 80);
     }
 
-    // Display episodes for the initial selected season
     displaySeasonEpisodes(seasonsMap.get(currentSelectedSeason) || episodes, series);
 }
+
+function updateSwitchSlider(container) {
+    if (!container) return;
+    const checkedRadio = container.querySelector('input[type="radio"]:checked');
+    const slider = container.querySelector('.dynamic-slider');
+    if (checkedRadio && slider) {
+        const label = container.querySelector(`label[for="${checkedRadio.id}"]`);
+        if (label) {
+            slider.style.width = label.offsetWidth + 'px';
+            slider.style.left = label.offsetLeft + 'px';
+        }
+    }
+}
+
+window.addEventListener('resize', () => {
+    updateSwitchSlider(document.getElementById('seasonSwitch'));
+});
 
 function displaySeasonEpisodes(seasonEpisodes, series) {
     const grid = document.getElementById('episodes-grid');
@@ -288,15 +326,17 @@ function displaySeasonEpisodes(seasonEpisodes, series) {
     seasonEpisodes.forEach(ep => {
         const epSlug = (ep.slug && ep.slug.trim() !== '') ? ep.slug : ep.id;
         const watchUrl = `/${epSlug}`;
-        const epName = ep.name && ep.name.trim() !== ''
+        const epNum = ep.episodeNumber || 1;
+        const epLabel = `${epNum}. Bölüm`;
+        const epName = (ep.name && ep.name.trim() !== '' && !ep.name.toLowerCase().includes('sezon'))
             ? ep.name
-            : `${ep.seasonNumber || 1}. Sezon ${ep.episodeNumber || 1}. Bölüm`;
+            : epLabel;
         const epThumb = `/media/image/${ep.id}`;
 
         const card = document.createElement('a');
         card.href = watchUrl;
         card.className = 'episode-card';
-        card.title = `${series.name || ''} - ${epName} İzle`;
+        card.title = `${series.name || ''} - ${epLabel} İzle`;
 
         card.innerHTML = `
             <div class="episode-thumb-wrap">
@@ -306,7 +346,7 @@ function displaySeasonEpisodes(seasonEpisodes, series) {
                     <div class="play-circle-btn"><i class="fas fa-play"></i></div>
                 </div>
                 <div class="episode-meta-badges">
-                    <span class="badge-ep-num">S${ep.seasonNumber || 1} • B${ep.episodeNumber || 1}</span>
+                    <span class="badge-ep-num"><i class="fas fa-play" style="font-size:0.62rem; margin-right:4px;"></i>${ep.episodeNumber || 1}. Bölüm</span>
                     ${ep.duration > 0 ? `<span class="badge-ep-duration"><i class="far fa-clock"></i> ${ep.duration} dk</span>` : ''}
                 </div>
             </div>
@@ -345,8 +385,7 @@ function renderCast(cast) {
 
         card.innerHTML = `
             <div class="cast-avatar-wrap">
-                <img src="${photoUrl}" alt="${escapeHtml(actor.name || 'Oyuncu')}" loading="lazy"
-                     onerror="this.onerror=null; this.src='${defaultAvatarSvg}';">
+                <img src="${photoUrl}" alt="" loading="lazy" onerror="window.handleActorAvatarError(this)">
             </div>
             <div class="cast-actor-name">${escapeHtml(actor.name || 'Oyuncu')}</div>
             ${role ? `<div class="cast-character-name">${escapeHtml(role)}</div>` : ''}
@@ -375,7 +414,7 @@ function renderInfo(series, episodes) {
     if (genresEl) genresEl.textContent = series.category || 'Belirtilmemiş';
     if (countryEl) countryEl.textContent = formatCountry(series.country);
     if (langEl) langEl.textContent = series.language || 'Orijinal';
-    if (statusEl) statusEl.textContent = series.finalStatus === 1 ? 'Tamamlandı' : 'Devam Ediyor';
+    if (statusEl) statusEl.textContent = series.finalStatus === 1 ? 'Final Yaptı' : 'Devam Ediyor';
     if (epEl) epEl.textContent = `${episodes.length} Bölüm`;
 }
 
@@ -560,8 +599,7 @@ function renderActorModalContent(modalBody, actor, fallbackName, fallbackPhoto, 
     modalBody.innerHTML = `
         <div class="actor-header-row">
             <div class="actor-modal-photo-wrap">
-                <img src="${photo}" alt="${escapeHtml(name)}"
-                     onerror="this.onerror=null; this.src='${defaultAvatarSvg}'">
+                <img src="${photo}" alt="" onerror="window.handleActorAvatarError(this)">
             </div>
             <div class="actor-header-details">
                 <h2>${escapeHtml(name)}</h2>

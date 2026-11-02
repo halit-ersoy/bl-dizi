@@ -249,15 +249,18 @@
             <!-- TAB 1: EPISODES -->
             <div class="tab-panel active" id="tab-episodes">
                 <div class="episodes-toolbar">
-                    <div class="season-tabs" id="season-tabs">
-                        <!-- Populated by JS when multiple seasons exist -->
+                    <div class="filter-switch-container" style="margin: 0;">
+                        <div class="dynamic-switch" id="seasonSwitch">
+                            <!-- Populated dynamically via JS as sliding switch -->
+                            <div class="dynamic-slider"></div>
+                        </div>
                     </div>
                     <div class="episodes-info-count" id="episodes-info-count">
                         <i class="fas fa-film" style="color: var(--primary-color); margin-right: 6px;"></i> Bölümler listeleniyor
                     </div>
                 </div>
 
-                <div class="episodes-grid" id="episodes-grid">
+                <div class="episodes-grid"  id="episodes-grid">
                     <!-- Episode cards injected by JS -->
                 </div>
 

@@ -272,7 +272,7 @@ async function loadContentDetails(id) {
         if (castList) {
             castList.innerHTML = '';
             if (data.cast && data.cast.length > 0) {
-                const defaultAvatarSvg = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='70' height='70' viewBox='0 0 24 24' fill='%23666'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>";
+                const defaultAvatarSvg = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22 width=%22100%22 height=%22100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%231b1c24%22/%3E%3Ccircle cx=%2250%22 cy=%2238%22 r=%2214%22 fill=%22%23505465%22/%3E%3Cpath d=%22M25 80c0-13.8 11.2-25 25-25s25 11.2 25 25v6H25v-6z%22 fill=%22%23505465%22/%3E%3C/svg%3E";
                 data.cast.forEach((actor, index) => {
                     const member = document.createElement('div');
                     member.className = 'cast-member';
@@ -420,7 +420,7 @@ function getOrCreateActorModal() {
 async function openActorModal(actorId, fallbackName, fallbackPhoto, contextCharacter) {
     const overlay = getOrCreateActorModal();
     const modalBody = overlay.querySelector('#actorModalBody');
-    const defaultAvatarSvg = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='70' height='70' viewBox='0 0 24 24' fill='%23666'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>";
+    const defaultAvatarSvg = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22 width=%22100%22 height=%22100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%231b1c24%22/%3E%3Ccircle cx=%2250%22 cy=%2238%22 r=%2214%22 fill=%22%23505465%22/%3E%3Cpath d=%22M25 80c0-13.8 11.2-25 25-25s25 11.2 25 25v6H25v-6z%22 fill=%22%23505465%22/%3E%3C/svg%3E";
 
     // Render instant skeleton header while network request completes
     modalBody.innerHTML = `
