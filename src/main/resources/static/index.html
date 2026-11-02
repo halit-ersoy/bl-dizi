@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="tr" data-theme="pink">
 
 <head>
@@ -30,7 +30,7 @@
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="stylesheet" href="/homepage/css/main.css?v=5">
+    <link rel="stylesheet" href="/homepage/css/main.css?v=6">
     <script src="/homepage/js/devtools-protection.js"></script>
     <script type="application/ld+json">
     {
@@ -150,173 +150,6 @@
                     </div>
                 </div>
                 <button class="login-btn" aria-label="Oturum aç" id="login-btn">OTURUM AÇ</button>
-            </div>
-        </div>
-        <div class="login-modal-overlay" id="login-modal">
-            <div class="login-modal">
-                <button class="close-modal" id="close-modal">
-                    <i class="fas fa-times"></i>
-                </button>
-                <div class="login-header">
-                    <div class="login-logo">BL DİZİ</div>
-                    <h2 class="login-title">Hoşgeldiniz</h2>
-                    <p class="login-subtitle">Hesabınıza giriş yapın</p>
-                </div>
-                <form class="login-form" id="login-form-element" action="javascript:void(0);">
-                    <div class="form-group">
-                        <label for="email">E-posta veya kullanıcı adı</label>
-                        <input type="text" class="form-control" id="email" name="username" autocomplete="username" placeholder="E-posta veya kullanıcı adı" required>
-                        <span class="highlight"></span>
-                    </div>
-                    <div class="form-group">
-                        <label for="password">Şifre</label>
-                        <input type="password" class="form-control" id="password" name="password" autocomplete="current-password" placeholder="Şifreniz" required>
-                        <span class="highlight"></span>
-                    </div>
-                    <div class="forgot-password">
-                        <a href="#">Şifremi unuttum</a>
-                    </div>
-                    <button type="submit" class="login-btn-page" id="login-submit">Giriş Yap</button>
-                    <div class="login-divider">veya</div>
-                    <div class="social-login">
-                        <button class="social-btn">
-                            <i class="fab fa-google"></i>
-                        </button>
-                        <button class="social-btn">
-                            <i class="fab fa-facebook-f"></i>
-                        </button>
-                        <button class="social-btn">
-                            <i class="fab fa-twitter"></i>
-                        </button>
-                        <button class="social-btn">
-                            <i class="fab fa-apple"></i>
-                        </button>
-                    </div>
-                    <div class="register-link">
-                        Hesabınız yok mu? <a href="#">Hesap oluştur</a>
-                    </div>
-                </form>
-            </div>
-        </div>
-        <div class="login-modal-overlay" id="register-modal">
-            <div class="login-modal">
-                <button class="close-modal" id="close-register-modal">
-                    <i class="fas fa-times"></i>
-                </button>
-                <div class="login-header">
-                    <div class="login-logo">BL DİZİ</div>
-                    <div class="login-title">Hesap Oluştur</div>
-                    <div class="login-subtitle">En iyi BL içerik platformuna üye ol</div>
-                </div>
-                <div class="login-form">
-                    <div class="form-group">
-                        <label for="first-name">Ad</label>
-                        <input type="text" id="first-name" class="form-control" placeholder="Adınızı giriniz" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="last-name">Soyad</label>
-                        <input type="text" id="last-name" class="form-control" placeholder="Soyadınızı giriniz"
-                            required>
-                    </div>
-                    <div class="form-group">
-                        <label for="nickname">Kullanıcı Adı</label>
-                        <input type="text" id="nickname" class="form-control" placeholder="Kullanıcı adınızı giriniz"
-                            required>
-                    </div>
-                    <div class="form-group">
-                        <label for="register-email">E-posta</label>
-                        <input type="email" id="register-email" class="form-control"
-                            placeholder="E-posta adresinizi giriniz" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="register-password">Şifre</label>
-                        <input type="password" id="register-password" class="form-control"
-                            placeholder="Şifrenizi giriniz" required>
-                    </div>
-                    <button class="login-btn-page" id="register-submit">Kayıt Ol</button>
-                    <div class="login-divider">veya</div>
-                    <div class="social-login">
-                        <button class="social-btn">
-                            <i class="fab fa-google"></i>
-                        </button>
-                        <button class="social-btn">
-                            <i class="fab fa-facebook-f"></i>
-                        </button>
-                        <button class="social-btn">
-                            <i class="fab fa-twitter"></i>
-                        </button>
-                        <button class="social-btn">
-                            <i class="fab fa-apple"></i>
-                        </button>
-                    </div>
-                    <div class="register-link login-link">
-                        Zaten hesabınız var mı? <a href="#" id="login-link">Giriş Yap</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="login-modal-overlay" id="forgot-password-modal">
-            <div class="login-modal">
-                <button class="close-modal" id="close-forgot-modal">
-                    <i class="fas fa-times"></i>
-                </button>
-                <div class="login-header">
-                    <div class="login-logo">BL DİZİ</div>
-                    <h2 class="login-title">Şifremi Unuttum</h2>
-                    <p class="login-subtitle">Şifre sıfırlamak için e-posta veya kullanıcı adınızı girin</p>
-                </div>
-                <div class="login-form">
-                    <div class="form-group">
-                        <label for="forgot-email">E-posta veya kullanıcı adı</label>
-                        <input type="text" class="form-control" id="forgot-email"
-                            placeholder="E-posta veya kullanıcı adınızı giriniz">
-                        <span class="highlight"></span>
-                    </div>
-                    <button class="login-btn-page" id="forgot-password-submit">Şifremi Sıfırla</button>
-                    <div class="register-link login-link">
-                        Şifrenizi hatırladınız mı? <a href="#" id="back-to-login">Giriş Yap</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="calendar-modal-overlay" id="calendar-modal">
-            <div class="calendar-modal">
-                <button class="close-modal" id="close-calendar-modal">
-                    <i class="fas fa-times"></i>
-                </button>
-                <div class="calendar-header">
-                    <h2>Takvim</h2>
-                </div>
-                <div class="weekly-calendar">
-                    <div class="calendar-day">
-                        <h3>Pazartesi</h3>
-                        <div class="calendar-shows" id="monday-shows"></div>
-                    </div>
-                    <div class="calendar-day">
-                        <h3>Salı</h3>
-                        <div class="calendar-shows" id="tuesday-shows"></div>
-                    </div>
-                    <div class="calendar-day">
-                        <h3>Çarşamba</h3>
-                        <div class="calendar-shows" id="wednesday-shows"></div>
-                    </div>
-                    <div class="calendar-day">
-                        <h3>Perşembe</h3>
-                        <div class="calendar-shows" id="thursday-shows"></div>
-                    </div>
-                    <div class="calendar-day">
-                        <h3>Cuma</h3>
-                        <div class="calendar-shows" id="friday-shows"></div>
-                    </div>
-                    <div class="calendar-day">
-                        <h3>Cumartesi</h3>
-                        <div class="calendar-shows" id="saturday-shows"></div>
-                    </div>
-                    <div class="calendar-day">
-                        <h3>Pazar</h3>
-                        <div class="calendar-shows" id="sunday-shows"></div>
-                    </div>
-                </div>
             </div>
         </div>
     </header>
@@ -487,6 +320,174 @@
             </div>
         </div>
     </div>
+
+        <div class="login-modal-overlay" id="login-modal">
+            <div class="login-modal">
+                <button class="close-modal" id="close-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="login-header">
+                    <div class="login-logo">BL DİZİ</div>
+                    <h2 class="login-title">Hoşgeldiniz</h2>
+                    <p class="login-subtitle">Hesabınıza giriş yapın</p>
+                </div>
+                <form class="login-form" id="login-form-element" action="javascript:void(0);">
+                    <div class="form-group">
+                        <label for="email">E-posta veya kullanıcı adı</label>
+                        <input type="text" class="form-control" id="email" name="username" autocomplete="username" placeholder="E-posta veya kullanıcı adı" required>
+                        <span class="highlight"></span>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Şifre</label>
+                        <input type="password" class="form-control" id="password" name="password" autocomplete="current-password" placeholder="Şifreniz" required>
+                        <span class="highlight"></span>
+                    </div>
+                    <div class="forgot-password">
+                        <a href="#">Şifremi unuttum</a>
+                    </div>
+                    <button type="submit" class="login-btn-page" id="login-submit">Giriş Yap</button>
+                    <div class="login-divider">veya</div>
+                    <div class="social-login">
+                        <button class="social-btn">
+                            <i class="fab fa-google"></i>
+                        </button>
+                        <button class="social-btn">
+                            <i class="fab fa-facebook-f"></i>
+                        </button>
+                        <button class="social-btn">
+                            <i class="fab fa-twitter"></i>
+                        </button>
+                        <button class="social-btn">
+                            <i class="fab fa-apple"></i>
+                        </button>
+                    </div>
+                    <div class="register-link">
+                        Hesabınız yok mu? <a href="#">Hesap oluştur</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="login-modal-overlay" id="register-modal">
+            <div class="login-modal">
+                <button class="close-modal" id="close-register-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="login-header">
+                    <div class="login-logo">BL DİZİ</div>
+                    <div class="login-title">Hesap Oluştur</div>
+                    <div class="login-subtitle">En iyi BL içerik platformuna üye ol</div>
+                </div>
+                <div class="login-form">
+                    <div class="form-group">
+                        <label for="first-name">Ad</label>
+                        <input type="text" id="first-name" class="form-control" placeholder="Adınızı giriniz" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="last-name">Soyad</label>
+                        <input type="text" id="last-name" class="form-control" placeholder="Soyadınızı giriniz"
+                            required>
+                    </div>
+                    <div class="form-group">
+                        <label for="nickname">Kullanıcı Adı</label>
+                        <input type="text" id="nickname" class="form-control" placeholder="Kullanıcı adınızı giriniz"
+                            required>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-email">E-posta</label>
+                        <input type="email" id="register-email" class="form-control"
+                            placeholder="E-posta adresinizi giriniz" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-password">Şifre</label>
+                        <input type="password" id="register-password" class="form-control"
+                            placeholder="Şifrenizi giriniz" required>
+                    </div>
+                    <button class="login-btn-page" id="register-submit">Kayıt Ol</button>
+                    <div class="login-divider">veya</div>
+                    <div class="social-login">
+                        <button class="social-btn">
+                            <i class="fab fa-google"></i>
+                        </button>
+                        <button class="social-btn">
+                            <i class="fab fa-facebook-f"></i>
+                        </button>
+                        <button class="social-btn">
+                            <i class="fab fa-twitter"></i>
+                        </button>
+                        <button class="social-btn">
+                            <i class="fab fa-apple"></i>
+                        </button>
+                    </div>
+                    <div class="register-link login-link">
+                        Zaten hesabınız var mı? <a href="#" id="login-link">Giriş Yap</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="login-modal-overlay" id="forgot-password-modal">
+            <div class="login-modal">
+                <button class="close-modal" id="close-forgot-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="login-header">
+                    <div class="login-logo">BL DİZİ</div>
+                    <h2 class="login-title">Şifremi Unuttum</h2>
+                    <p class="login-subtitle">Şifre sıfırlamak için e-posta veya kullanıcı adınızı girin</p>
+                </div>
+                <div class="login-form">
+                    <div class="form-group">
+                        <label for="forgot-email">E-posta veya kullanıcı adı</label>
+                        <input type="text" class="form-control" id="forgot-email"
+                            placeholder="E-posta veya kullanıcı adınızı giriniz">
+                        <span class="highlight"></span>
+                    </div>
+                    <button class="login-btn-page" id="forgot-password-submit">Şifremi Sıfırla</button>
+                    <div class="register-link login-link">
+                        Şifrenizi hatırladınız mı? <a href="#" id="back-to-login">Giriş Yap</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="calendar-modal-overlay" id="calendar-modal">
+            <div class="calendar-modal">
+                <button class="close-modal" id="close-calendar-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="calendar-header">
+                    <h2>Takvim</h2>
+                </div>
+                <div class="weekly-calendar">
+                    <div class="calendar-day">
+                        <h3>Pazartesi</h3>
+                        <div class="calendar-shows" id="monday-shows"></div>
+                    </div>
+                    <div class="calendar-day">
+                        <h3>Salı</h3>
+                        <div class="calendar-shows" id="tuesday-shows"></div>
+                    </div>
+                    <div class="calendar-day">
+                        <h3>Çarşamba</h3>
+                        <div class="calendar-shows" id="wednesday-shows"></div>
+                    </div>
+                    <div class="calendar-day">
+                        <h3>Perşembe</h3>
+                        <div class="calendar-shows" id="thursday-shows"></div>
+                    </div>
+                    <div class="calendar-day">
+                        <h3>Cuma</h3>
+                        <div class="calendar-shows" id="friday-shows"></div>
+                    </div>
+                    <div class="calendar-day">
+                        <h3>Cumartesi</h3>
+                        <div class="calendar-shows" id="saturday-shows"></div>
+                    </div>
+                    <div class="calendar-day">
+                        <h3>Pazar</h3>
+                        <div class="calendar-shows" id="sunday-shows"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
     <!-- Feedback Modal -->
     <div class="login-modal-overlay" id="feedback-modal">

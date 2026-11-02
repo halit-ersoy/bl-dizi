@@ -18,7 +18,7 @@ export function initRegister() {
         document.body.style.overflow = 'hidden';
         setTimeout(() => {
             const firstNameInput = document.getElementById('first-name');
-            if (firstNameInput) firstNameInput.focus();
+            if (firstNameInput && window.innerWidth > 768) firstNameInput.focus();
         }, 400);
     });
 

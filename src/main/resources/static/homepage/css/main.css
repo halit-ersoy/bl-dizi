@@ -37,7 +37,7 @@
 @import url('new-programs.css');
 
 /* 13) Login */
-@import url('login.css');
+@import url('login.css?v=6');
 
 @import url('featured-grid.css');
 
