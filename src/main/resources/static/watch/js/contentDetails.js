@@ -2,14 +2,6 @@
 import { handleImageSkeleton } from '../../elements/userLogged.js';
 
 export function initContentDetails(videoId) {
-    const detailsToggle = document.querySelector('.details-toggle');
-    const detailsContainer = document.querySelector('.content-details-container');
-
-    detailsToggle?.addEventListener('click', () => {
-        detailsToggle.classList.toggle('active');
-        detailsContainer.classList.toggle('open');
-    });
-
     if (videoId) loadContentDetails(videoId);
 }
 
@@ -18,6 +10,9 @@ async function loadContentDetails(id) {
         const response = await fetch(`/api/video/details?id=${id}`);
         if (!response.ok) throw new Error('Details not found');
         const data = await response.json();
+
+        // Configure Details Toggle behavior (Accordion for movies, direct link for series/programs)
+        setupDetailsToggle(data);
 
         // Update title and +18 badge
         const titleEl = document.getElementById('title');
@@ -345,6 +340,14 @@ async function loadContentDetails(id) {
         console.error('Content details loading error:', error);
         const titleEl = document.getElementById('contentTitle');
         if (titleEl) titleEl.innerText = "Detaylar yüklenemedi";
+        const detailsToggle = document.querySelector('.details-toggle');
+        const detailsContainer = document.querySelector('.content-details-container');
+        if (detailsToggle && !detailsToggle.onclick) {
+            detailsToggle.onclick = () => {
+                detailsToggle.classList.toggle('active');
+                if (detailsContainer) detailsContainer.classList.toggle('open');
+            };
+        }
     }
 }
 
@@ -645,4 +648,75 @@ function getCountryName(code) {
         'ie': 'İrlanda'
     };
     return countries[code.toLowerCase()] || code;
+}
+
+function setupDetailsToggle(data) {
+    const detailsToggle = document.querySelector('.details-toggle');
+    const detailsContainer = document.querySelector('.content-details-container');
+    if (!detailsToggle) return;
+
+    const isMovie = data.type === 'movie' || (data.isUpcoming && (data.category === 'Movie' || data.upcomingType === 'Movie'));
+
+    if (isMovie) {
+        // Film: Mevcut açılabilir / kapanabilir akordiyon davranışı
+        detailsToggle.classList.remove('is-link');
+        const icon = detailsToggle.querySelector('i');
+        if (icon) {
+            icon.className = 'fas fa-chevron-down';
+        }
+        const span = detailsToggle.querySelector('span');
+        if (span) {
+            span.textContent = 'İçerik Detayları';
+        }
+
+        detailsToggle.onclick = () => {
+            detailsToggle.classList.toggle('active');
+            if (detailsContainer) {
+                detailsContainer.classList.toggle('open');
+            }
+        };
+    } else {
+        // Dizi ve Program: Açılabilir olmasın, tıklandığında dizi/program bilgi ekranına gitsin
+        detailsToggle.classList.add('is-link');
+        detailsToggle.classList.remove('active');
+        if (detailsContainer) {
+            detailsContainer.classList.remove('open');
+            detailsContainer.style.display = 'none';
+        }
+
+        const icon = detailsToggle.querySelector('i');
+        if (icon) {
+            icon.className = 'fas fa-chevron-right';
+        }
+
+        const span = detailsToggle.querySelector('span');
+        const isProgram = (data.seriesType === 'Program' || (data.seriesName && data.seriesName.toLowerCase().includes('program')));
+        const label = isProgram ? 'Program Detayları' : 'Dizi Detayları';
+        if (span) {
+            span.textContent = label;
+        }
+
+        const rawSlug = data.seriesSlug || (data.type === 'series' ? data.slug : null);
+        const targetUrl = rawSlug 
+            ? `/${rawSlug.replace(/^\/+/, '')}` 
+            : (data.seriesId ? `/series/${data.seriesId}` : null);
+
+        if (targetUrl) {
+            detailsToggle.setAttribute('title', `${label} sayfasına git`);
+            detailsToggle.onclick = (e) => {
+                e.preventDefault();
+                if (e.ctrlKey || e.metaKey) {
+                    window.open(targetUrl, '_blank');
+                } else {
+                    window.location.href = targetUrl;
+                }
+            };
+            detailsToggle.onauxclick = (e) => {
+                if (e.button === 1) {
+                    e.preventDefault();
+                    window.open(targetUrl, '_blank');
+                }
+            };
+        }
+    }
 }

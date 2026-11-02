@@ -70,6 +70,17 @@ public class VideoController {
                     response.put("finalStatus", series.get("finalStatus"));
                     response.put("adult", Boolean.TRUE.equals(episode.get("IsAdult")));
                     cast = actorRepository.getCastForSeries(seriesId);
+                    if (series.get("slug") != null) {
+                        response.put("seriesSlug", series.get("slug"));
+                    }
+                    if (series.get("name") != null) {
+                        response.put("seriesName", series.get("name"));
+                    }
+                    if (series.get("SeriesType") != null) {
+                        response.put("seriesType", series.get("SeriesType"));
+                    } else {
+                        response.put("seriesType", "Dizi");
+                    }
                 } else {
                     response.put("title", episode.get("name"));
                     response.put("seriesTitle", episode.get("name"));

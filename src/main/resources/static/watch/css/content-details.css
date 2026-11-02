@@ -3,6 +3,7 @@
    ========================================================================== */
 
 .content-details-section {
+    overflow: hidden;
     margin: 24px 0;
     background: linear-gradient(135deg, rgba(22, 22, 28, 0.85) 0%, rgba(14, 14, 18, 0.95) 100%);
     border: 1px solid rgba(255, 255, 255, 0.08);
@@ -78,6 +79,32 @@
 .details-toggle.active i.fa-chevron-down {
     transform: rotate(180deg);
 }
+
+/* Direct Link Style for Series & Programs */
+.details-toggle.is-link {
+    border-radius: 15px;
+    transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+.details-toggle.is-link:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.details-toggle.is-link:hover span {
+    color: var(--primary-color);
+}
+
+.details-toggle.is-link i.fa-chevron-right {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.95rem;
+    transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), color 0.3s ease;
+}
+
+.details-toggle.is-link:hover i.fa-chevron-right {
+    transform: translateX(4px);
+    color: var(--primary-color);
+}
+
 
 /* Expandable Details Container */
 .content-details-container {
