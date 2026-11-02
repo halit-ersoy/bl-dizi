@@ -27,24 +27,7 @@ public class CommentRepository {
             RelatedIDs AS (
                 SELECT ID FROM TargetContent WHERE ID IS NOT NULL
                 UNION
-                SELECT e.SeriesId FROM Episode e JOIN TargetContent t ON e.ID = t.ID WHERE e.SeriesId IS NOT NULL
-                UNION
-                SELECT e.ID FROM Episode e JOIN TargetContent t ON e.SeriesId = t.ID WHERE e.SeasonNumber = 1 AND e.EpisodeNumber = 1
-                UNION
-                SELECT e1.ID FROM Episode ep JOIN TargetContent t ON ep.ID = t.ID JOIN Episode e1 ON e1.SeriesId = ep.SeriesId WHERE e1.SeasonNumber = 1 AND e1.EpisodeNumber = 1
-                UNION
-                SELECT u.ID FROM Upcoming u
-                JOIN Episode e ON e.ID IN (SELECT ID FROM TargetContent)
-                JOIN Series s ON e.SeriesId = s.ID
-                WHERE u.Name COLLATE Latin1_General_CI_AI = s.Name COLLATE Latin1_General_CI_AI
-                   OR u.ReferenceId = s.ID
-                   OR u.ReferenceId = e.ID
-                UNION
-                SELECT u.ID FROM Upcoming u
-                JOIN Series s ON s.ID IN (SELECT ID FROM TargetContent)
-                WHERE u.Name COLLATE Latin1_General_CI_AI = s.Name COLLATE Latin1_General_CI_AI
-                   OR u.ReferenceId = s.ID
-                UNION
+                -- For Movies: include linked Upcoming pre-release comments if any
                 SELECT u.ID FROM Upcoming u
                 JOIN Movie m ON m.ID IN (SELECT ID FROM TargetContent)
                 WHERE u.Name COLLATE Latin1_General_CI_AI = m.Name COLLATE Latin1_General_CI_AI
@@ -52,13 +35,19 @@ public class CommentRepository {
                 UNION
                 SELECT u.ReferenceId FROM Upcoming u JOIN TargetContent t ON u.ID = t.ID WHERE u.ReferenceId IS NOT NULL
                 UNION
-                SELECT s.ID FROM Series s JOIN Upcoming u ON s.Name COLLATE Latin1_General_CI_AI = u.Name COLLATE Latin1_General_CI_AI JOIN TargetContent t ON u.ID = t.ID
-                UNION
-                SELECT e.ID FROM Episode e JOIN Series s ON e.SeriesId = s.ID JOIN Upcoming u ON s.Name COLLATE Latin1_General_CI_AI = u.Name COLLATE Latin1_General_CI_AI JOIN TargetContent t ON u.ID = t.ID WHERE e.SeasonNumber = 1 AND e.EpisodeNumber = 1
-                UNION
-                SELECT e.ID FROM Episode e JOIN Upcoming u ON e.SeriesId = u.ReferenceId JOIN TargetContent t ON u.ID = t.ID WHERE e.SeasonNumber = 1 AND e.EpisodeNumber = 1
-                UNION
                 SELECT m.ID FROM Movie m JOIN Upcoming u ON m.Name COLLATE Latin1_General_CI_AI = u.Name COLLATE Latin1_General_CI_AI JOIN TargetContent t ON u.ID = t.ID
+                UNION
+                -- For Series when queried directly (NOT when watching a specific episode): include linked Upcoming pre-release comments
+                SELECT u.ID FROM Upcoming u
+                JOIN Series s ON s.ID IN (SELECT ID FROM TargetContent)
+                WHERE (u.Name COLLATE Latin1_General_CI_AI = s.Name COLLATE Latin1_General_CI_AI
+                   OR u.ReferenceId = s.ID)
+                   AND NOT EXISTS (SELECT 1 FROM Episode ep WHERE ep.ID IN (SELECT ID FROM TargetContent))
+                UNION
+                SELECT s.ID FROM Series s 
+                JOIN Upcoming u ON s.Name COLLATE Latin1_General_CI_AI = u.Name COLLATE Latin1_General_CI_AI 
+                JOIN TargetContent t ON u.ID = t.ID
+                WHERE NOT EXISTS (SELECT 1 FROM Episode ep WHERE ep.ID IN (SELECT ID FROM TargetContent))
             )
             SELECT
                 c.ID, c.Text as comment, c.CreatedAt as date, c.Spoiler,
