@@ -113,8 +113,26 @@ public class HomeController {
         return renderHtml("static/watch/html/watch.html");
     }
 
+        @GetMapping({"/series/{slug}", "/dizi/{slug}", "/program/{slug}"})
+    public ResponseEntity<Resource> seriesPageDirect(@PathVariable("slug") String slug) {
+        return renderHtml("static/series/html/series.html");
+    }
+
     @GetMapping("/{slug:[a-zA-Z0-9-’']+}")
     public ResponseEntity<Resource> watchPageBySlug(@PathVariable("slug") String slug) {
+        // Check if slug or UUID is a Series -> serve dedicated series details page
+        Map<String, Object> seriesMatch = seriesRepository.findSeriesBySlug(slug);
+        if (seriesMatch == null) {
+            try {
+                UUID sId = UUID.fromString(slug);
+                seriesMatch = seriesRepository.findSeriesDetails(sId);
+            } catch (Exception ignored) {
+            }
+        }
+        if (seriesMatch != null) {
+            return renderHtml("static/series/html/series.html");
+        }
+
         boolean isValid = seriesRepository.isValidSlug(slug) || movieRepository.isValidSlug(slug);
         if (!isValid) {
             try {
