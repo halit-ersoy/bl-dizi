@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <script src="/elements/theme.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Yayın Takvimi - Who Dat Idols?</title>
+    <meta name="description" content="Dizi ve programların güncel haftalık yayın takvimi.">
+
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
+    <!-- Global Styles -->
+    <link rel="stylesheet" href="/elements/variables.css">
+    <link rel="stylesheet" href="/homepage/css/main.css">
+    <!-- Calendar Specific Styles -->
+    <link rel="stylesheet" href="/calendar/css/calendar.css?v=3.0">
+</head>
+
+<body class="calendar-page">
+    <div id="loading-screen" style="display: none;">
+        <div class="loader-container">
+            <div class="loader-circle"></div>
+            <div class="loading-text" id="loader-brand">WDI</div>
+        </div>
+        <div class="loader-status">Yükleniyor...</div>
+    </div>
+
+    <!-- Header Navigation (Exactly matching Category / Movies screen) -->
+    <header id="header">
+        <a href="/" class="logo-link" aria-label="Ana sayfa">
+            <div class="logo" id="site-logo">WDI</div>
+        </a>
+    </header>
+
+    <!-- Main Content -->
+    <main class="calendar-main">
+        <!-- Calendar Top Header -->
+        <div class="calendar-header-bar">
+            <div class="title-area">
+                <h1 class="page-title">Yayın Takvimi</h1>
+                <div class="today-chip">
+                    <span class="live-pulse-dot"></span>
+                    <span id="today-text-date">Bugün: -</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sliding Day Tabs (Segmented Control - Days only) -->
+        <div class="calendar-tabs-wrapper">
+            <div class="day-tabs-slider" id="dayTabs">
+                <button class="day-tab" data-day="monday">
+                    <span class="day-short">Pzt</span>
+                    <span class="day-full">Pazartesi</span>
+                    <span class="day-count" id="count-monday"></span>
+                </button>
+                <button class="day-tab" data-day="tuesday">
+                    <span class="day-short">Sal</span>
+                    <span class="day-full">Salı</span>
+                    <span class="day-count" id="count-tuesday"></span>
+                </button>
+                <button class="day-tab" data-day="wednesday">
+                    <span class="day-short">Çar</span>
+                    <span class="day-full">Çarşamba</span>
+                    <span class="day-count" id="count-wednesday"></span>
+                </button>
+                <button class="day-tab" data-day="thursday">
+                    <span class="day-short">Per</span>
+                    <span class="day-full">Perşembe</span>
+                    <span class="day-count" id="count-thursday"></span>
+                </button>
+                <button class="day-tab" data-day="friday">
+                    <span class="day-short">Cum</span>
+                    <span class="day-full">Cuma</span>
+                    <span class="day-count" id="count-friday"></span>
+                </button>
+                <button class="day-tab" data-day="saturday">
+                    <span class="day-short">Cmt</span>
+                    <span class="day-full">Cumartesi</span>
+                    <span class="day-count" id="count-saturday"></span>
+                </button>
+                <button class="day-tab" data-day="sunday">
+                    <span class="day-short">Paz</span>
+                    <span class="day-full">Pazar</span>
+                    <span class="day-count" id="count-sunday"></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Schedule Grid Container -->
+        <div class="calendar-content-area" id="calendarContent">
+            <!-- Dynamically populated -->
+        </div>
+    </main>
+
+    <!-- Quick Show Details Modal -->
+    <div id="showDetailsModal" class="calendar-modal" style="display: none;">
+        <div class="calendar-modal-backdrop" id="closeModalBackdrop"></div>
+        <div class="calendar-modal-dialog">
+            <button class="modal-close-btn" id="closeModalBtn" aria-label="Kapat">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-body" id="modalBodyContent">
+                <!-- Populated dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/calendar/js/calendar.js?v=3.0"></script>
+</body>
+
+</html>

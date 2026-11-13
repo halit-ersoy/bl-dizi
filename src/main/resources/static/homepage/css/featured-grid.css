@@ -484,6 +484,10 @@
     background-image: url('https://flagcdn.com/h240/ie.webp');
 }
 
+.au {
+    background-image: url('https://flagcdn.com/h240/au.webp');
+}
+
 .title-container {
     display: flex;
     align-items: center;

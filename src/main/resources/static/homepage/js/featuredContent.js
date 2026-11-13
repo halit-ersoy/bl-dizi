@@ -48,7 +48,8 @@ export function initFeaturedContent() {
         pl: 'Polonya',
         ar: 'Arjantin',
         br: 'Brezilya',
-        ie: 'İrlanda'
+        ie: 'İrlanda',
+        au: 'Avustralya'
     };
 
     updateToggleState();

@@ -103,6 +103,11 @@ public class HomeController {
         return renderHtml("static/favorites/html/favorites.html");
     }
 
+    @GetMapping({"/takvim", "/calendar"})
+    public ResponseEntity<Resource> getCalendarPage() {
+        return renderHtml("static/calendar/html/calendar.html");
+    }
+
     @GetMapping({"/filmler", "/diziler"})
     public ResponseEntity<Resource> getCategoryPage() {
         return renderHtml("static/category/html/category.html");

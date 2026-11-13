@@ -685,16 +685,77 @@ function escapeHtml(text) {
 
 function formatCountry(country) {
     if (!country) return 'Asya';
-    const c = country.trim().toUpperCase();
-    switch (c) {
-        case 'KR': return 'Güney Kore';
-        case 'JP': return 'Japonya';
-        case 'CN': return 'Çin';
-        case 'TH': return 'Tayland';
-        case 'TW': return 'Tayvan';
-        case 'PH': return 'Filipinler';
-        default: return country;
-    }
+    const c = country.trim().toLowerCase();
+    const map = {
+        'kr': 'Güney Kore',
+        'kor': 'Güney Kore',
+        'jp': 'Japonya',
+        'jpn': 'Japonya',
+        'th': 'Tayland',
+        'tha': 'Tayland',
+        'cn': 'Çin',
+        'chn': 'Çin',
+        'tw': 'Tayvan',
+        'twn': 'Tayvan',
+        'ph': 'Filipinler',
+        'phl': 'Filipinler',
+        'id': 'Endonezya',
+        'idn': 'Endonezya',
+        'my': 'Malezya',
+        'mys': 'Malezya',
+        'sg': 'Singapur',
+        'sgp': 'Singapur',
+        'be': 'Belçika',
+        'bel': 'Belçika',
+        'us': 'USA',
+        'usa': 'USA',
+        'ch': 'İsviçre',
+        'che': 'İsviçre',
+        'hk': 'Hong Kong',
+        'hkg': 'Hong Kong',
+        'ca': 'Kanada',
+        'can': 'Kanada',
+        'es': 'İspanya',
+        'esp': 'İspanya',
+        'in': 'Hindistan',
+        'ind': 'Hindistan',
+        'vn': 'Vietnam',
+        'vnm': 'Vietnam',
+        'kh': 'Kamboçya',
+        'khm': 'Kamboçya',
+        'ee': 'Estonya',
+        'est': 'Estonya',
+        'de': 'Almanya',
+        'deu': 'Almanya',
+        'fr': 'Fransa',
+        'fra': 'Fransa',
+        'hr': 'Hırvatistan',
+        'hrv': 'Hırvatistan',
+        'nl': 'Hollanda',
+        'nld': 'Hollanda',
+        'gb': 'Birleşik Krallık',
+        'gbr': 'Birleşik Krallık',
+        'uk': 'Birleşik Krallık',
+        'at': 'Avusturya',
+        'aut': 'Avusturya',
+        'au': 'Avustralya',
+        'aus': 'Avustralya',
+        'it': 'İtalya',
+        'ita': 'İtalya',
+        'pl': 'Polonya',
+        'pol': 'Polonya',
+        'ar': 'Arjantin',
+        'arg': 'Arjantin',
+        'br': 'Brezilya',
+        'bra': 'Brezilya',
+        'ie': 'İrlanda',
+        'irl': 'İrlanda',
+        'tr': 'Türkiye',
+        'tur': 'Türkiye',
+        'ru': 'Rusya',
+        'rus': 'Rusya'
+    };
+    return map[c] || country;
 }
 
 function showToast(msg) {

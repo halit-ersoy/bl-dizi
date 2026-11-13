@@ -730,6 +730,7 @@ public class SeriesRepository {
         if (lang.contains("tayland") || lang.contains("thai")) return "th";
         if (lang.contains("tayvan") || lang.contains("taiwan")) return "tw";
         if (lang.contains("filipin") || lang.contains("phili")) return "ph";
+        if (lang.contains("avustral") || lang.contains("austral")) return "au";
         return "th";
     }
 }

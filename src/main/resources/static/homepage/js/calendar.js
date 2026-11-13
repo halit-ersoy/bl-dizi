@@ -35,10 +35,8 @@ export function initCalendar() {
     const closeCalendarButton = document.getElementById('close-calendar-modal');
 
     takvimLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        loadCalendarData();
-        calendarModal.style.display = 'flex';
-        document.body.style.overflow = 'hidden';
+        // Direct navigation to dedicated /takvim page
+        window.location.href = '/takvim';
     });
 
     if (closeCalendarButton) {

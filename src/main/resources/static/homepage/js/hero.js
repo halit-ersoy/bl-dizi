@@ -1,3 +1,12 @@
+function formatHeroCountry(c) {
+    if (!c) return 'Tayland';
+    const map = {
+        'th': 'Tayland', 'kr': 'Güney Kore', 'jp': 'Japonya', 'cn': 'Çin', 'tw': 'Tayvan', 'ph': 'Filipinler',
+        'au': 'Avustralya', 'us': 'USA', 'gb': 'UK', 'uk': 'UK', 'de': 'Almanya', 'fr': 'Fransa',
+        'it': 'İtalya', 'es': 'İspanya', 'vn': 'Vietnam', 'id': 'Endonezya', 'my': 'Malezya', 'sg': 'Singapur'
+    };
+    return map[c.trim().toLowerCase()] || c;
+}
 export function initHero() {
     const heroSection = document.querySelector('.hero');
     const heroContainer = document.querySelector('.hero-videos');
@@ -32,7 +41,7 @@ export function initHero() {
             slide.dataset.index = idx;
 
             const categoryText = item.category || 'BL Dizi';
-            const countryText = item.country ? item.country.toUpperCase() : 'TH';
+            const countryText = formatHeroCountry(item.country);
             const yearText = item.releaseYear ? `<span><i class="far fa-calendar-alt"></i> ${item.releaseYear}</span>` : '';
 
             const heroId = item.ID || item.id;

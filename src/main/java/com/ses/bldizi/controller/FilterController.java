@@ -133,6 +133,7 @@ public class FilterController {
         if (code == null) return "Bilinmiyor";
         String lower = code.trim().toLowerCase();
         return switch (lower) {
+            case "au", "aus" -> "Avustralya";
             case "th", "tha" -> "Tayland";
             case "kr", "kor" -> "Güney Kore";
             case "jp", "jpn" -> "Japonya";

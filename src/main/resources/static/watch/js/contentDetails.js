@@ -645,7 +645,12 @@ function getCountryName(code) {
         'pl': 'Polonya',
         'ar': 'Arjantin',
         'br': 'Brezilya',
-        'ie': 'İrlanda'
+        'ie': 'İrlanda',
+        'au': 'Avustralya',
+        'tr': 'Türkiye',
+        'ru': 'Rusya',
+        'uk': 'UK',
+        'usa': 'USA'
     };
     return countries[code.toLowerCase()] || code;
 }
