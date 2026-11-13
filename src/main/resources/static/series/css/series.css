@@ -3,6 +3,9 @@
    Cinema Glassmorphism, Theme-Aware, Fluid Responsiveness
    ========================================================================== */
 
+@import url('../../elements/scrool.css');
+@import url('../../elements/footer.css');
+
 /* --- General Reset & Layout --- */
 *, *::before, *::after {
     box-sizing: border-box;
@@ -667,8 +670,8 @@ body {
 /* Episodes Grid */
 .episodes-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
-    gap: 24px;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 20px;
 }
 
 .episode-card {
@@ -695,7 +698,7 @@ body {
 
 .episode-thumb-wrap {
     width: 100%;
-    aspect-ratio: 16 / 9;
+    aspect-ratio: 9 / 16;
     position: relative;
     overflow: hidden;
     background: #15161b;
@@ -761,6 +764,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 6px;
+    flex-wrap: wrap;
     pointer-events: none;
 }
 
@@ -1078,31 +1083,7 @@ body {
 
 /* Footer */
 footer {
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    background: #090a0d;
-    padding: 34px 24px;
-    text-align: center;
-    color: rgba(255, 255, 255, 0.5);
-    font-size: 0.88rem;
     margin-top: auto;
-}
-
-.footer-links {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 22px;
-    margin-bottom: 14px;
-}
-
-.footer-links a {
-    color: rgba(255, 255, 255, 0.75);
-    text-decoration: none;
-    transition: color 0.2s;
-}
-
-.footer-links a:hover {
-    color: var(--primary-color);
 }
 
 /* --- Responsive Adjustments --- */
@@ -1182,8 +1163,8 @@ footer {
     }
 
     .episodes-grid {
-        grid-template-columns: 1fr;
-        gap: 16px;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
     }
 
     .cast-grid {

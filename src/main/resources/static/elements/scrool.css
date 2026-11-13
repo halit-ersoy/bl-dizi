@@ -1,4 +1,9 @@
 /* Custom scrollbar styling */
+html {
+    scrollbar-width: thin;
+    scrollbar-color: var(--bg-card-hover) var(--bg-main);
+}
+
 ::-webkit-scrollbar {
     width: 8px;
 }
